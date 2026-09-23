@@ -41,6 +41,27 @@ def test_unannotated_tests_become_scenarios_with_derived_metadata(pytester, run)
     assert two["name"] == "Two things"  # humanized function name when no docstring
 
 
+def test_name_is_first_sentence_not_first_line(pytester, run):
+    """A wrapped docstring must not produce a name that stops mid-sentence."""
+    pytester.makepyfile(
+        test_wrap='''
+        def test_w():
+            """Auto-tap: a plain script (no imports) constructs a gateway bot,
+            events are pushed to it, and record captures them. Second sentence.
+
+            Body paragraph becomes the description.
+            """
+        ''',
+    )
+    _, spec, _ = run()
+    s = spec["scenarios"][0]
+    assert s["name"] == (
+        "Auto-tap: a plain script (no imports) constructs a gateway bot, "
+        "events are pushed to it, and record captures them."
+    )
+    assert s["description"] == "Body paragraph becomes the description."
+
+
 def test_marker_overrides_and_runtime_steps(pytester, run):
     pytester.makepyfile(
         test_beta='''

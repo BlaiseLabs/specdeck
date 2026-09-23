@@ -107,12 +107,24 @@ def _first_line(text: Optional[str]) -> str:
     return ""
 
 
+def _first_sentence(text: Optional[str]) -> str:
+    """Scenario name from a docstring: the first sentence of the first paragraph,
+    collapsed to one line — so a wrapped first line never yields a name that
+    ends mid-sentence with a comma."""
+    if not text:
+        return ""
+    para = text.strip().split("\n\n", 1)[0]
+    one = " ".join(para.split())
+    m = re.search(r"[.!?](\s|$)", one)
+    return one[: m.end()].strip() if m else one
+
+
 def _rest_lines(text: Optional[str]) -> Optional[str]:
-    """Docstring body after its first line, or None."""
+    """Docstring body after the first paragraph, or None."""
     if not text:
         return None
-    lines = text.strip().splitlines()
-    body = "\n".join(lines[1:]).strip()
+    parts = text.strip().split("\n\n", 1)
+    body = parts[1].strip() if len(parts) > 1 else ""
     return body or None
 
 
@@ -271,7 +283,7 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
         store.fn_global.setdefault(fn_name, []).append(sid)
 
         doc = getattr(item.obj, "__doc__", None)
-        name = kw.get("name") or _first_line(doc) or _humanize(re.sub(r"^test_", "", item.originalname or item.name))
+        name = kw.get("name") or _first_sentence(doc) or _humanize(re.sub(r"^test_", "", item.originalname or item.name))
         if item.originalname and item.name != item.originalname:  # parametrized
             name = f"{name} [{item.name[len(item.originalname):].strip('[]')}]"
 
