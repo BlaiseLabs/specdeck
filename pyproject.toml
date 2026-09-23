@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "specdeck"
+version = "0.1.0"
+description = "Generate a test-failure-DX spec (feature -> scenarios -> Given/When/Then, dependency DAG, pass/fail) from ordinary pytest tests. Tests are the source of truth; the spec cannot drift."
+requires-python = ">=3.10"
+dependencies = [
+    "pytest>=7",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.entry-points.pytest11]
+specdeck = "specdeck.plugin"
+
+[tool.setuptools.packages.find]
+include = ["specdeck*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+specdeck_feature = "specdeck"
+specdeck_description = "The spec generator, specified by its own tests."
