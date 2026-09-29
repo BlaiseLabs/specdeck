@@ -245,3 +245,108 @@ def test_generated_spec_is_warning_free_under_dx_spec_viewer_validator(pytester,
 
     diags = validate_text(out.read_text(encoding="utf-8"), source="spec.yaml")
     assert diags == [], [d.to_dict() for d in diags]
+
+
+def test_skipped_scenario_keeps_its_narrated_steps(pytester, run):
+    """Steps are read from the test source, so a scenario that never ran still reads as a spec."""
+    pytester.makepyfile(
+        test_plan='''
+        import pytest
+        from specdeck import scenario, given, when, then, and_
+
+        KIND = "surviving-mutant"
+
+        @scenario("later")
+        @pytest.mark.skip(reason="not built yet")
+        def test_later():
+            with given("a branch with a vacuous test"):
+                pass
+            with when("it is analysed"):
+                pass
+            with then("the boundary mutant survives", expected=KIND):
+                pass
+            with and_("the gate fails", expected="exit 1"):
+                pass
+        ''',
+    )
+    result, spec, _ = run()
+    result.assert_outcomes(skipped=1)
+    steps = scenario_by_id(spec, "later")["steps"]
+    assert [(s["keyword"], s["text"]) for s in steps] == [
+        ("Given", "a branch with a vacuous test"),
+        ("When", "it is analysed"),
+        ("Then", "the boundary mutant survives"),
+        ("And", "the gate fails"),
+    ]
+    # module-level constants in expected= are resolved; nothing ran, so nothing was observed
+    assert steps[2]["assertion"] == {"expected_label": "surviving-mutant", "observed_label": "not run"}
+
+
+def test_error_is_pinned_to_the_step_that_raised_and_later_steps_are_not_reached(pytester, run):
+    """A non-assertion error lands on the step where it happened; the intended Then steps still show."""
+    pytester.makepyfile(
+        test_stub='''
+        from specdeck import scenario, given, when, then
+
+        def analyse():
+            raise NotImplementedError("analyse")
+
+        @scenario("stub")
+        def test_stub():
+            with given("a repo"):
+                pass
+            with when("it is analysed"):
+                analyse()
+            with then("findings are reported", expected="1 finding"):
+                pass
+        ''',
+    )
+    result, spec, _ = run()
+    result.assert_outcomes(failed=1)
+    steps = scenario_by_id(spec, "stub")["steps"]
+    assert [s["keyword"] for s in steps] == ["Given", "When", "Then"]
+    assert steps[1]["assertion"]["observed_label"] == "NotImplementedError: analyse"
+    assert steps[2]["text"] == "findings are reported"
+    assert steps[2]["assertion"] == {"expected_label": "1 finding", "observed_label": "not reached"}
+
+
+def test_parametrized_step_text_is_rendered_per_instance(pytester, run):
+    """f-string step text is filled in from each parametrize value, even when the test was skipped."""
+    pytester.makepyfile(
+        test_param='''
+        import pytest
+        from specdeck import scenario, given
+
+        @pytest.mark.skip(reason="later")
+        @pytest.mark.parametrize("needle", ["print(", "log.info"])
+        def test_arid(needle):
+            with given(f"a line containing {needle!r}"):
+                pass
+        ''',
+    )
+    _, spec, _ = run()
+    texts = sorted(s["steps"][0]["text"] for s in spec["scenarios"])
+    assert texts == ["a line containing 'log.info'", "a line containing 'print('"]
+
+
+def test_failure_between_steps_is_still_reported(pytester, run):
+    """If the test fails outside any step, the failure is appended rather than hidden by 'not reached' steps."""
+    pytester.makepyfile(
+        test_gap='''
+        from specdeck import scenario, given, then
+
+        @scenario("gap")
+        def test_gap():
+            with given("a setup"):
+                pass
+            raise RuntimeError("between steps")
+            with then("never"):
+                pass
+        ''',
+    )
+    result, spec, _ = run()
+    result.assert_outcomes(failed=1)
+    steps = scenario_by_id(spec, "gap")["steps"]
+    assert steps[1] == {"keyword": "Then", "text": "never", "assertion": {"observed_label": "not reached"}}
+    assert steps[-1]["text"] == "the test passes"
+    assert "RuntimeError" in steps[-1]["assertion"]["observed_label"]

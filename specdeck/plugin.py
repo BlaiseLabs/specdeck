@@ -17,7 +17,10 @@ Design rules, deliberately:
 """
 from __future__ import annotations
 
+import ast
 import contextvars
+import inspect
+import textwrap
 import datetime as _dt
 import re
 from contextlib import contextmanager
@@ -41,6 +44,7 @@ class Step:
     text: str
     assertion: Optional[dict] = None
     decision_context: Optional[list] = None
+    failed: bool = False  # this step is where the test failed
 
     def to_dict(self) -> dict:
         d: dict = {"keyword": self.keyword, "text": self.text}
@@ -64,6 +68,9 @@ class ScenarioRecord:
     tags: list = field(default_factory=list)
     depends_on: list = field(default_factory=list)
     steps: list = field(default_factory=list)
+    # Steps read from the test's source at collection time: (keyword, text, expected).
+    # They narrate scenarios that never ran, and the steps a failure never reached.
+    planned: list = field(default_factory=list)
     status: str = "pending"  # pending | passed | failed | skipped | error
     duration: float = 0.0
     message: Optional[str] = None
@@ -198,10 +205,29 @@ def step(
         yield st
     except AssertionError as exc:  # capture the failure labels, then re-raise
         first = _first_line(str(exc))
+        if not getattr(exc, "_specdeck_pinned", False):
+            st.failed = True
+            try:
+                exc._specdeck_pinned = True  # type: ignore[attr-defined]
+            except Exception:
+                pass
         st.assertion = {
             "expected_label": expected,
             "observed_label": observed if observed is not None else (first or "assertion failed"),
         }
+        raise
+    except Exception as exc:  # e.g. NotImplementedError: pin it to this step only
+        if not getattr(exc, "_specdeck_pinned", False):
+            st.failed = True
+            first = _first_line(str(exc))
+            st.assertion = {
+                "expected_label": expected,
+                "observed_label": f"{type(exc).__name__}: {first}" if first else type(exc).__name__,
+            }
+            try:
+                exc._specdeck_pinned = True  # type: ignore[attr-defined]
+            except Exception:
+                pass
         raise
     else:
         if expected is not None or observed is not None:
@@ -225,6 +251,79 @@ def then(text: str, **kw):
 
 def and_(text: str, **kw):
     return step("And", text, **kw)
+
+
+# --------------------------------------------------------------------------- #
+# Static steps: read given/when/then/and_ calls from the test source
+# --------------------------------------------------------------------------- #
+_STEP_FUNCS = {"given": "Given", "when": "When", "then": "Then", "and_": "And"}
+
+
+def _render(expr: ast.expr, ns: dict) -> Optional[str]:
+    """Evaluate a step's text / expected expression without running test code.
+
+    Only literals, names, attribute access, subscripts and f-strings are
+    evaluated (never calls); anything else, or a name that only exists at
+    runtime, falls back to the expression's source."""
+    if isinstance(expr, ast.Constant):
+        return None if expr.value is None else str(expr.value)
+    if not any(isinstance(n, (ast.Call, ast.Lambda, ast.NamedExpr, ast.Await)) for n in ast.walk(expr)):
+        try:
+            value = eval(compile(ast.Expression(expr), "<specdeck>", "eval"), {"__builtins__": {}}, dict(ns))
+            return str(value)
+        except Exception:
+            pass
+    if isinstance(expr, ast.JoinedStr):  # keep the template readable: "a line containing {needle!r}"
+        parts = []
+        for v in expr.values:
+            if isinstance(v, ast.Constant):
+                parts.append(str(v.value))
+            else:
+                parts.append("{" + ast.unparse(v.value) + "}")
+        return "".join(parts)
+    return ast.unparse(expr)
+
+
+def _planned_steps(item: pytest.Item) -> list:
+    fn = getattr(item, "function", None)
+    if fn is None:
+        return []
+    try:
+        tree = ast.parse(textwrap.dedent(inspect.getsource(inspect.unwrap(fn))))
+    except (OSError, TypeError, SyntaxError):
+        return []
+    ns = dict(getattr(fn, "__globals__", {}))
+    callspec = getattr(item, "callspec", None)
+    if callspec is not None:
+        ns.update(callspec.params)
+    out: list = []
+
+    class _Visitor(ast.NodeVisitor):
+        def _with(self, node) -> None:
+            for it in node.items:
+                c = it.context_expr
+                if not isinstance(c, ast.Call):
+                    continue
+                name = c.func.id if isinstance(c.func, ast.Name) else getattr(c.func, "attr", None)
+                args = list(c.args)
+                if name in _STEP_FUNCS:
+                    keyword = _STEP_FUNCS[name]
+                elif name == "step" and args and isinstance(args[0], ast.Constant):
+                    keyword = str(args.pop(0).value)
+                else:
+                    continue
+                if not args:
+                    continue
+                expected = next((k.value for k in c.keywords if k.arg == "expected"), None)
+                out.append((keyword, _render(args[0], ns) or "",
+                            _render(expected, ns) if expected is not None else None))
+            self.generic_visit(node)
+
+        visit_With = _with
+        visit_AsyncWith = _with
+
+    _Visitor().visit(tree)
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -296,6 +395,7 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
             description=kw.get("description") or _rest_lines(doc),
             tags=[t for t in kw.get("tags", ()) if t],
             depends_on=list(kw.get("depends_on", ())),
+            planned=_planned_steps(item),
         )
         store.order.append(item.nodeid)
 
@@ -437,6 +537,14 @@ def _feature_name(config: pytest.Config) -> str:
 
 def _scenario_dict(rec: ScenarioRecord) -> dict:
     steps = [s.to_dict() for s in rec.steps]
+    ran = [s.keyword for s in rec.steps]
+    if rec.status != "passed" and rec.planned and ran == [p[0] for p in rec.planned[: len(ran)]]:
+        # the rest of the scenario as written: never run (skipped) or not reached (failed)
+        pending = "not run" if not ran else "not reached"
+        for keyword, text, expected in rec.planned[len(ran):]:
+            steps.append({"keyword": keyword, "text": text,
+                          "assertion": {k: v for k, v in (("expected_label", expected),
+                                                          ("observed_label", pending)) if v is not None}})
     if not steps:  # un-annotated test: synthesize from the outcome
         steps = [{"keyword": "When", "text": f"pytest runs {rec.nodeid}"}]
         verdict = {"passed": "it passes", "failed": "it fails", "skipped": "it is skipped",
@@ -445,7 +553,7 @@ def _scenario_dict(rec: ScenarioRecord) -> dict:
         if rec.status in ("failed", "error"):
             then_step["assertion"] = {"expected_label": "passes", "observed_label": rec.message or rec.status}
         steps.append(then_step)
-    elif rec.status in ("failed", "error") and not any(s.get("assertion") for s in steps):
+    elif rec.status in ("failed", "error") and not any(s.failed for s in rec.steps):
         steps.append({"keyword": "Then", "text": "the test passes",
                       "assertion": {"expected_label": "passes", "observed_label": rec.message or rec.status}})
 
