@@ -350,3 +350,28 @@ def test_failure_between_steps_is_still_reported(pytester, run):
     assert steps[1] == {"keyword": "Then", "text": "never", "assertion": {"observed_label": "not reached"}}
     assert steps[-1]["text"] == "the test passes"
     assert "RuntimeError" in steps[-1]["assertion"]["observed_label"]
+
+
+def test_blocking_cascades_through_a_chain(pytester, run):
+    """If a prerequisite was itself skipped as blocked, its dependents are blocked too (not run)."""
+    pytester.makepyfile(
+        test_chain='''
+        from specdeck import scenario
+
+        @scenario("a")
+        def test_a():
+            assert False
+
+        @scenario("b", depends_on=["a"])
+        def test_b():
+            pass
+
+        @scenario("c", depends_on=["b"])
+        def test_c():
+            assert False, "must not run"
+        ''',
+    )
+    result, spec, _ = run()
+    result.assert_outcomes(failed=1, skipped=2)
+    c = scenario_by_id(spec, "c")
+    assert "status:skipped" in c["tags"]

@@ -61,6 +61,9 @@ scenario passes, the vision is delivered") plus **skip-if-a-prerequisite-failed*
 (the pytest-dependency convention). It **never reorders execution** — runtime
 coupling between tests is an anti-pattern, and specdeck won't help you create it.
 
+Blocking cascades: if A fails, B (depends on A) is skipped as *blocked*, and so
+is C (depends on B). The viewer shows all of them as blocked by A.
+
 ## Configuration (`pyproject.toml` / `pytest.ini`)
 
 ```toml
@@ -72,6 +75,58 @@ specdeck_needs = ".specdeck/needs.json"   # default
 ```
 
 CLI: `--no-specdeck` (don't write), `--specdeck-out PATH`.
+
+A partial run (a file, a node id, `-k`, `-m`, `--lf`) does not rewrite the spec,
+so running one test never shrinks it to one scenario.
+
+## The live viewer
+
+```bash
+pytest --specdeck-live          # record this run and watch it at http://127.0.0.1:7357/p/<project>
+```
+
+The first live run starts the viewer in the background; later runs, from any
+project, join the same viewer and get their own page. To record every run
+without the flag, set `specdeck_live = true` (or `record` to keep history
+without starting the viewer). `python -m specdeck serve` runs it by hand.
+
+What it shows:
+
+- **Summary.** How many scenarios pass, as a bar split by status, with what
+  changed since the previous run (newly passing, regressions, new scenarios)
+  and a trend over recent complete runs.
+- **Overview.** Scenarios grouped by feature (module), each with its status,
+  its error and how much work it holds up. The side panel answers "where is it
+  stuck": *Stuck at* lists root-cause failures (failing, with every prerequisite
+  passing), *Goals* shows each end of a dependency branch with progress over
+  everything it relies on, *Load-bearing* lists what most scenarios depend on.
+- **Graph.** The `depends_on` DAG, coloured by status. Selecting a node
+  highlights everything it needs and everything that needs it.
+- **History.** Every run with its source (terminal or viewer), branch and
+  commit, result and change. Click a run to see the suite as it was then.
+- **Live.** During a run the page updates by itself: the running test spins,
+  tests not reached yet keep their last result, faded.
+- **Scenario drawer.** Steps with expected and observed values, where a failure
+  stopped, dependencies both ways, the scenario's own pass/fail history, its
+  source, and a command to run it.
+- **Run from the page.** *Run all*, *Run failing* (failing and blocked) or one
+  scenario. Runs of a subset update those scenarios and keep the rest.
+- **Light editing.** Edit a scenario's title, details, tags, `depends_on`,
+  step text and expected labels. Only string literals are rewritten, you review
+  a diff before saving, and an edit made against a test that changed on disk is
+  refused. Text built with f-strings stays read-only.
+
+History lives in `~/.specdeck/history.db` (SQLite; `SPECDECK_HOME` moves it).
+The viewer uses only the standard library, listens on 127.0.0.1 only, refuses
+requests whose Host isn't loopback, and needs a per-page token for anything that
+writes. Keyboard: `/` search, `j`/`k` move, `1` `2` `3` tabs, `Esc` close.
+
+| Option | Meaning |
+|---|---|
+| `--specdeck-live` | record and make sure a viewer is running |
+| `--specdeck-record` | record only |
+| `--no-specdeck-live` | override `specdeck_live` from config |
+| `--specdeck-port N` / `specdeck_port` / `SPECDECK_PORT` | viewer port, default 7357 |
 
 ## Output
 

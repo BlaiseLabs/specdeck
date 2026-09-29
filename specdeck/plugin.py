@@ -31,6 +31,7 @@ from typing import Any, Iterable, Optional
 import pytest
 import yaml
 
+from .editing import step_calls
 from .needs import write_needs
 
 __version__ = "0.1.0"
@@ -256,9 +257,6 @@ def and_(text: str, **kw):
 # --------------------------------------------------------------------------- #
 # Static steps: read given/when/then/and_ calls from the test source
 # --------------------------------------------------------------------------- #
-_STEP_FUNCS = {"given": "Given", "when": "When", "then": "Then", "and_": "And"}
-
-
 def _render(expr: ast.expr, ns: dict) -> Optional[str]:
     """Evaluate a step's text / expected expression without running test code.
 
@@ -297,32 +295,9 @@ def _planned_steps(item: pytest.Item) -> list:
     if callspec is not None:
         ns.update(callspec.params)
     out: list = []
-
-    class _Visitor(ast.NodeVisitor):
-        def _with(self, node) -> None:
-            for it in node.items:
-                c = it.context_expr
-                if not isinstance(c, ast.Call):
-                    continue
-                name = c.func.id if isinstance(c.func, ast.Name) else getattr(c.func, "attr", None)
-                args = list(c.args)
-                if name in _STEP_FUNCS:
-                    keyword = _STEP_FUNCS[name]
-                elif name == "step" and args and isinstance(args[0], ast.Constant):
-                    keyword = str(args.pop(0).value)
-                else:
-                    continue
-                if not args:
-                    continue
-                expected = next((k.value for k in c.keywords if k.arg == "expected"), None)
-                out.append((keyword, _render(args[0], ns) or "",
-                            _render(expected, ns) if expected is not None else None))
-            self.generic_visit(node)
-
-        visit_With = _with
-        visit_AsyncWith = _with
-
-    _Visitor().visit(tree)
+    for keyword, _call, text_node, exp_kw in step_calls(tree):
+        out.append((keyword, _render(text_node, ns) or "",
+                    _render(exp_kw.value, ns) if exp_kw is not None else None))
     return out
 
 
@@ -337,6 +312,15 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini("specdeck_description", "feature description for the generated spec", default="")
     parser.addini("specdeck_out", "spec output path (relative to rootdir)", default=".specdeck/spec.yaml")
     parser.addini("specdeck_needs", "needs.json output path (relative to rootdir)", default=".specdeck/needs.json")
+    g.addoption("--specdeck-live", action="store_true", default=False,
+                help="record this run in the specdeck viewer and show it live (starts the viewer if needed)")
+    g.addoption("--specdeck-record", action="store_true", default=False,
+                help="record this run in the viewer's history without starting the viewer")
+    g.addoption("--no-specdeck-live", action="store_true", default=False,
+                help="do not record this run, even if specdeck_live is set in the config")
+    g.addoption("--specdeck-port", type=int, default=None, help="viewer port (default 7357)")
+    parser.addini("specdeck_live", "record runs for the viewer: true (and start it), record, or false", default="false")
+    parser.addini("specdeck_port", "viewer port", default="7357")
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -346,6 +330,12 @@ def pytest_configure(config: pytest.Config) -> None:
         "specdeck scenario metadata for this test",
     )
     config._specdeck = _Store()  # type: ignore[attr-defined]
+    if not hasattr(config, "workerinput"):  # xdist workers don't record
+        from .recorder import LiveRecorder, live_mode
+
+        mode = live_mode(config)
+        if mode:
+            config.pluginmanager.register(LiveRecorder(config, mode), "specdeck-live")
 
 
 def _store(config: pytest.Config) -> Optional[_Store]:
@@ -477,8 +467,12 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
     by_id = store.by_id()
     for dep in rec.depends_on:
         d = by_id.get(dep)
-        if d is not None and d.status in ("failed", "error"):
+        if d is None:
+            continue
+        if d.status in ("failed", "error"):
             pytest.skip(f"specdeck: prerequisite scenario {dep!r} {d.status}")
+        if d.status == "skipped" and (d.message or "").startswith("specdeck: prerequisite scenario"):
+            pytest.skip(f"specdeck: prerequisite scenario {dep!r} blocked")  # blocking cascades
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -584,6 +578,14 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     config = session.config
     store = _store(config)
     if store is None or not store.records or config.getoption("--no-specdeck"):
+        return
+    from .recorder import is_full_run
+
+    if not is_full_run(config) and not config.getoption("--specdeck-out"):
+        # A selection (one file, -k, a node id) would shrink the spec to that subset.
+        tr = config.pluginmanager.get_plugin("terminalreporter")
+        if tr is not None:
+            tr.write_line("specdeck: partial run, spec not rewritten (run the whole suite to regenerate it)")
         return
     spec = build_spec(config, store)
     out = Path(config.getoption("--specdeck-out") or config.getini("specdeck_out"))

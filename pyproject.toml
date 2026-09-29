@@ -15,11 +15,17 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest"]
 
+[project.scripts]
+specdeck = "specdeck.cli:main"
+
 [project.entry-points.pytest11]
 specdeck = "specdeck.plugin"
 
 [tool.setuptools.packages.find]
 include = ["specdeck*"]
+
+[tool.setuptools.package-data]
+specdeck = ["web/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
