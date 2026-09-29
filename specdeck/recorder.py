@@ -240,11 +240,17 @@ class LiveRecorder:
             self._fail(exc)
 
     def pytest_terminal_summary(self, terminalreporter) -> None:
+        n = self.run_id
+        if self.run_id and self.hist is not None:
+            try:
+                n = self.hist._ordinals(self.project["id"]).get(self.run_id, self.run_id)
+            except Exception:
+                pass
         if self.url:
-            terminalreporter.write_line(f"specdeck live: {self.url}  (run #{self.run_id or '?'})", cyan=True)
+            terminalreporter.write_line(f"specdeck live: {self.url}  (run #{n or '?'})", cyan=True)
         elif self.run_id and self.project:
             terminalreporter.write_line(
-                f"specdeck: recorded run #{self.run_id} for {self.project['slug']} "
+                f"specdeck: recorded run #{n} for {self.project['slug']} "
                 f"(view with: python -m specdeck serve)")
         if self.note:
             terminalreporter.write_line(f"specdeck: {self.note}", yellow=True)
