@@ -101,7 +101,18 @@ What it shows:
   passing), *Goals* shows each end of a dependency branch with progress over
   everything it relies on, *Load-bearing* lists what most scenarios depend on.
 - **Graph.** The `depends_on` DAG, coloured by status. Selecting a node
-  highlights everything it needs and everything that needs it.
+  highlights everything it needs and everything that needs it. Built to stay
+  readable on big suites:
+  - scenarios with no dependencies aren't drawn (they're in the Overview; one
+    click shows them), and the cases of a parametrized test are one node;
+  - each chain is laid out on its own and chains are packed under the feature
+    they belong to; chains that mix features sit under *Across features*;
+  - above 150 nodes it opens on a **feature map**, one node per feature, with
+    arrows counting the dependencies between features; click one to open it;
+  - **Problems** draws only failing and blocked scenarios, **Selected branch**
+    only what the selected scenario needs and what needs it;
+  - a searchable feature picker, a minimap, scroll to move and Ctrl+scroll to
+    zoom; zoomed far out, nodes turn into status tiles.
 - **History.** Every run with its source (terminal or viewer), branch and
   commit, result and change. Click a run to see the suite as it was then.
 - **Live.** During a run the page updates by itself: the running test spins,

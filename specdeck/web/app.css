@@ -310,14 +310,7 @@ body.drawer-open .ov { grid-template-columns: 1fr; }
 
 /* graph ------------------------------------------------------------------- */
 .graph-tools { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-.graph-tools .search { flex: 0 1 300px; }
-.gchips { display: flex; gap: 6px; flex-wrap: wrap; }
-.gchip {
-  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 8px; cursor: pointer;
-  border: 1px solid var(--border); background: var(--panel); font-size: 12.5px; color: var(--muted);
-}
-.gchip i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
-.gchip.on { color: var(--text); border-color: var(--border-strong); background: var(--panel-2); font-weight: 600; }
+.graph-tools .search { flex: 0 1 280px; }
 .graph-wrap { position: relative; height: calc(100vh - 330px); min-height: 460px; overflow: hidden; cursor: grab; background:
   radial-gradient(circle, color-mix(in srgb, var(--faint) 26%, transparent) 1px, transparent 1.2px) 0 0 / 22px 22px, var(--panel); }
 .graph-wrap.panning { cursor: grabbing; }
@@ -528,3 +521,77 @@ code.inl { font-size: .9em; padding: 0 4px; border-radius: 4px; background: colo
 .param { display: inline-block; margin-right: 7px; padding: 0 6px; border-radius: 5px; font: 500 11.5px var(--mono); color: var(--accent); background: var(--accent-weak); vertical-align: 1px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dr-desc p { margin: 0 0 8px; }
 .dr-desc p:last-child { margin-bottom: 0; }
+
+/* graph: controls ---------------------------------------------------------- */
+.seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 9px; background: var(--panel-2); border: 1px solid var(--border); }
+.seg button { height: 28px; padding: 0 11px; border: 0; border-radius: 7px; background: transparent; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.seg button:hover:not(:disabled) { color: var(--text); }
+.seg button.on { background: var(--panel); color: var(--text); font-weight: 600; box-shadow: var(--shadow); }
+.seg button:disabled { opacity: .45; cursor: default; }
+.gpick { position: relative; }
+.gpick > .btn { max-width: 300px; }
+.gpick > .btn span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.gpick .menu { left: 0; min-width: 360px; }
+.gpick .menu .search { height: 34px; box-shadow: none; }
+.gpick .menu a { gap: 10px; }
+.swatch { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.gnote { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; font-size: 12.5px; color: var(--muted); margin: -2px 0 10px; min-height: 18px; }
+.gnote b { color: var(--text); font-weight: 600; }
+.gnote a { cursor: pointer; font-weight: 500; }
+.gempty {
+  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 18px 24px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); color: var(--muted); font-size: 13px; text-align: center;
+}
+.gempty b { color: var(--text); font-size: 14px; display: flex; gap: 8px; align-items: center; }
+
+/* graph: feature map ---------------------------------------------------------- */
+.gf { cursor: pointer; }
+.gf rect.body { fill: var(--panel); stroke: var(--border-strong); stroke-width: 1.2; }
+.gf .gf-name { font: 600 13px var(--sans); fill: var(--text); pointer-events: none; }
+.gf text { pointer-events: none; }
+.gf.st-passed rect.body { stroke: color-mix(in srgb, var(--pass) 55%, transparent); }
+.gf.st-failed rect.body, .gf.st-error rect.body { stroke: var(--fail); stroke-width: 1.6; }
+.gf.st-blocked rect.body { stroke: color-mix(in srgb, var(--blocked) 70%, transparent); stroke-width: 1.4; }
+.gf.st-notrun rect.body { stroke-dasharray: 4 3; }
+.gf:hover rect.body, .gf.match rect.body { stroke: var(--accent); stroke-width: 2; }
+.gf.sel rect.body { stroke: var(--accent); stroke-width: 2.4; }
+.gf.dim { opacity: .25; }
+.gel rect { fill: var(--panel); stroke: var(--border-strong); }
+.gel text { font: 600 11px var(--sans); fill: var(--muted); }
+
+/* graph: sections, parametrized, neighbours ------------------------------------ */
+.sec { cursor: pointer; }
+.sec-label { font: 700 14px var(--sans); fill: var(--text); letter-spacing: -.01em; }
+.sec-count { font: 500 12px var(--sans); fill: var(--muted); }
+.sec:hover:not(.across) .sec-label { fill: var(--accent); }
+.sec.across { cursor: default; }
+.gn.ext rect.body { stroke-dasharray: 3 3; }
+.gn.ext { opacity: .72; }
+.gn.ext.dim { opacity: .2; }
+.rel-chip.on { border-color: var(--accent); background: var(--accent-weak); }
+
+/* graph: zoomed far out, nodes become status tiles ------------------------------ */
+.far .gn text, .far .gf text:not(.gf-name), .far .gn .dot, .far .gn .fbar, .far .gel { display: none; }
+.far .gn rect.body { stroke-width: 0; }
+.far .gn.st-passed rect.body { fill: var(--pass); }
+.far .gn.st-failed rect.body { fill: var(--fail); }
+.far .gn.st-error rect.body { fill: var(--error); }
+.far .gn.st-blocked rect.body { fill: var(--blocked); }
+.far .gn.st-skipped rect.body { fill: var(--skipped); }
+.far .gn.st-notrun rect.body { fill: var(--notrun); }
+.far .gn.live-running rect.body { fill: var(--run); }
+.far .gn.sel rect.body { stroke: var(--text); stroke-width: 6; }
+.far .sec-count { display: none; }
+.far .gf .gf-name { font-size: 20px; }
+.far .ge { stroke-width: 3; }
+
+/* graph: minimap ------------------------------------------------------------------- */
+.minimap-box { position: absolute; top: 12px; right: 12px; padding: 6px; border-radius: 10px; background: color-mix(in srgb, var(--panel) 94%, transparent); border: 1px solid var(--border); box-shadow: var(--shadow); cursor: crosshair; }
+.minimap { display: block; }
+.minimap rect { fill: var(--notrun); }
+.minimap .mm-passed { fill: var(--pass); opacity: .7; }
+.minimap .mm-failed { fill: var(--fail); }
+.minimap .mm-error { fill: var(--error); }
+.minimap .mm-blocked { fill: var(--blocked); }
+.minimap .mm-skipped { fill: var(--skipped); opacity: .6; }
+.minimap rect.vp { fill: color-mix(in srgb, var(--accent) 12%, transparent); stroke: var(--accent); stroke-width: 1.2; }

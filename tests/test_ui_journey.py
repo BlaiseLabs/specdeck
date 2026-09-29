@@ -113,9 +113,14 @@ def test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green(pyt
     with when("the developer switches to the graph"):
         page.click("[data-tab=graph]")
         page.wait_for_selector(".gn")
-    with then("every scenario is a node, all green, with the chain's two edges", expected="4 nodes, 2 edges"):
-        assert page.locator(".gn").count() == 4
-        assert page.locator(".gn.st-passed").count() == 4
+    with then("the dependency chain is drawn, all green, and the scenario with no dependencies is left out",
+              expected="3 nodes, 2 edges"):
+        assert page.locator(".gn").count() == 3
+        assert page.locator(".gn.st-passed").count() == 3
         assert page.locator(".ge").count() == 2
+        assert "1 scenario with no dependencies isn't drawn" in text(page, "#gnote")
+    with and_("asking for it adds it to the picture", expected="4 nodes"):
+        page.click("#gnote [data-act=gindep]")
+        playwright.expect(page.locator(".gn")).to_have_count(4)
     with and_("the page raised no script errors along the way"):
         assert page.errors == []

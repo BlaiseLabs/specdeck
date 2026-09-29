@@ -15,7 +15,8 @@
     collapsed: new Set(), es: null, online: true,
     hist: {}, histFor: {}, source: {}, showSource: false,
     edit: null, edited: {},
-    graph: { key: null, layout: null, t: { x: 0, y: 0, k: 1 }, fitted: false, group: null, search: '' },
+    graph: { key: null, viewKey: null, layout: null, t: { x: 0, y: 0, k: 1 }, fitted: false, search: '',
+      level: null, focus: 'all', feature: null, showIndep: false, mm: null },
     launchSeen: null, projects: null,
   };
 
@@ -67,6 +68,7 @@
     const segs = ORDER.filter((k) => counts[k]).map((k) => `<span class="seg-${k}" style="flex-grow:${counts[k]}"></span>`).join('');
     return `<div class="segbar ${cls}">${segs}</div>`;
   }
+  const trunc = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
   const failingCount = (c) => (c.failed || 0) + (c.error || 0);
   function groupColor(gid) {
     const groups = S.board ? S.board.groups.map((g) => g.id) : [];
@@ -199,8 +201,11 @@
     } catch (e) {
       if (e.status === 404) {
         $('#main').innerHTML = `<div class="card empty"><b>${esc(e.message)}</b>Run <code>pytest --specdeck-live</code> in the project first.</div>`;
-      } else {
+      } else if (e.status || e instanceof TypeError && /fetch/i.test(e.message)) {
         S.online = false; renderTop();
+      } else {
+        console.error(e);  // a bug in the page, not the connection
+        toast(`Viewer error: ${esc(e.message)}`, { bad: true, ms: 8000 });
       }
     } finally {
       refreshing = false;
@@ -386,17 +391,33 @@
       $('#q').addEventListener('input', (e) => { S.filter.text = e.target.value; renderFeatures(); });
     } else if (S.tab === 'graph') {
       S.graph.key = null;
+      S.graph.viewKey = null;
       body.innerHTML = `
         <div class="graph-tools">
           <label class="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.8"/><path d="M10.6 10.6L14 14" stroke-linecap="round"/></svg>
           <input id="gq" placeholder="Find a scenario…" value="${esc(S.graph.search)}" autocomplete="off" spellcheck="false"></label>
-          <div class="gchips" id="gchips"></div>
+          <div class="seg" role="group" aria-label="Level">
+            <button data-glevel="features" data-tip="One node per feature">Features</button>
+            <button data-glevel="scenarios" data-tip="One node per scenario">Scenarios</button>
+          </div>
+          <div class="seg" role="group" aria-label="Show">
+            <button data-gfocus="all">Everything</button>
+            <button data-gfocus="problems" data-tip="Only failing and blocked scenarios">Problems</button>
+            <button data-gfocus="branch" data-tip="Only what the selected scenario needs and what needs it">Selected branch</button>
+          </div>
+          <div class="gpick">
+            <button class="btn" data-act="gpick"><span id="gpick-label">All features</span><span class="caret"></span></button>
+            <div class="menu" id="gpick-menu" hidden></div>
+          </div>
         </div>
+        <div class="gnote" id="gnote"></div>
         <div class="card graph-wrap" id="gwrap">
           <svg id="gsvg"><defs>
             <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L9 5L0 9z" style="fill:var(--faint)"/></marker>
           </defs><g id="gview"></g></svg>
-          <div class="graph-legend">${ORDER.map((k) => `<span>${icon(k)}${LABEL[k]}</span>`).join('')}<span>${icon('passed', 'running')}Running</span></div>
+          <div class="gempty" id="gempty" hidden></div>
+          <div class="minimap-box" id="gminibox" hidden><svg id="gmini" class="minimap"></svg></div>
+          <div class="graph-legend">${ORDER.map((k) => `<span>${icon(k)}${LABEL[k]}</span>`).join('')}<span>${icon('passed', 'running')}Running</span><span class="faint">Scroll to move · Ctrl+scroll to zoom</span></div>
           <div class="graph-zoom">
             <button class="btn icon" data-act="zoom-in" data-tip="Zoom in">+</button>
             <button class="btn icon" data-act="zoom-out" data-tip="Zoom out">−</button>
@@ -569,30 +590,138 @@
   }
 
   // ------------------------------------------------------------------ graph
-  const NW = 232, NH = 46, GX = 96, GY = 14;
+  // What gets drawn, in order:
+  //  1. scope: every scenario, one feature (plus the scenarios it connects to), problems, or one branch
+  //  2. units: parametrized cases of one test collapse into one node
+  //  3. level: a feature map (one node per feature) or scenarios; big suites open on the feature map
+  //  4. layout: each connected cluster is laid out on its own, then clusters are packed in rows,
+  //     grouped under the feature they belong to. Scenarios with no dependencies are left out
+  //     (they're in the Overview) unless asked for.
+  const NW = 232, NH = 46, GX = 84, GY = 14;       // scenario node + spacing inside a cluster
+  const FW = 268, FH = 66, FGX = 120, FGY = 24;    // feature node
+  const PACK_GAP = 40, SEC_HEAD = 50, SEC_GAP = 36;
+  const BIG = 150;                                  // above this many nodes, open on the feature map
+  const WORST = ['failed', 'error', 'blocked', 'notrun', 'passed', 'skipped'];
+  const PROBLEM = new Set(['failed', 'error', 'blocked']);
+  const FAR = 0.5;                                  // below this zoom, nodes become status tiles
 
-  function layoutGraph(scen) {
-    const ids = scen.map((s) => s.id);
-    const has = new Set(ids);
-    const deps = new Map(scen.map((s) => [s.id, (s.depends_on || []).filter((d) => has.has(d) && d !== s.id)]));
-    const kids = new Map(ids.map((i) => [i, []]));
-    deps.forEach((ds, i) => ds.forEach((d) => kids.get(d).push(i)));
-    const connected = ids.filter((i) => deps.get(i).length || kids.get(i).length);
-    const isolated = ids.filter((i) => !deps.get(i).length && !kids.get(i).length);
+  const worstOf = (counts) => WORST.find((k) => counts[k]) || 'notrun';
+  const famKey = (s) => (s.parametrized && s.function ? `fam:${s.file}::${s.function}` : s.id);
+  const groupById = (gid) => S.board.groups.find((g) => g.id === gid);
+
+  function scenarioBranch(id) {
+    const out = new Set([id]);
+    const walk = (key) => {
+      const st = [id];
+      while (st.length) {
+        const s = S.byId.get(st.pop());
+        (s?.[key] || []).forEach((n) => { if (S.byId.has(n) && !out.has(n)) { out.add(n); st.push(n); } });
+      }
+    };
+    walk('depends_on');
+    walk('dependents');
+    return out;
+  }
+
+  // 1. scope ---------------------------------------------------------------
+  function graphScope() {
+    const G = S.graph, all = S.board.scenarios;
+    let inc = new Set(all.map((s) => s.id));
+    const ext = new Set();
+    if (G.feature) {
+      inc = new Set(all.filter((s) => s.group === G.feature).map((s) => s.id));
+      [...inc].forEach((id) => {
+        const s = S.byId.get(id);
+        [...(s.depends_on || []), ...(s.dependents || [])].forEach((n) => { if (S.byId.has(n) && !inc.has(n)) ext.add(n); });
+      });
+      ext.forEach((id) => inc.add(id));
+    }
+    if (G.focus === 'problems') inc = new Set([...inc].filter((id) => PROBLEM.has(S.byId.get(id).status)));
+    else if (G.focus === 'branch') {
+      const b = S.sel && S.byId.has(S.sel) ? scenarioBranch(S.sel) : new Set();
+      inc = new Set([...inc].filter((id) => b.has(id)));
+    }
+    return { inc, ext };
+  }
+
+  // 2. units ---------------------------------------------------------------
+  function buildUnits(inc, ext) {
+    const units = new Map(), unitOf = new Map();
+    S.board.scenarios.forEach((s) => {
+      if (!inc.has(s.id)) return;
+      const k = famKey(s);
+      let u = units.get(k);
+      if (!u) {
+        u = { id: k, members: [], group: s.group, group_name: s.group_name, name: splitParam(s).base, fam: k !== s.id, ext: ext.has(s.id) };
+        units.set(k, u);
+      }
+      u.members.push(s.id);
+      unitOf.set(s.id, k);
+    });
+    const deps = new Map([...units.keys()].map((k) => [k, new Set()]));
+    const kids = new Map([...units.keys()].map((k) => [k, new Set()]));
+    S.board.scenarios.forEach((s) => {
+      const a = unitOf.get(s.id);
+      if (!a) return;
+      (s.depends_on || []).forEach((d) => {
+        const b = unitOf.get(d);
+        if (b && b !== a) { deps.get(a).add(b); kids.get(b).add(a); }
+      });
+    });
+    return { units, unitOf, deps, kids };
+  }
+
+  function unitState(u) {
+    const counts = {};
+    let live = null;
+    u.members.forEach((id) => {
+      const s = S.byId.get(id);
+      if (!s) return;
+      counts[s.status] = (counts[s.status] || 0) + 1;
+      if (s.live === 'running') live = 'running';
+      else if (s.live === 'queued' && !live) live = 'queued';
+    });
+    return { counts, status: worstOf(counts), live };
+  }
+
+  // 4. layout helpers ------------------------------------------------------
+  function components(ids, deps, kids) {
+    const index = new Map(ids.map((id, i) => [id, i]));
+    const seen = new Set(), out = [];
+    ids.forEach((i) => {
+      if (seen.has(i)) return;
+      const comp = [], st = [i];
+      seen.add(i);
+      while (st.length) {
+        const v = st.pop();
+        comp.push(v);
+        [...deps.get(v), ...kids.get(v)].forEach((w) => { if (index.has(w) && !seen.has(w)) { seen.add(w); st.push(w); } });
+      }
+      comp.sort((a, b) => index.get(a) - index.get(b));
+      out.push(comp);
+    });
+    return out;
+  }
+
+  // longest-path layers, barycenter ordering; one cluster, local coordinates
+  function layerLayout(ids, deps, kids, w, h, gx, gy) {
+    const inC = new Set(ids);
+    const D = new Map(ids.map((i) => [i, [...deps.get(i)].filter((x) => inC.has(x))]));
+    const K = new Map(ids.map((i) => [i, [...kids.get(i)].filter((x) => inC.has(x))]));
     const layer = new Map(), visiting = new Set();
     const L = (i) => {
       if (layer.has(i)) return layer.get(i);
-      if (visiting.has(i)) return 0;
+      if (visiting.has(i)) return 0; // cycle: break it here
       visiting.add(i);
-      const ds = deps.get(i);
+      const ds = D.get(i);
       const v = ds.length ? 1 + Math.max(...ds.map(L)) : 0;
       visiting.delete(i);
       layer.set(i, v);
       return v;
     };
-    connected.forEach(L);
+    ids.forEach(L);
     const layers = [];
-    connected.forEach((i) => { (layers[layer.get(i)] ||= []).push(i); });
+    ids.forEach((i) => { (layers[layer.get(i)] ||= []).push(i); });
     for (let li = 0; li < layers.length; li++) layers[li] ||= [];
     const pos = new Map();
     const index = (l) => l.forEach((id, k) => pos.set(id, k));
@@ -600,78 +729,325 @@
     const bary = (id, list) => (list.length ? list.reduce((a, x) => a + pos.get(x), 0) / list.length : pos.get(id));
     for (let it = 0; it < 8; it++) {
       for (let li = 1; li < layers.length; li++) {
-        const l = layers[li];
-        const key = new Map(l.map((id) => [id, bary(id, deps.get(id))]));
-        l.sort((a, b) => key.get(a) - key.get(b));
-        index(l);
+        const key = new Map(layers[li].map((id) => [id, bary(id, D.get(id))]));
+        layers[li].sort((a, b) => key.get(a) - key.get(b));
+        index(layers[li]);
       }
       for (let li = layers.length - 2; li >= 0; li--) {
-        const l = layers[li];
-        const key = new Map(l.map((id) => [id, bary(id, kids.get(id))]));
-        l.sort((a, b) => key.get(a) - key.get(b));
-        index(l);
+        const key = new Map(layers[li].map((id) => [id, bary(id, K.get(id))]));
+        layers[li].sort((a, b) => key.get(a) - key.get(b));
+        index(layers[li]);
       }
     }
-    const nodes = new Map();
-    const maxN = layers.length ? Math.max(...layers.map((l) => l.length)) : 0;
+    const maxN = Math.max(1, ...layers.map((l) => l.length));
+    const out = new Map();
     layers.forEach((l, li) => {
-      const off = ((maxN - l.length) * (NH + GY)) / 2;
-      l.forEach((id, k) => nodes.set(id, { x: li * (NW + GX), y: off + k * (NH + GY) }));
+      const off = ((maxN - l.length) * (h + gy)) / 2;
+      l.forEach((id, k) => out.set(id, { x: li * (w + gx), y: off + k * (h + gy) }));
     });
-    const labels = [];
-    let W = layers.length ? layers.length * (NW + GX) - GX : 0;
-    let H = maxN ? maxN * (NH + GY) - GY : 0;
-    if (connected.length) labels.push({ x: 0, y: -18, text: 'Dependencies flow left to right' });
-    if (isolated.length) {
-      const y0 = connected.length ? H + 64 : 0;
-      const cols = Math.max(3, Math.min(6, layers.length || 4));
-      labels.push({ x: 0, y: y0 - 18, text: `Independent scenarios · ${isolated.length}` });
-      isolated.forEach((id, k) => nodes.set(id, { x: (k % cols) * (NW + 24), y: y0 + Math.floor(k / cols) * (NH + GY) }));
-      W = Math.max(W, cols * (NW + 24) - 24);
-      H = y0 + Math.ceil(isolated.length / cols) * (NH + GY) - GY;
-    }
-    const edges = [];
-    deps.forEach((ds, i) => ds.forEach((d) => edges.push({ from: d, to: i })));
-    return { nodes, edges, labels, W, H, deps, kids };
+    return { pos: out, w: layers.length * (w + gx) - gx, h: maxN * (h + gy) - gy };
   }
 
-  function trunc(s, n) { return s.length > n ? `${s.slice(0, n - 1)}…` : s; }
+  // skyline packing (bottom-left): each block goes where it sits highest, so short blocks fill
+  // the space under tall neighbours instead of each row being as tall as its tallest block
+  function pack(blocks, maxW, gap) {
+    let sky = [{ x: 0, w: maxW + gap, y: 0 }];
+    let W = 0, H = 0;
+    blocks.forEach((b) => {
+      const bw = b.w + gap;
+      let best = null;
+      for (let i = 0; i < sky.length; i++) {
+        let need = bw, j = i, y = 0;
+        while (need > 0.5 && j < sky.length) { y = Math.max(y, sky[j].y); need -= sky[j].w; j++; }
+        if (need > 0.5) break;  // runs off the right edge; later starts only get narrower
+        if (!best || y < best.y) best = { x: sky[i].x, y };
+      }
+      if (!best) best = { x: 0, y: Math.max(...sky.map((s) => s.y)) };  // wider than the page
+      b.x = best.x; b.y = best.y;
+      const x0 = best.x, x1 = best.x + bw, top = best.y + b.h + gap;
+      const next = [];
+      sky.forEach((s) => {
+        const s1 = s.x + s.w;
+        if (s1 <= x0 || s.x >= x1) { next.push(s); return; }
+        if (s.x < x0) next.push({ x: s.x, w: x0 - s.x, y: s.y });
+        if (s1 > x1) next.push({ x: x1, w: s1 - x1, y: s.y });
+      });
+      next.push({ x: x0, w: bw, y: top });
+      next.sort((a, c) => a.x - c.x);
+      sky = next.reduce((acc, s) => {
+        const l = acc[acc.length - 1];
+        if (l && Math.abs(l.y - s.y) < 0.5 && Math.abs(l.x + l.w - s.x) < 0.5) l.w += s.w; else acc.push({ ...s });
+        return acc;
+      }, []);
+      W = Math.max(W, b.x + b.w);
+      H = Math.max(H, b.y + b.h);
+    });
+    return { W, H };
+  }
+
+  function packWidth() {
+    const wrap = $('#gwrap');
+    const cw = wrap && wrap.clientWidth ? wrap.clientWidth : 1300;
+    return Math.max(2 * (NW + GX) + NW, (cw - 70) / 0.85);
+  }
+
+  function layoutScenarios(scope) {
+    const G = S.graph;
+    const { units, unitOf, deps, kids } = buildUnits(scope.inc, scope.ext);
+    const ids = [...units.keys()];
+    const linked = ids.filter((i) => deps.get(i).size || kids.get(i).size);
+    const lonely = ids.filter((i) => !deps.get(i).size && !kids.get(i).size);
+    const hideLonely = G.focus === 'all' && !G.feature && !G.showIndep;
+    const maxW = packWidth();
+
+    // a chain goes under the feature most of it belongs to; one that mixes features goes under "Across features"
+    const ACROSS = '__across__';
+    const home = (comp) => {
+      const c = new Map();
+      comp.forEach((i) => { const u = units.get(i); if (!u.ext) c.set(u.group, (c.get(u.group) || 0) + 1); });
+      if (!c.size) return units.get(comp[0]).group;
+      const order = S.board.groups.map((g) => g.id);
+      const [gid, n] = [...c.entries()].sort((a, b) => b[1] - a[1] || order.indexOf(a[0]) - order.indexOf(b[0]))[0];
+      const own = [...c.values()].reduce((a, b) => a + b, 0);
+      return c.size > 1 && n / own < 0.6 && !G.feature ? ACROSS : gid;
+    };
+    const comps = components(linked, deps, kids).map((ids2) => {
+      const L = layerLayout(ids2, deps, kids, NW, NH, GX, GY);
+      return { ids: ids2, pos: L.pos, w: L.w, h: L.h, home: home(ids2), bad: ids2.some((i) => PROBLEM.has(unitState(units.get(i)).status)) };
+    });
+    const secs = new Map([[ACROSS, { g: { id: ACROSS, name: 'Across features' }, comps: [], lonely: [] }],
+      ...S.board.groups.map((g) => [g.id, { g, comps: [], lonely: [] }])]);
+    comps.forEach((c) => secs.get(c.home)?.comps.push(c));
+    const hiddenBy = new Map();
+    lonely.forEach((i) => {
+      const u = units.get(i);
+      if (hideLonely) hiddenBy.set(u.group, (hiddenBy.get(u.group) || 0) + u.members.length);
+      else secs.get(u.group)?.lonely.push(i);
+    });
+
+    // pack each feature's clusters into a section, then pack the sections themselves
+    const blocksOut = [];
+    secs.forEach((sec) => {
+      if (!sec.comps.length && !sec.lonely.length) return;
+      sec.comps.sort((a, b) => (b.bad - a.bad) || (b.h - a.h) || (b.w - a.w));
+      const blocks = [...sec.comps];
+      if (sec.lonely.length) {
+        const cols = Math.max(1, Math.floor((maxW + 24) / (NW + 24)));
+        const n = sec.lonely.length;
+        blocks.push({ lonely: sec.lonely, cols, w: Math.min(n, cols) * (NW + 24) - 24, h: Math.ceil(n / cols) * (NH + GY) - GY });
+      }
+      const P = pack(blocks, maxW, PACK_GAP);
+      const headW = Math.min(maxW, Math.max(300, sec.g.name.length * 8.2 + 20));
+      blocksOut.push({ sec, blocks, w: Math.max(P.W, headW), h: SEC_HEAD + P.H,
+        bad: sec.comps.some((c) => c.bad) || sec.lonely.some((i) => PROBLEM.has(unitState(units.get(i)).status)) });
+    });
+    blocksOut.sort((a, b) => (b.bad - a.bad) || ((b.sec.g.id === ACROSS) - (a.sec.g.id === ACROSS)) || (b.h - a.h));
+    const outer = pack(blocksOut, maxW, SEC_GAP + 20);
+    const nodes = new Map(), labels = [];
+    blocksOut.forEach((sb) => {
+      let info = '';
+      if (sb.sec.g.id === ACROSS) {
+        const gs = new Set(), n = sb.sec.comps.reduce((a, c) => { c.ids.forEach((i) => gs.add(units.get(i).group)); return a + c.ids.length; }, 0);
+        info = `${plural(sb.sec.comps.length, 'chain')} · ${plural(n, 'node')} from ${plural(gs.size, 'feature')}`;
+      }
+      labels.push({ gid: sb.sec.g.id, x: sb.x, y: sb.y, w: sb.w, info });
+      sb.blocks.forEach((b) => {
+        const ox = sb.x + b.x, oy = sb.y + SEC_HEAD + b.y;
+        if (b.lonely) b.lonely.forEach((id, k) => nodes.set(id, { x: ox + (k % b.cols) * (NW + 24), y: oy + Math.floor(k / b.cols) * (NH + GY) }));
+        else b.pos.forEach((p, id) => nodes.set(id, { x: ox + p.x, y: oy + p.y }));
+      });
+    });
+    const W = outer.W, y = outer.H + SEC_GAP;
+    const edges = [];
+    deps.forEach((ds, i) => ds.forEach((d) => { if (nodes.has(i) && nodes.has(d)) edges.push({ from: d, to: i }); }));
+    const hidden = [...hiddenBy.values()].reduce((a, b) => a + b, 0);
+    return { level: 'scenarios', units, unitOf, deps, kids, nodes, edges, labels, hiddenBy, hidden,
+      clusters: comps.length, W, H: Math.max(0, y - SEC_GAP), nw: NW, nh: NH };
+  }
+
+  function layoutFeatures() {
+    const groups = S.board.groups, ids = groups.map((g) => g.id);
+    const deps = new Map(ids.map((g) => [g, new Set()])), kids = new Map(ids.map((g) => [g, new Set()]));
+    const weight = new Map();
+    S.board.scenarios.forEach((s) => (s.depends_on || []).forEach((d) => {
+      const t = S.byId.get(d);
+      if (!t || t.group === s.group) return;
+      deps.get(s.group).add(t.group);
+      kids.get(t.group).add(s.group);
+      const k = `${t.group}>${s.group}`;
+      weight.set(k, (weight.get(k) || 0) + 1);
+    }));
+    const comps = components(ids, deps, kids).map((c) => {
+      const L = layerLayout(c, deps, kids, FW, FH, FGX, FGY);
+      const bad = c.some((gid) => { const g = groupById(gid); return g.failed + g.error + g.blocked > 0; });
+      return { ids: c, pos: L.pos, w: L.w, h: L.h, bad };
+    });
+    comps.sort((a, b) => ((b.ids.length > 1) - (a.ids.length > 1)) || (b.bad - a.bad) || (b.h - a.h) || (b.w - a.w));
+    const P = pack(comps, packWidth(), 48);
+    const nodes = new Map();
+    comps.forEach((c) => c.pos.forEach((p, id) => nodes.set(id, { x: c.x + p.x, y: c.y + p.y })));
+    const edges = [];
+    weight.forEach((n, k) => { const [from, to] = k.split('>'); edges.push({ from, to, n }); });
+    return { level: 'features', deps, kids, nodes, edges, labels: [], W: P.W, H: P.H, nw: FW, nh: FH };
+  }
+
+  // 3. level ---------------------------------------------------------------
+  function chooseLevel() {
+    const G = S.graph;
+    if (G.focus !== 'all' || G.feature) return 'scenarios';
+    if (G.level) return G.level;
+    // count what the scenario view would draw
+    const fams = new Set(), linked = new Set();
+    S.board.scenarios.forEach((s) => {
+      if ((s.depends_on || []).some((d) => S.byId.has(d)) || (s.dependents || []).length) linked.add(famKey(s));
+      fams.add(famKey(s));
+    });
+    const drawn = G.showIndep ? fams.size : linked.size;
+    return drawn > BIG ? 'features' : 'scenarios';
+  }
+
+  // render --------------------------------------------------------------------
+  function barSvg(counts, width, height) {
+    const total = ORDER.reduce((a, k) => a + (counts[k] || 0), 0) || 1;
+    let x = 0, out = '';
+    ORDER.forEach((k) => {
+      const v = counts[k] || 0;
+      if (!v) return;
+      const w = Math.max(2, (v / total) * width);
+      out += `<rect x="${x.toFixed(1)}" y="0" width="${Math.max(0, w - 1).toFixed(1)}" height="${height}" rx="1" style="fill:${COLOR[k]}${k === 'notrun' || k === 'skipped' ? ';opacity:.6' : ''}"></rect>`;
+      x += w;
+    });
+    return out;
+  }
+
+  function edgePath(a, b, w, h) {
+    const x1 = a.x + w, y1 = a.y + h / 2, x2 = b.x - 2, y2 = b.y + h / 2;
+    const dx = Math.max(36, Math.abs(x2 - x1) / 2);
+    return { d: `M${x1} ${y1}C${x1 + dx} ${y1} ${x2 - dx} ${y2} ${x2} ${y2}`, mx: (x1 + x2) / 2, my: (y1 + y2) / 2 };
+  }
+
+  function graphViewKey() {
+    const G = S.graph;
+    return [G.level || '', G.focus, G.feature || '', G.showIndep ? 1 : 0, G.focus === 'branch' ? S.sel || '' : ''].join('|');
+  }
 
   function ensureGraph() {
-    const scen = S.board.scenarios;
-    const key = scen.map((s) => `${s.id}<${(s.depends_on || []).join(',')}`).join('|');
-    if (key === S.graph.key) return;
-    S.graph.key = key;
-    const lay = layoutGraph(scen);
-    S.graph.layout = lay;
+    const G = S.graph;
+    const scope = graphScope();
+    const level = chooseLevel();
+    const struct = S.board.scenarios.map((s) => `${s.id}<${(s.depends_on || []).join(',')}${scope.inc.has(s.id) ? '' : '-'}`).join('|');
+    const key = `${level}#${graphViewKey()}#${struct}`;
+    if (key === G.key) { renderGraphChrome(level); return; }
+    const viewChanged = G.viewKey !== `${level}#${graphViewKey()}`;
+    G.key = key;
+    G.viewKey = `${level}#${graphViewKey()}`;
+    const lay = level === 'features' ? layoutFeatures() : layoutScenarios(scope);
+    G.layout = lay;
     let g = '';
-    lay.labels.forEach((l) => { g += `<text class="glabel" x="${l.x}" y="${l.y}">${esc(l.text)}</text>`; });
-    lay.edges.forEach((e) => {
-      const a = lay.nodes.get(e.from), b = lay.nodes.get(e.to);
-      const x1 = a.x + NW, y1 = a.y + NH / 2, x2 = b.x - 2, y2 = b.y + NH / 2;
-      const dx = Math.max(40, (x2 - x1) / 2);
-      g += `<path class="ge" data-from="${esc(e.from)}" data-to="${esc(e.to)}" d="M${x1} ${y1}C${x1 + dx} ${y1} ${x2 - dx} ${y2} ${x2} ${y2}" marker-end="url(#arr)"></path>`;
-    });
-    scen.forEach((s) => {
-      const p = lay.nodes.get(s.id);
-      const sub = `${s.group_name}${s.downstream ? ` · ⤷ ${s.downstream}` : ''}`;
-      g += `<g class="gn" data-sid="${esc(s.id)}" transform="translate(${p.x},${p.y})">
-        <rect class="body" width="${NW}" height="${NH}" rx="9"></rect>
-        <rect class="gstripe" x="5" y="9" width="3" height="${NH - 18}" rx="1.5" style="fill:${groupColor(s.group)}"></rect>
-        <circle class="dot" cx="21" cy="${NH / 2}" r="5"></circle>
-        <text x="34" y="19">${esc(trunc(s.name.replace(/`/g, ''), 31))}</text>
-        <text class="gsub-t" x="34" y="34">${esc(trunc(sub, 38))}</text>
-      </g>`;
-    });
+    if (lay.level === 'features') {
+      lay.edges.forEach((e) => {
+        const p = edgePath(lay.nodes.get(e.from), lay.nodes.get(e.to), FW, FH);
+        const sw = (1.2 + Math.min(4, Math.log2(e.n + 1))).toFixed(1);
+        const tip = `${plural(e.n, 'dependency', 'dependencies')}: ${groupById(e.to).name} needs ${groupById(e.from).name}`;
+        g += `<path class="ge" data-from="${esc(e.from)}" data-to="${esc(e.to)}" d="${p.d}" style="stroke-width:${sw}" marker-end="url(#arr)"></path>`;
+        g += `<g class="gel" data-tip="${esc(tip)}" transform="translate(${p.mx.toFixed(1)},${p.my.toFixed(1)})"><rect x="-13" y="-9" width="26" height="18" rx="9"></rect><text y="4" text-anchor="middle">${e.n}</text></g>`;
+      });
+      S.board.groups.forEach((gr) => {
+        const p = lay.nodes.get(gr.id);
+        g += `<g class="gf" data-gid="${esc(gr.id)}" transform="translate(${p.x},${p.y})">
+          <rect class="body" width="${FW}" height="${FH}" rx="11"></rect>
+          <rect class="gstripe" x="7" y="11" width="3.5" height="${FH - 22}" rx="1.75" style="fill:${groupColor(gr.id)}"></rect>
+          <text class="gf-name" x="20" y="23">${esc(trunc(gr.name.replace(/`/g, ''), 34))}</text>
+          <text class="gsub-t" x="20" y="40"></text>
+          <g class="fbar" transform="translate(20,49)"></g>
+        </g>`;
+      });
+    } else {
+      lay.labels.forEach((l) => {
+        const gr = groupById(l.gid) || { name: 'Across features' };
+        const across = !groupById(l.gid);
+        const maxChars = Math.max(24, Math.floor((l.w - 16) / 8.2));
+        g += across
+          ? `<g class="sec across" transform="translate(${l.x},${l.y})" data-tip="Chains whose scenarios come from several features">
+          <rect class="gstripe" x="0" y="3" width="4" height="32" rx="2" style="fill:var(--faint)"></rect>
+          <text class="sec-label" x="12" y="15">Across features</text>
+          <text class="sec-count" x="12" y="32">${esc(l.info)}</text>
+        </g>`
+          : `<g class="sec" data-gscope="${esc(l.gid)}" transform="translate(${l.x},${l.y})" data-tip="${esc(gr.name)}\nClick to open this feature">
+          <rect class="gstripe" x="0" y="3" width="4" height="32" rx="2" style="fill:${groupColor(l.gid)}"></rect>
+          <text class="sec-label" x="12" y="15">${esc(trunc(gr.name.replace(/`/g, ''), maxChars))}</text>
+          <text class="sec-count" data-gid="${esc(l.gid)}" x="12" y="32"></text>
+        </g>`;
+      });
+      lay.edges.forEach((e) => {
+        const p = edgePath(lay.nodes.get(e.from), lay.nodes.get(e.to), NW, NH);
+        g += `<path class="ge" data-from="${esc(e.from)}" data-to="${esc(e.to)}" d="${p.d}" marker-end="url(#arr)"></path>`;
+      });
+      lay.nodes.forEach((p, uid) => {
+        const u = lay.units.get(uid);
+        const sub = `${u.ext ? '↗ ' : ''}${u.fam ? `${u.members.length} cases · ` : ''}${u.group_name.replace(/`/g, '')}`;
+        g += `<g class="gn${u.ext ? ' ext' : ''}" data-uid="${esc(uid)}" transform="translate(${p.x},${p.y})">
+          <rect class="body" width="${NW}" height="${NH}" rx="9"></rect>
+          <rect class="gstripe" x="5" y="9" width="3" height="${NH - 18}" rx="1.5" style="fill:${groupColor(u.group)}"></rect>
+          <circle class="dot" cx="21" cy="${NH / 2}" r="5"></circle>
+          <text x="34" y="${u.fam ? 17 : 19}">${esc(trunc(u.name.replace(/`/g, ''), 31))}</text>
+          <text class="gsub-t" x="34" y="${u.fam ? 31 : 34}">${esc(trunc(sub, 38))}</text>
+          ${u.fam ? `<g class="fbar" transform="translate(34,36)"></g>` : ''}
+        </g>`;
+      });
+    }
     $('#gview').innerHTML = g;
-    const chips = S.board.groups.map((gr) =>
-      `<button class="gchip ${S.graph.group === gr.id ? 'on' : ''}" data-ggroup="${esc(gr.id)}" data-tip="${esc(gr.name)}"><i style="background:${groupColor(gr.id)}"></i>${esc(trunc(gr.name, 26))}<span class="faint">${gr.passed}/${gr.total}</span></button>`).join('');
-    $('#gchips').innerHTML = chips;
-    if (!S.graph.fitted) {
-      fitGraph(0.85);
-      S.graph.fitted = true;
-      if (S.sel && lay.nodes.has(S.sel)) centerOn(S.sel);
+    renderGraphChrome(level);
+    renderGraphEmpty(lay, scope);
+    buildMinimap();
+    if (viewChanged || !G.fitted) {
+      fitGraph(lay.level === 'features' ? 0.75 : 0.85);
+      G.fitted = true;
+      if (S.sel) centerOn(S.sel, true);
     } else applyT();
+  }
+
+  function renderGraphEmpty(lay, scope) {
+    const el = $('#gempty');
+    if (!el) return;
+    const G = S.graph;
+    let msg = '';
+    if (!lay.nodes.size) {
+      if (G.focus === 'problems') msg = `${icon('passed')}<b>Nothing is failing or blocked.</b>`;
+      else if (G.focus === 'branch') msg = '<b>Select a scenario to see its branch.</b><span>Click one in the Overview, or search above and press Enter.</span>';
+      else if (lay.hidden) msg = `<b>No scenario declares <code class="inl">depends_on</code>.</b><span>${plural(lay.hidden, 'scenario')} with no dependencies ${lay.hidden === 1 ? "isn't" : "aren't"} drawn.</span><button class="btn sm" data-act="gindep">Show ${lay.hidden === 1 ? 'it' : 'them'}</button>`;
+      else msg = '<b>Nothing to draw.</b>';
+    }
+    el.innerHTML = msg;
+    el.hidden = !msg;
+  }
+
+  function renderGraphChrome(level) {
+    const G = S.graph;
+    $$('[data-glevel]').forEach((b) => {
+      b.classList.toggle('on', b.dataset.glevel === level);
+      b.disabled = G.focus !== 'all' || !!G.feature;
+    });
+    $$('[data-gfocus]').forEach((b) => b.classList.toggle('on', b.dataset.gfocus === G.focus));
+    const pick = $('#gpick-label');
+    if (pick) pick.textContent = G.feature ? trunc((groupById(G.feature)?.name || G.feature).replace(/`/g, ''), 40) : 'All features';
+    const note = $('#gnote');
+    if (!note) return;
+    const lay = G.layout;
+    const bits = [];
+    if (G.feature) {
+      const gr = groupById(G.feature);
+      bits.push(`<span>Feature <b>${esc(gr ? gr.name : G.feature)}</b>, plus the scenarios elsewhere it connects to (marked ↗).</span><a href="#" data-act="gall">Show all features</a>`);
+    } else if (level === 'features') {
+      bits.push(`<span>${plural(S.board.groups.length, 'feature')}. Arrows count dependencies between features. Click a feature to open it.</span>`);
+    } else if (lay && lay.level === 'scenarios') {
+      if (G.focus === 'problems') bits.push(`<span>Failing and blocked scenarios, and the chains between them.</span>`);
+      else if (G.focus === 'branch') bits.push(`<span>${S.sel && S.byId.has(S.sel) ? `Everything <b>${esc(trunc(nameOf(S.sel), 60))}</b> needs, and everything that needs it.` : 'No scenario selected.'}</span>`);
+      else bits.push(`<span>${plural(lay.nodes.size, 'node')} in ${plural(lay.clusters, 'chain')}.</span>`);
+      if (lay.hidden) bits.push(`<span class="muted">${plural(lay.hidden, 'scenario')} with no dependencies ${lay.hidden === 1 ? "isn't" : "aren't"} drawn.</span><a href="#" data-act="gindep">Show ${lay.hidden === 1 ? 'it' : 'them'}</a>`);
+      else if (G.showIndep && G.focus === 'all' && !G.feature) bits.push('<a href="#" data-act="gindep">Hide scenarios with no dependencies</a>');
+    }
+    note.innerHTML = bits.join(' ');
   }
 
   function graphMatches() {
@@ -680,95 +1056,195 @@
     return S.board.scenarios.filter((s) => `${s.name} ${s.id} ${(s.tags || []).join(' ')}`.toLowerCase().includes(q)).map((s) => s.id);
   }
 
-  function related(id) {
-    const lay = S.graph.layout;
-    const out = new Set([id]);
-    const walk = (start, edges) => {
-      const st = [start];
+  function relatedUnits(uid, lay) {
+    const out = new Set([uid]);
+    [lay.deps, lay.kids].forEach((edges) => {
+      const st = [uid];
       while (st.length) {
-        const n = st.pop();
-        (edges.get(n) || []).forEach((m) => { if (!out.has(m)) { out.add(m); st.push(m); } });
+        (edges.get(st.pop()) || []).forEach((m) => { if (!out.has(m)) { out.add(m); st.push(m); } });
       }
-    };
-    walk(id, lay.deps);
-    walk(id, lay.kids);
+    });
     return out;
   }
 
   function updateGraph() {
-    if (!S.graph.layout) return;
+    const lay = S.graph.layout;
+    if (!lay) return;
     const q = graphMatches();
-    const qs = new Set(q);
-    let focus = null;
-    if (S.sel && S.byId.has(S.sel)) focus = related(S.sel);
-    else if (S.graph.group) focus = new Set(S.board.scenarios.filter((s) => s.group === S.graph.group).map((s) => s.id));
-    else if (q.length) focus = qs;
-    else if (filterActive()) focus = new Set(S.board.scenarios.filter(matches).map((s) => s.id));
-    $$('.gn').forEach((el) => {
-      const s = S.byId.get(el.dataset.sid);
-      if (!s) return;
-      const cls = ['gn', `st-${s.status}`];
-      if (s.live) cls.push(`live-${s.live}`);
-      if (S.sel === s.id) cls.push('sel');
-      if (qs.has(s.id)) cls.push('match');
-      if (focus && !focus.has(s.id)) cls.push('dim');
-      el.setAttribute('class', cls.join(' '));
-      const tip = `${s.name}\n${LABEL[s.status]}${s.live ? ` · ${s.live}` : ''}${s.message ? `\n${s.message}` : ''}`;
-      el.setAttribute('data-tip', tip);
-    });
-    $$('.ge').forEach((el) => {
-      const f = el.dataset.from, t = el.dataset.to;
-      const cls = ['ge'];
-      const fs = S.byId.get(f);
-      if (fs && BAD.has(fs.status)) cls.push('bad');
-      if (focus) { if (focus.has(f) && focus.has(t)) { if (S.sel) cls.push('hl'); } else cls.push('dim'); }
-      el.setAttribute('class', cls.join(' '));
-    });
-    $$('.gchip').forEach((el) => el.classList.toggle('on', S.graph.group === el.dataset.ggroup));
+    if (lay.level === 'features') {
+      const matchG = new Set(q.map((id) => S.byId.get(id)?.group));
+      const selG = S.sel ? S.byId.get(S.sel)?.group : null;
+      $$('.gf').forEach((el) => {
+        const gr = groupById(el.dataset.gid);
+        if (!gr) return;
+        const cls = ['gf', `st-${worstOf(gr)}`];
+        if (selG === gr.id) cls.push('sel');
+        if (matchG.has(gr.id)) cls.push('match');
+        if (q.length && !matchG.has(gr.id)) cls.push('dim');
+        el.setAttribute('class', cls.join(' '));
+        const bad = gr.failed + gr.error;
+        const sub = `${gr.passed} / ${gr.total} passing${bad ? ` · ${bad} failing` : ''}${gr.blocked ? ` · ${gr.blocked} blocked` : ''}`;
+        $('.gsub-t', el).textContent = sub;
+        $('.fbar', el).innerHTML = barSvg(gr, FW - 40, 5);
+        el.setAttribute('data-tip', `${gr.name}\n${sub}\nClick to open this feature`);
+      });
+      $$('.ge').forEach((el) => {
+        const cls = ['ge'];
+        const from = groupById(el.dataset.from);
+        if (from && from.failed + from.error + from.blocked) cls.push('bad');
+        if (q.length && !(matchG.has(el.dataset.from) || matchG.has(el.dataset.to))) cls.push('dim');
+        el.setAttribute('class', cls.join(' '));
+      });
+    } else {
+      const qU = new Set(q.map((id) => lay.unitOf.get(id)).filter(Boolean));
+      const selU = S.sel ? lay.unitOf.get(S.sel) : null;
+      let focus = null;
+      if (selU && lay.nodes.has(selU) && S.graph.focus !== 'branch') focus = relatedUnits(selU, lay);
+      else if (qU.size) focus = qU;
+      else if (filterActive()) focus = new Set(S.board.scenarios.filter(matches).map((s) => lay.unitOf.get(s.id)).filter(Boolean));
+      $$('.gn').forEach((el) => {
+        const u = lay.units.get(el.dataset.uid);
+        if (!u) return;
+        const st = unitState(u);
+        const cls = ['gn', `st-${st.status}`];
+        if (u.ext) cls.push('ext');
+        if (st.live) cls.push(`live-${st.live}`);
+        if (selU === u.id) cls.push('sel');
+        if (qU.has(u.id)) cls.push('match');
+        if (focus && !focus.has(u.id)) cls.push('dim');
+        el.setAttribute('class', cls.join(' '));
+        if (u.fam) $('.fbar', el).innerHTML = barSvg(st.counts, NW - 46, 3);
+        const first = S.byId.get(u.members[0]);
+        const caseLine = u.fam ? `\n${ORDER.filter((k) => st.counts[k]).map((k) => `${st.counts[k]} ${LABEL[k].toLowerCase()}`).join(' · ')} of ${u.members.length} cases` : '';
+        el.setAttribute('data-tip', `${u.name}\n${LABEL[st.status]}${st.live ? ` · ${st.live}` : ''}${caseLine}${!u.fam && first?.message ? `\n${first.message}` : ''}${u.ext ? `\nFrom ${u.group_name}` : ''}`);
+      });
+      $$('.ge').forEach((el) => {
+        const f = el.dataset.from, t = el.dataset.to;
+        const cls = ['ge'];
+        const fu = lay.units.get(f);
+        if (fu && PROBLEM.has(unitState(fu).status)) cls.push('bad');
+        if (focus) { if (focus.has(f) && focus.has(t)) { if (selU) cls.push('hl'); } else cls.push('dim'); }
+        el.setAttribute('class', cls.join(' '));
+      });
+      $$('.sec-count[data-gid]').forEach((el) => {
+        const gr = groupById(el.dataset.gid);
+        if (!gr) return;
+        const hid = lay.hiddenBy.get(gr.id);
+        const bad = gr.failed + gr.error;
+        el.textContent = `${gr.passed} / ${gr.total} passing${bad ? ` · ${bad} failing` : ''}${gr.blocked ? ` · ${gr.blocked} blocked` : ''}${hid ? ` · ${hid} with no dependencies not drawn` : ''}`;
+      });
+    }
+    paintMinimap();
   }
 
+  // minimap ---------------------------------------------------------------------
+  function buildMinimap() {
+    const mm = $('#gmini'), lay = S.graph.layout;
+    if (!mm || !lay) return;
+    const MW = 200, MH = 130;
+    const W = Math.max(lay.W, 1), H = Math.max(lay.H, 1);
+    const s = Math.min(MW / W, MH / H);
+    S.graph.mm = { s, W, H };
+    const w = Math.max(1.5, lay.nw * s), h = Math.max(1.5, lay.nh * s);
+    let r = '';
+    lay.nodes.forEach((p, id) => { r += `<rect data-mm="${esc(id)}" x="${(p.x * s).toFixed(1)}" y="${(p.y * s).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"></rect>`; });
+    mm.setAttribute('width', Math.ceil(W * s) + 2);
+    mm.setAttribute('height', Math.ceil(H * s) + 2);
+    mm.innerHTML = `<g transform="translate(1,1)">${r}<rect id="gmini-vp" class="vp"></rect></g>`;
+  }
+  function paintMinimap() {
+    const lay = S.graph.layout;
+    if (!lay) return;
+    $$('#gmini [data-mm]').forEach((el) => {
+      let st;
+      if (lay.level === 'features') st = worstOf(groupById(el.dataset.mm) || {});
+      else { const u = lay.units.get(el.dataset.mm); st = u ? unitState(u).status : 'notrun'; }
+      el.setAttribute('class', `mm-${st}`);
+    });
+  }
+  function placeViewport() {
+    const wrap = $('#gwrap'), vp = $('#gmini-vp'), mm = S.graph.mm, box = $('#gminibox');
+    if (!wrap || !vp || !mm || !box) return;
+    const t = S.graph.t, cw = wrap.clientWidth, ch = wrap.clientHeight;
+    const fits = mm.W * t.k <= cw - 20 && mm.H * t.k <= ch - 20;
+    box.hidden = fits;
+    const x = (-t.x / t.k) * mm.s, y = (-t.y / t.k) * mm.s;
+    vp.setAttribute('x', x.toFixed(1));
+    vp.setAttribute('y', y.toFixed(1));
+    vp.setAttribute('width', ((cw / t.k) * mm.s).toFixed(1));
+    vp.setAttribute('height', ((ch / t.k) * mm.s).toFixed(1));
+  }
+
+  // view transform --------------------------------------------------------------
   function applyT() {
     const t = S.graph.t, v = $('#gview');
     if (v) v.setAttribute('transform', `translate(${t.x},${t.y}) scale(${t.k})`);
+    $('#gsvg')?.classList.toggle('far', t.k < FAR);
+    placeViewport();
   }
   // minK: never open smaller than this; a big graph then starts at its top-left corner
   function fitGraph(minK = 0) {
     const wrap = $('#gwrap'), lay = S.graph.layout;
     if (!wrap || !lay) return;
     const cw = wrap.clientWidth, ch = wrap.clientHeight;
-    const W = Math.max(lay.W, 1), H = Math.max(lay.H + 30, 1);
-    const fit = Math.max(0.2, Math.min((cw - 60) / W, (ch - 80) / H, 1.1));
-    if (fit >= minK) S.graph.t = { k: fit, x: (cw - W * fit) / 2, y: Math.max(40, (ch - H * fit) / 2 + 24) };
-    else S.graph.t = { k: minK, x: 28, y: 48 };
+    const W = Math.max(lay.W, 1), H = Math.max(lay.H, 1);
+    const fit = Math.max(0.08, Math.min((cw - 60) / W, (ch - 70) / H, 1.1));
+    if (fit >= minK) S.graph.t = { k: fit, x: (cw - W * fit) / 2, y: Math.max(28, (ch - H * fit) / 2) };
+    else S.graph.t = { k: minK, x: 28, y: 28 };
     applyT();
   }
   function zoomAt(factor, cx, cy) {
     const t = S.graph.t;
-    const k2 = Math.min(2.5, Math.max(0.2, t.k * factor));
+    const k2 = Math.min(2.5, Math.max(0.08, t.k * factor));
     t.x = cx - ((cx - t.x) * k2) / t.k;
     t.y = cy - ((cy - t.y) * k2) / t.k;
     t.k = k2;
     applyT();
   }
-  function centerOn(id) {
-    const p = S.graph.layout?.nodes.get(id), wrap = $('#gwrap');
-    if (!p || !wrap) return;
+  function centerOn(scenarioId, onlyIfHidden = false) {
+    const lay = S.graph.layout, wrap = $('#gwrap');
+    if (!lay || !wrap) return;
+    const key = lay.level === 'features' ? S.byId.get(scenarioId)?.group : lay.unitOf.get(scenarioId);
+    const p = key && lay.nodes.get(key);
+    if (!p) return;
     const t = S.graph.t;
-    t.x = wrap.clientWidth / 2 - (p.x + NW / 2) * t.k;
-    t.y = wrap.clientHeight / 2 - (p.y + NH / 2) * t.k;
+    const sx = t.x + (p.x + lay.nw / 2) * t.k, sy = t.y + (p.y + lay.nh / 2) * t.k;
+    if (onlyIfHidden && sx > 40 && sx < wrap.clientWidth - 40 && sy > 40 && sy < wrap.clientHeight - 40) return;
+    if (t.k < 0.7) t.k = 0.85;
+    t.x = wrap.clientWidth / 2 - (p.x + lay.nw / 2) * t.k;
+    t.y = wrap.clientHeight / 2 - (p.y + lay.nh / 2) * t.k;
     applyT();
   }
+  function setScope(changes) {
+    Object.assign(S.graph, changes);
+    ensureGraph();
+    updateGraph();
+  }
+  function openUnit(uid) {
+    const u = S.graph.layout?.units?.get(uid);
+    if (!u) return;
+    // for a parametrized test, open the case that most needs attention
+    const pick = [...u.members].sort((a, b) => WORST.indexOf(S.byId.get(a).status) - WORST.indexOf(S.byId.get(b).status))[0];
+    openScenario(pick);
+  }
+
   function bindGraph() {
     const wrap = $('#gwrap');
     let drag = null;
     wrap.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const r = wrap.getBoundingClientRect();
-      zoomAt(Math.exp(-e.deltaY * 0.0016), e.clientX - r.left, e.clientY - r.top);
+      if (e.ctrlKey || e.metaKey) {
+        const r = wrap.getBoundingClientRect();
+        zoomAt(Math.exp(-e.deltaY * 0.0022), e.clientX - r.left, e.clientY - r.top);
+      } else {
+        S.graph.t.x -= e.shiftKey && !e.deltaX ? e.deltaY : e.deltaX;
+        S.graph.t.y -= e.shiftKey && !e.deltaX ? 0 : e.deltaY;
+        applyT();
+      }
     }, { passive: false });
     wrap.addEventListener('pointerdown', (e) => {
-      if (e.target.closest('.graph-zoom, .graph-legend')) return;
-      drag = { x: e.clientX, y: e.clientY, tx: S.graph.t.x, ty: S.graph.t.y, moved: false, node: e.target.closest('.gn') };
+      if (e.target.closest('.graph-zoom, .graph-legend, .minimap-box, .gempty')) return;
+      drag = { x: e.clientX, y: e.clientY, tx: S.graph.t.x, ty: S.graph.t.y, moved: false, target: e.target };
       wrap.setPointerCapture(e.pointerId);
     });
     wrap.addEventListener('pointermove', (e) => {
@@ -779,12 +1255,56 @@
     });
     wrap.addEventListener('pointerup', () => {
       if (drag && !drag.moved) {
-        if (drag.node) openScenario(drag.node.dataset.sid);
-        else if (S.sel) closeDrawer();
+        const t = drag.target;
+        const fnode = t.closest('.gf'), node = t.closest('.gn'), sec = t.closest('.sec');
+        if (fnode) setScope({ feature: fnode.dataset.gid, focus: 'all' });
+        else if (node) openUnit(node.dataset.uid);
+        else if (sec && sec.dataset.gscope) setScope({ feature: sec.dataset.gscope, focus: 'all' });
+        else if (S.sel && S.graph.focus !== 'branch') closeDrawer();
       }
       drag = null;
       wrap.classList.remove('panning');
     });
+    // minimap: click or drag to move the view there
+    const box = $('#gminibox');
+    let mmDrag = false;
+    const jump = (e) => {
+      const mm = S.graph.mm, svg = $('#gmini');
+      if (!mm || !svg) return;
+      const r = svg.getBoundingClientRect();
+      const cx = (e.clientX - r.left - 1) / mm.s, cy = (e.clientY - r.top - 1) / mm.s;
+      const t = S.graph.t;
+      t.x = wrap.clientWidth / 2 - cx * t.k;
+      t.y = wrap.clientHeight / 2 - cy * t.k;
+      applyT();
+    };
+    box.addEventListener('pointerdown', (e) => { mmDrag = true; box.setPointerCapture(e.pointerId); jump(e); e.stopPropagation(); });
+    box.addEventListener('pointermove', (e) => { if (mmDrag) jump(e); });
+    box.addEventListener('pointerup', () => { mmDrag = false; });
+  }
+
+  async function openFeaturePicker() {
+    const menu = $('#gpick-menu');
+    if (!menu) return;
+    if (!menu.hidden) { menu.hidden = true; return; }
+    menu.hidden = false;
+    const draw = (q) => {
+      const ql = q.trim().toLowerCase();
+      const items = S.board.groups.filter((g) => !ql || g.name.toLowerCase().includes(ql) || g.id.includes(ql));
+      $('#gpick-list').innerHTML = `<a href="#" data-gpick="" class="${S.graph.feature ? '' : 'current'}"><div class="m-name">All features</div></a>` +
+        items.map((g) => `<a href="#" data-gpick="${esc(g.id)}" class="${S.graph.feature === g.id ? 'current' : ''}">
+          <i class="swatch" style="background:${groupColor(g.id)}"></i>
+          <div style="min-width:0"><div class="m-name">${fmt(g.name)}</div><div class="m-sub">${g.passed} / ${g.total} passing${g.failed + g.error ? ` · ${g.failed + g.error} failing` : ''}${g.blocked ? ` · ${g.blocked} blocked` : ''}</div></div>
+          ${segbar(g, 'sm')}</a>`).join('') + (items.length ? '' : '<div class="hist-cap" style="padding:8px">No feature matches.</div>');
+    };
+    menu.innerHTML = `<div class="search" style="margin:2px 2px 6px"><input id="gpick-q" placeholder="Find a feature…" autocomplete="off"></div><div id="gpick-list"></div>`;
+    draw('');
+    const inp = $('#gpick-q');
+    inp.addEventListener('input', () => draw(inp.value));
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { const first = $('#gpick-list [data-gpick]:not([data-gpick=""])'); if (first) first.click(); }
+    });
+    inp.focus();
   }
 
   // ------------------------------------------------------------------ history
@@ -835,7 +1355,7 @@
     $$(`.row[data-sid="${CSS.escape(id)}"]`).forEach((el) => { el.classList.add('sel'); });
     const row = $(`#features .row[data-sid="${CSS.escape(id)}"]`);
     if (row) row.scrollIntoView({ block: 'nearest' });
-    if (S.tab === 'graph') updateGraph();
+    if (S.tab === 'graph') { ensureGraph(); updateGraph(); centerOn(id, true); }
   }
   function closeDrawer() {
     if (S.edit && editDirty() && !confirm('Discard your unsaved edits?')) return;
@@ -844,7 +1364,7 @@
     setHash();
     renderDrawer();
     $$('.row.sel').forEach((el) => el.classList.remove('sel'));
-    if (S.tab === 'graph') updateGraph();
+    if (S.tab === 'graph') { ensureGraph(); updateGraph(); }
   }
 
   async function loadHist(s) {
@@ -892,6 +1412,27 @@
       <div><div class="step-text">${fmt(st.text)}</div>${lbl ? `<div class="step-lbl">${lbl}</div>` : ''}${note ? `<div class="step-state">${note}</div>` : ''}</div></li>`;
   }
 
+  // one chip per test: the cases of a parametrized test fold into one chip
+  function relChips(ids) {
+    const seen = new Map();
+    ids.filter((id) => S.byId.has(id)).forEach((id) => {
+      const s = S.byId.get(id);
+      const k = s.parametrized ? `${s.file}::${s.function}` : id;
+      if (!seen.has(k)) seen.set(k, []);
+      seen.get(k).push(id);
+    });
+    return [...seen.values()].map((grp) => {
+      if (grp.length === 1) return relChip(grp[0]);
+      const counts = {};
+      grp.forEach((id) => { const st = S.byId.get(id).status; counts[st] = (counts[st] || 0) + 1; });
+      const worst = ['failed', 'error', 'blocked', 'notrun', 'passed', 'skipped'].find((k) => counts[k]);
+      const pick = grp.find((id) => S.byId.get(id).status === worst);
+      const s = S.byId.get(pick);
+      const base = splitParam(s).base.replace(/`/g, '');
+      return `<span class="rel-chip" data-sid-link="${esc(pick)}" data-tip="${esc(base)}\n${grp.length} cases">${icon(worst)}<span>${esc(trunc(base, 40))}</span><span class="faint">· ${grp.length} cases</span></span>`;
+    }).join('');
+  }
+
   function relChip(id) {
     const s = S.byId.get(id);
     if (!s) return '';
@@ -930,10 +1471,15 @@
     }
     const deps = (s.depends_on || []).filter((id) => S.byId.has(id));
     const needed = (s.dependents || []).filter((id) => S.byId.has(id));
+    const cases = s.parametrized ? S.board.scenarios.filter((x) => x.parametrized && x.file === s.file && x.function === s.function) : [];
+    const casesHtml = cases.length > 1 ? `
+      <div class="section"><h4>Cases of this test · ${cases.filter((x) => x.status === 'passed').length} of ${cases.length} passing</h4>
+        <div class="rel">${cases.map((x) => `<span class="rel-chip${x.id === s.id ? ' on' : ''}" data-sid-link="${esc(x.id)}" data-tip="${esc(x.name)}">${icon(x.status, x.live)}<span>${esc(splitParam(x).param || x.id)}</span></span>`).join('')}</div>
+      </div>` : '';
     const rel = deps.length || needed.length ? `
       <div class="section"><h4>Relationships</h4>
-        ${deps.length ? `<div class="rel-label">Depends on</div><div class="rel">${deps.map(relChip).join('')}</div>` : ''}
-        ${needed.length ? `<div class="rel-label">Needed by${s.downstream > needed.length ? ` · ${s.downstream} downstream in total` : ''}</div><div class="rel">${needed.map(relChip).join('')}</div>` : ''}
+        ${deps.length ? `<div class="rel-label">Depends on</div><div class="rel">${relChips(deps)}</div>` : ''}
+        ${needed.length ? `<div class="rel-label">Needed by${s.downstream > needed.length ? ` · ${s.downstream} downstream in total` : ''}</div><div class="rel">${relChips(needed)}</div>` : ''}
       </div>` : '';
     const src = S.source[s.id];
     const code = S.showSource
@@ -956,6 +1502,7 @@
         ${s.tags && s.tags.length ? `<div class="tags">${s.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
         ${alert}
         <div class="section"><h4>Steps</h4><ol class="steps">${stepsFor(s).map(stepHtml).join('') || '<li class="hist-cap">No steps.</li>'}</ol></div>
+        ${casesHtml}
         ${rel}
         <div class="section"><h4>History</h4><div id="dr-hist">${histHtml(s)}</div></div>
         <div class="section"><h4>Source</h4>
@@ -1146,6 +1693,8 @@
       const t = e.target;
       const menu = $('#pmenu');
       if (menu && !menu.hidden && !t.closest('.switcher')) menu.hidden = true;
+      const gmenu = $('#gpick-menu');
+      if (gmenu && !gmenu.hidden && !t.closest('.gpick')) gmenu.hidden = true;
 
       const act = t.closest('[data-act]')?.dataset.act;
       if (act) {
@@ -1179,6 +1728,9 @@
           case 'zoom-in': { const w = $('#gwrap'); return zoomAt(1.25, w.clientWidth / 2, w.clientHeight / 2); }
           case 'zoom-out': { const w = $('#gwrap'); return zoomAt(0.8, w.clientWidth / 2, w.clientHeight / 2); }
           case 'fit': return fitGraph();
+          case 'gpick': return openFeaturePicker();
+          case 'gindep': return setScope({ showIndep: !S.graph.showIndep });
+          case 'gall': return setScope({ feature: null });
           default: return undefined;
         }
       }
@@ -1214,8 +1766,16 @@
         renderSummary();
         return S.renderedTab !== S.tab ? renderTabBody() : updateTabBody();
       }
-      const gg = t.closest('[data-ggroup]');
-      if (gg) { S.graph.group = S.graph.group === gg.dataset.ggroup ? null : gg.dataset.ggroup; return updateGraph(); }
+      const gl = t.closest('[data-glevel]');
+      if (gl && !gl.disabled) return setScope({ level: gl.dataset.glevel });
+      const gfo = t.closest('[data-gfocus]');
+      if (gfo) return setScope({ focus: gfo.dataset.gfocus });
+      const gp = t.closest('[data-gpick]');
+      if (gp) {
+        e.preventDefault();
+        $('#gpick-menu').hidden = true;
+        return setScope({ feature: gp.dataset.gpick || null, focus: 'all' });
+      }
       const runLink = t.closest('[data-run], [data-run-link]');
       if (runLink && !t.closest('.gn')) {
         e.preventDefault();
@@ -1265,6 +1825,8 @@
       if (e.key === 'Escape') {
         const menu = $('#pmenu');
         if (menu && !menu.hidden) { menu.hidden = true; return undefined; }
+        const gmenu = $('#gpick-menu');
+        if (gmenu && !gmenu.hidden) { gmenu.hidden = true; return undefined; }
         if (S.edit) { if (editDirty() && !confirm('Discard your unsaved edits?')) return undefined; S.edit = null; return renderDrawer(); }
         if (/INPUT|TEXTAREA/.test(t.tagName) && t.value) { t.value = ''; t.dispatchEvent(new Event('input')); return undefined; }
         if (S.sel) return closeDrawer();
