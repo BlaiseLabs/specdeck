@@ -595,3 +595,26 @@ code.inl { font-size: .9em; padding: 0 4px; border-radius: 4px; background: colo
 .minimap .mm-blocked { fill: var(--blocked); }
 .minimap .mm-skipped { fill: var(--skipped); opacity: .6; }
 .minimap rect.vp { fill: color-mix(in srgb, var(--accent) 12%, transparent); stroke: var(--accent); stroke-width: 1.2; }
+
+/* requirements -------------------------------------------------------------- */
+.kpis { display: flex; gap: 28px; align-items: flex-end; }
+.req-kpi { cursor: pointer; }
+.req-kpi:hover .kpi-label { color: var(--accent); }
+.kpi-num.second { font-size: 24px; }
+.kpi-num.second span { font-size: 15px; }
+.pill.untested { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1.5px var(--border-strong); }
+.req-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.req-legend { margin-top: 0; }
+.req { padding: 16px 18px; margin-bottom: 12px; transition: box-shadow .3s; }
+.req.focus { box-shadow: 0 0 0 2px var(--accent); }
+.req-h { display: flex; align-items: center; gap: 10px; }
+.req-id { font-size: 12.5px; color: var(--muted); }
+.req-says { font-size: 15px; font-weight: 550; margin: 10px 0 2px; line-height: 1.4; }
+.req-why { font-size: 13px; color: var(--muted); }
+table.ex { border-collapse: collapse; margin: 12px 0 4px; font-size: 13px; }
+table.ex th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--faint); padding: 0 18px 4px 0; }
+table.ex td { padding: 4px 18px 4px 0; border-top: 1px solid var(--border); }
+.ex-ok { color: var(--pass); font-weight: 600; font-size: 12px; }
+.req-warn { padding: 12px 16px; margin-bottom: 12px; background: var(--blocked-weak); border-color: transparent; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.req-empty { text-align: left; }
+.req-empty pre { margin: 12px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--border); font: 12.5px var(--mono); overflow: auto; color: var(--text); }

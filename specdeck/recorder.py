@@ -190,6 +190,7 @@ class LiveRecorder:
                 invocation_dir=str(config.invocation_params.dir),
                 git_branch=_git(root, "rev-parse", "--abbrev-ref", "HEAD"),
                 git_sha=_git(root, "rev-parse", "--short", "HEAD"),
+                requirements=_requirements_snapshot(config),
             )
         except Exception as exc:  # never break the test run
             self._fail(exc)
@@ -226,7 +227,8 @@ class LiveRecorder:
             status = "error"
         try:
             self.hist.set_result(self.project["id"], self.run_id, sid, status,
-                                 duration=rec.duration, message=rec.message, steps=_steps(rec))
+                                 duration=rec.duration, message=rec.message, steps=_steps(rec),
+                                 evidence={"examples_used": [[rid, g] for rid, g in rec.examples_used]})
         except Exception as exc:
             self._fail(exc)
 
@@ -261,6 +263,15 @@ class LiveRecorder:
             self.hist = None
 
 
+def _requirements_snapshot(config) -> Optional[dict]:
+    from .requirements import snapshot
+
+    reqs = getattr(config, "_specdeck_reqs", None)
+    if reqs is None or (not reqs.items and not reqs.problems):
+        return None
+    return snapshot(reqs)
+
+
 def _meta(item: pytest.Item, rec, root: Path) -> dict:
     import inspect
 
@@ -280,7 +291,7 @@ def _meta(item: pytest.Item, rec, root: Path) -> dict:
     return {
         "name": rec.name, "group": rec.group, "group_name": rec.group_name,
         "description": rec.description, "tags": list(rec.tags), "depends_on": list(rec.depends_on),
-        "planned": [list(p) for p in rec.planned], "file": rel, "line": line,
+        "planned": [list(p) for p in rec.planned], "file": rel, "line": line, "covers": list(rec.covers),
         "function": original, "parametrized": original != item.name,
     }
 

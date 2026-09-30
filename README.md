@@ -79,6 +79,54 @@ CLI: `--no-specdeck` (don't write), `--specdeck-out PATH`.
 A partial run (a file, a node id, `-k`, `-m`, `--lf`) does not rewrite the spec,
 so running one test never shrinks it to one scenario.
 
+## Requirements: what the tests should show
+
+The generated spec says what the tests do. `requirements.yaml`, written by
+people, says what they *should* show: one sentence of intent per entry, plus
+concrete examples.
+
+```yaml
+requirements:
+  - id: pricing.bulk-tier
+    says: Orders of 100 units or more get 15% off; 10 or more get 5%.
+    why: Agreed with sales, 2026-09.     # optional
+    examples:
+      - given: {qty: 100}
+        expect: 15
+      - given: {qty: 99}
+        expect: 5
+```
+
+Link tests to entries, and take expected values from the examples so they come
+from the requirement rather than from running the code:
+
+```python
+from specdeck import scenario, example, examples
+
+@scenario(covers=["pricing.bulk-tier"])
+def test_tiers():
+    assert bulk_discount(100) == example("pricing.bulk-tier", qty=100)
+
+@pytest.mark.parametrize("given, expected", examples("pricing.bulk-tier"))
+def test_every_example(given, expected):      # one case per example
+    assert bulk_discount(**given) == expected
+```
+
+Using an example counts as covering its requirement. Each requirement is
+**met** (every covering scenario passes), **failing**, **blocked**, **not run**,
+or **untested** (nothing covers it). Every run writes
+`.specdeck/requirements.json`, prints `specdeck: requirements: 1 of 3 met, ...`,
+warns about links to ids that don't exist and about problems in the file, and
+tags scenarios `req:<id>` in the spec. The viewer leads with "requirements met"
+and has a Requirements tab showing each entry, its examples (and which ones a
+passing test used), and the scenarios behind it.
+
+`example()` with inputs the requirement has no example for raises
+`RequirementError`, listing the examples it does have. An explicit scenario id
+on a parametrized test becomes one id per case (`tiers-qty-100`); depending on
+the id depends on every case. Config: `specdeck_requirements` (default
+`requirements.yaml`), `specdeck_requirements_out`.
+
 ## The live viewer
 
 ```bash

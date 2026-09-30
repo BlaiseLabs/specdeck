@@ -20,5 +20,7 @@ Un-annotated tests still become scenarios, with metadata derived from the module
 function name and docstring — so an existing suite gets a spec with zero edits.
 """
 from .plugin import __version__, and_, given, scenario, step, then, when
+from .requirements import RequirementError, example, examples
 
-__all__ = ["scenario", "given", "when", "then", "and_", "step", "__version__"]
+__all__ = ["scenario", "given", "when", "then", "and_", "step", "example", "examples", "RequirementError",
+           "__version__"]

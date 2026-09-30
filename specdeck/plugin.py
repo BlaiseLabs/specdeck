@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import ast
 import contextvars
+import json
 import inspect
 import textwrap
 import datetime as _dt
@@ -68,6 +69,8 @@ class ScenarioRecord:
     description: Optional[str] = None
     tags: list = field(default_factory=list)
     depends_on: list = field(default_factory=list)
+    covers: list = field(default_factory=list)          # requirement ids declared with covers=
+    examples_used: list = field(default_factory=list)   # [(requirement id, given)] expected values came from
     steps: list = field(default_factory=list)
     # Steps read from the test's source at collection time: (keyword, text, expected).
     # They narrate scenarios that never ran, and the steps a failure never reached.
@@ -88,6 +91,7 @@ class _Store:
         # function name to every instance's id (depend on one = depend on all).
         self.fn_index: dict[tuple[str, str], list[str]] = {}  # (group, fn) -> ids
         self.fn_global: dict[str, list[str]] = {}  # fn -> ids across groups
+        self.aliases: dict[str, list[str]] = {}  # explicit id of a parametrized test -> its cases' ids
 
     def by_id(self) -> dict[str, ScenarioRecord]:
         return {r.id: r for r in self.records.values()}
@@ -171,10 +175,12 @@ def scenario(
     tags: Iterable[str] = (),
     depends_on: Iterable[str] = (),
     description: Optional[str] = None,
+    covers: Iterable[str] = (),
 ):
     """Declare spec metadata for a test. Everything is optional — omitted fields
     are derived (id from the function name, group from the module, name from the
-    docstring's first line)."""
+    docstring's first line). `covers` lists the requirement ids (requirements.yaml)
+    this test is evidence for."""
     return pytest.mark.scenario(
         id=id,
         name=name,
@@ -182,6 +188,7 @@ def scenario(
         tags=tuple(tags),
         depends_on=tuple(depends_on),
         description=description,
+        covers=tuple(covers),
     )
 
 
@@ -312,6 +319,10 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini("specdeck_description", "feature description for the generated spec", default="")
     parser.addini("specdeck_out", "spec output path (relative to rootdir)", default=".specdeck/spec.yaml")
     parser.addini("specdeck_needs", "needs.json output path (relative to rootdir)", default=".specdeck/needs.json")
+    parser.addini("specdeck_requirements", "hand-written requirements file (relative to rootdir)",
+                  default="requirements.yaml")
+    parser.addini("specdeck_requirements_out", "requirements report output path (relative to rootdir)",
+                  default=".specdeck/requirements.json")
     g.addoption("--specdeck-live", action="store_true", default=False,
                 help="record this run in the specdeck viewer and show it live (starts the viewer if needed)")
     g.addoption("--specdeck-record", action="store_true", default=False,
@@ -329,7 +340,14 @@ def pytest_configure(config: pytest.Config) -> None:
         "scenario(id=None, name=None, group=None, tags=(), depends_on=(), description=None): "
         "specdeck scenario metadata for this test",
     )
+    config.addinivalue_line("markers", "specdeck_example(requirement, given): a case built by specdeck.examples()")
     config._specdeck = _Store()  # type: ignore[attr-defined]
+    from . import requirements as _reqs
+
+    req_path = Path(config.getini("specdeck_requirements") or _reqs.DEFAULT_FILE)
+    req_path = req_path if req_path.is_absolute() else Path(str(config.rootpath)) / req_path
+    config._specdeck_reqs = _reqs.load(req_path)  # type: ignore[attr-defined]
+    _reqs.set_loaded(config._specdeck_reqs)
     if not hasattr(config, "workerinput"):  # xdist workers don't record
         from .recorder import LiveRecorder, live_mode
 
@@ -359,7 +377,12 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
         store.groups.setdefault(group, group_name)
 
         fn_slug = _slug(re.sub(r"^test_", "", item.name))  # keeps [param] ids -> -param
-        sid = _slug(kw["id"]) if kw.get("id") else f"{group}--{fn_slug}"
+        parametrized = bool(item.originalname) and item.name != item.originalname
+        if kw.get("id") and parametrized:  # one id per case: tier-examples-qty-100
+            sid = _slug(f"{kw['id']}-{item.name[len(item.originalname):].strip('[]')}")
+            store.aliases.setdefault(_slug(kw["id"]), []).append(sid)
+        else:
+            sid = _slug(kw["id"]) if kw.get("id") else f"{group}--{fn_slug}"
         base = sid
         n = 2
         while sid in seen_ids:
@@ -386,6 +409,9 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
             tags=[t for t in kw.get("tags", ()) if t],
             depends_on=list(kw.get("depends_on", ())),
             planned=_planned_steps(item),
+            covers=[str(c) for c in kw.get("covers", ()) if c],
+            examples_used=[(m.args[0], dict(m.args[1])) for m in item.iter_markers("specdeck_example")
+                           if len(m.args) >= 2],
         )
         store.order.append(item.nodeid)
 
@@ -418,6 +444,8 @@ def _resolve_dependencies(store: _Store) -> None:
 def _resolve_one(store: _Store, by_id: dict, rec: ScenarioRecord, dep_s: str) -> list[str]:
     if dep_s in by_id:
         return [dep_s]
+    if _slug(dep_s) in store.aliases:
+        return list(store.aliases[_slug(dep_s)])
     fn_variants = [dep_s] if dep_s.startswith("test_") else [f"test_{dep_s}", dep_s]
     for fn in fn_variants:
         if (rec.group, fn) in store.fn_index:
@@ -479,11 +507,15 @@ def pytest_runtest_setup(item: pytest.Item) -> None:
 def pytest_runtest_call(item: pytest.Item):
     store = _store(item.config)
     rec = store.records.get(item.nodeid) if store else None
+    from .requirements import _USED
+
     token = _ACTIVE.set(rec.steps if rec is not None else None)
+    used = _USED.set(rec.examples_used if rec is not None else None)
     try:
         yield
     finally:
         _ACTIVE.reset(token)
+        _USED.reset(used)
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -529,6 +561,29 @@ def _feature_name(config: pytest.Config) -> str:
     return config.getini("specdeck_feature") or _humanize(_slug(Path(str(config.rootpath)).name))
 
 
+def covered_requirements(rec: ScenarioRecord) -> list:
+    """Declared covers=, plus every requirement whose examples the test took expected values from."""
+    return list(dict.fromkeys([*rec.covers, *(rid for rid, _ in rec.examples_used)]))
+
+
+def _outcome(rec: ScenarioRecord) -> str:
+    if rec.status == "skipped" and (rec.message or "").startswith("specdeck: prerequisite scenario"):
+        return "blocked"
+    return rec.status if rec.status != "pending" else "notrun"
+
+
+def requirements_report(config: pytest.Config, store: "_Store") -> Optional[dict]:
+    from . import requirements as _reqs
+
+    reqs = getattr(config, "_specdeck_reqs", None) or _reqs.Requirements()
+    ordered = [store.records[n] for n in store.order if n in store.records]
+    if not reqs.items and not reqs.problems and not any(covered_requirements(r) for r in ordered):
+        return None
+    scenarios = [{"id": r.id, "name": r.name, "status": _outcome(r), "covers": covered_requirements(r),
+                  "examples_used": [[rid, g] for rid, g in r.examples_used]} for r in ordered]
+    return _reqs.report(reqs, scenarios)
+
+
 def _scenario_dict(rec: ScenarioRecord) -> dict:
     steps = [s.to_dict() for s in rec.steps]
     ran = [s.keyword for s in rec.steps]
@@ -555,7 +610,8 @@ def _scenario_dict(rec: ScenarioRecord) -> dict:
     if rec.description:
         d["description"] = rec.description
     d["group"] = rec.group
-    d["tags"] = list(dict.fromkeys([*rec.tags, rec.group, f"status:{rec.status}"]))
+    d["tags"] = list(dict.fromkeys([*rec.tags, rec.group, f"status:{rec.status}",
+                                    *(f"req:{r}" for r in covered_requirements(rec))]))
     if rec.depends_on:
         d["depends_on"] = list(rec.depends_on)
     d["steps"] = steps
@@ -617,5 +673,20 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
             f"({len(ordered)} scenarios, {len(store.groups)} groups, {edges} edges; {summary}) "
             f"+ {needs_path.name}"
         )
+        rep = requirements_report(config, store)
+        if rep is not None:
+            rp = Path(config.getini("specdeck_requirements_out"))
+            rp = rp if rp.is_absolute() else Path(str(config.rootpath)) / rp
+            rp.parent.mkdir(parents=True, exist_ok=True)
+            rp.write_text(json.dumps(rep, indent=2, default=str), encoding="utf-8")
+            c = rep["counts"]
+            bits = [f"{c['met']} of {c['total']} met"]
+            bits += [f"{c[k]} {k}" for k in ("failing", "blocked", "not-run", "untested") if c[k]]
+            tr.write_line(f"specdeck: requirements: {', '.join(bits)} + {rp.name}")
+            for u in rep["unknown"]:
+                tr.write_line(f"specdeck: warning: {', '.join(u['scenarios'])} covers {u['id']!r}, "
+                              f"which isn't in the requirements file", yellow=True)
+            for prob in rep["problems"]:
+                tr.write_line(f"specdeck: warning: {prob}", yellow=True)
         for w in store.warnings:
             tr.write_line(f"specdeck: warning: {w}", yellow=True)

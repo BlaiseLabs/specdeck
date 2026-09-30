@@ -133,7 +133,8 @@
     const m = location.pathname.match(/^\/p\/([^/]+)/);
     S.slug = m ? decodeURIComponent(m[1]) : null;
     const hp = new URLSearchParams(location.hash.slice(1));
-    S.tab = ['overview', 'graph', 'history'].includes(hp.get('tab')) ? hp.get('tab') : 'overview';
+    S.tab = ['overview', 'requirements', 'graph', 'history'].includes(hp.get('tab')) ? hp.get('tab') : 'overview';
+    S.reqFocus = hp.get('r');
     S.sel = hp.get('s');
     S.viewRun = hp.get('run') ? Number(hp.get('run')) : null;
   }
@@ -142,6 +143,7 @@
     if (S.tab !== 'overview') hp.set('tab', S.tab);
     if (S.viewRun) hp.set('run', S.viewRun);
     if (S.sel) hp.set('s', S.sel);
+    if (S.tab === 'requirements' && S.reqFocus) hp.set('r', S.reqFocus);
     const h = hp.toString();
     history.replaceState(null, '', h ? `#${h}` : location.pathname);
   }
@@ -323,11 +325,18 @@
     if (d.regressed?.length) chips.push(`<button class="chip down ${S.filter.idsLabel === 'regressed' ? 'on' : ''}" data-delta="regressed">▼ ${plural(d.regressed.length, 'regression')}</button>`);
     if (d.new?.length) chips.push(`<button class="chip new ${S.filter.idsLabel === 'new' ? 'on' : ''}" data-delta="new">+ ${plural(d.new.length, 'new scenario')}</button>`);
     const deltas = chips.length ? `<div class="deltas">${chips.join('')}<span class="faint" style="font-size:12px">in run #${d.run_n || d.run_id}</span></div>` : '';
+    const R = b.requirements && b.requirements.counts.total ? b.requirements.counts : null;
+    const reqKpi = R ? `
+      <div class="kpi req-kpi" data-tab="requirements" data-tip="Open the requirements">
+        <div class="kpi-num">${R.met}<span>/ ${R.total}</span></div>
+        <div class="kpi-label">requirements met</div>
+      </div>` : '';
     $('#summary').innerHTML = `
-      <div>
-        <div class="kpi-num">${c.passed || 0}<span>/ ${total}</span></div>
+      <div class="kpis">${reqKpi}
+      <div class="kpi">
+        <div class="kpi-num${R ? ' second' : ''}">${c.passed || 0}<span>/ ${total}</span></div>
         <div class="kpi-label">${total ? 'scenarios passing' : 'no scenarios yet'}</div>
-      </div>
+      </div></div>
       <div class="sum-mid">
         ${segbar(c, 'big')}
         <div class="legend">${legend}</div>
@@ -365,7 +374,9 @@
 
   function renderTabs() {
     const b = S.board;
-    const tabs = [['overview', 'Overview', ''], ['graph', 'Graph', ''], ['history', 'History', b.runs_total ? b.runs_total : '']];
+    const R = b.requirements ? b.requirements.counts : null;
+    const tabs = [['overview', 'Overview', ''], ['requirements', 'Requirements', R && R.total ? `${R.met}/${R.total}` : ''],
+      ['graph', 'Graph', ''], ['history', 'History', b.runs_total ? b.runs_total : '']];
     $('#tabs').innerHTML = tabs.map(([k, l, n]) =>
       `<button data-tab="${k}" class="${S.tab === k ? 'on' : ''}">${l}${n !== '' ? `<span class="count">${n}</span>` : ''}</button>`).join('') +
       `<span class="hint"><span><span class="kbd">/</span> search</span><span><span class="kbd">j</span><span class="kbd">k</span> move</span><span><span class="kbd">esc</span> close</span></span>`;
@@ -433,7 +444,7 @@
       });
       bindGraph();
     } else {
-      body.innerHTML = '<div class="card" id="runs"></div>';
+      body.innerHTML = S.tab === 'requirements' ? '<div id="reqs"></div>' : '<div class="card" id="runs"></div>';
     }
     updateTabBody();
   }
@@ -441,6 +452,7 @@
   function updateTabBody() {
     if (S.tab === 'overview') { renderFilterNote(); renderFeatures(); renderSide(); }
     else if (S.tab === 'graph') { ensureGraph(); updateGraph(); }
+    else if (S.tab === 'requirements') renderRequirements();
     else renderHistory();
   }
 
@@ -1307,6 +1319,83 @@
     inp.focus();
   }
 
+  // ------------------------------------------------------------------ requirements
+  const REQ = {
+    met: { label: 'Met', cls: 'passed', icon: 'passed' },
+    failing: { label: 'Failing', cls: 'failed', icon: 'failed' },
+    blocked: { label: 'Blocked', cls: 'blocked', icon: 'blocked' },
+    'not-run': { label: 'Not run', cls: 'notrun', icon: 'notrun' },
+    untested: { label: 'No test', cls: 'untested', icon: 'notrun' },
+  };
+  const REQ_ORDER = ['failing', 'blocked', 'untested', 'not-run', 'met'];
+
+  function fmtValue(v) {
+    if (typeof v === 'string') return JSON.stringify(v);
+    return v === null || v === undefined ? 'null' : typeof v === 'object' ? JSON.stringify(v) : String(v);
+  }
+
+  function renderRequirements() {
+    const el = $('#reqs');
+    if (!el) return;
+    const R = S.board.requirements;
+    if (!R || (!R.counts.total && !R.unknown.length && !R.problems.length)) {
+      el.innerHTML = `<div class="card empty req-empty"><b>No requirements yet</b>
+        Write what the code should do in <code>requirements.yaml</code>, independent of the tests, and link tests to it.
+        <pre>requirements:
+  - id: pricing.bulk-tier
+    says: Orders of 100 units or more get 15% off; 10 or more get 5%.
+    examples:
+      - given: {qty: 100}
+        expect: 15
+      - given: {qty: 99}
+        expect: 5</pre>
+        <pre>@scenario(covers=["pricing.bulk-tier"])
+def test_tiers():
+    assert bulk_discount(100) == example("pricing.bulk-tier", qty=100)</pre></div>`;
+      return;
+    }
+    const c = R.counts;
+    const f = S.reqFilter || 'all';
+    const chips = [['all', `All ${c.total}`], ['open', `Not met ${c.total - c.met}`], ['untested', `No test ${c.untested}`]]
+      .map(([k, l]) => `<button class="${f === k ? 'on' : ''}" data-reqfilter="${k}">${l}</button>`).join('');
+    const items = R.requirements
+      .filter((r) => f === 'all' || (f === 'open' && r.status !== 'met') || (f === 'untested' && r.status === 'untested'))
+      .sort((a, b) => REQ_ORDER.indexOf(a.status) - REQ_ORDER.indexOf(b.status));
+    const cards = items.map((r) => {
+      const st = REQ[r.status] || REQ.untested;
+      const ex = r.examples.length ? `<table class="ex"><thead><tr><th>Given</th><th>Expect</th><th></th></tr></thead><tbody>${r.examples.map((e) => `
+          <tr><td><code>${esc(Object.entries(e.given || {}).map(([k, v]) => `${k}=${fmtValue(v)}`).join(', ') || '—')}</code></td>
+          <td><code>${esc(fmtValue(e.expect))}</code></td>
+          <td>${e.checked ? '<span class="ex-ok" data-tip="A passing test takes its expected value from this example">✓ used by a test</span>' : '<span class="faint">not used by a test</span>'}</td></tr>`).join('')}</tbody></table>` : '<div class="hint-line">No examples. Examples give tests an expected value that comes from here, not from the code.</div>';
+      const sc = r.scenarios.length
+        ? `<div class="rel">${r.scenarios.map((s) => relChip(s.id)).join('')}</div>`
+        : '<div class="hint-line">No test covers this. Add <code>covers=["' + esc(r.id) + '"]</code> to a scenario, or use <code>example("' + esc(r.id) + '", …)</code> in one.</div>';
+      return `<section class="card req ${S.reqFocus === r.id ? 'focus' : ''}" id="req-${esc(r.id)}">
+        <div class="req-h"><span class="pill ${st.cls}">${icon(st.icon)}${st.label}</span><code class="req-id">${esc(r.id)}</code>
+          <span class="spacer"></span>${r.examples.length ? `<span class="muted" style="font-size:12px">${r.examples_checked} of ${r.examples.length} examples used</span>` : ''}</div>
+        <div class="req-says">${fmt(r.says)}</div>
+        ${r.why ? `<div class="req-why">${fmt(r.why)}</div>` : ''}
+        ${ex}
+        <div class="rel-label">${r.scenarios.length ? `Covered by ${plural(r.scenarios.length, 'scenario')}` : 'Covered by'}</div>${sc}
+      </section>`;
+    }).join('');
+    const warn = [
+      ...R.unknown.map((u) => `<div>${u.scenarios.map((s) => relChip(s)).join('')} covers <code>${esc(u.id)}</code>, which isn't in the requirements file.</div>`),
+      ...R.problems.map((pr) => `<div>${esc(pr)}</div>`),
+    ];
+    el.innerHTML = `
+      <div class="req-top">
+        <div class="legend req-legend">${chips}</div><span class="spacer"></span>
+        <span class="muted" style="font-size:12.5px">${R.file ? `<code>${esc(R.file.split('/').slice(-2).join('/'))}</code> · ` : ''}written by people; tests link to it</span>
+      </div>
+      ${warn.length ? `<div class="card req-warn"><b>Needs attention</b>${warn.join('')}</div>` : ''}
+      ${cards || '<div class="card empty"><b>Nothing here</b>Every requirement in this view is met.</div>'}`;
+    if (S.reqFocus) {
+      const target = document.getElementById(`req-${S.reqFocus}`);
+      if (target && !S.reqScrolled) { target.scrollIntoView({ block: 'center' }); S.reqScrolled = true; }
+    }
+  }
+
   // ------------------------------------------------------------------ history
   function renderHistory() {
     const el = $('#runs');
@@ -1433,6 +1522,20 @@
     }).join('');
   }
 
+  function coversHtml(s) {
+    const ids = s.covers || [];
+    if (!ids.length) return '';
+    const R = S.board.requirements;
+    const by = new Map((R ? R.requirements : []).map((r) => [r.id, r]));
+    const chips = ids.map((id) => {
+      const r = by.get(id);
+      const st = r ? REQ[r.status] : null;
+      const used = (s.examples_used || []).filter((u) => u[0] === id).length;
+      return `<span class="rel-chip" data-req-link="${esc(id)}" data-tip="${esc(r ? r.says : 'Not in the requirements file')}">${st ? icon(st.icon) : icon('error')}<span>${esc(id)}</span>${used ? `<span class="faint">· ${plural(used, 'example')}</span>` : ''}</span>`;
+    }).join('');
+    return `<div class="section"><h4>Covers</h4><div class="rel">${chips}</div></div>`;
+  }
+
   function relChip(id) {
     const s = S.byId.get(id);
     if (!s) return '';
@@ -1503,6 +1606,7 @@
         ${alert}
         <div class="section"><h4>Steps</h4><ol class="steps">${stepsFor(s).map(stepHtml).join('') || '<li class="hist-cap">No steps.</li>'}</ol></div>
         ${casesHtml}
+        ${coversHtml(s)}
         ${rel}
         <div class="section"><h4>History</h4><div id="dr-hist">${histHtml(s)}</div></div>
         <div class="section"><h4>Source</h4>
@@ -1742,6 +1846,10 @@
         S.edit.v[field].splice(Number(i), 1);
         return rerenderChips(field);
       }
+      const rl = t.closest('[data-req-link]');
+      if (rl) { S.tab = 'requirements'; S.reqFocus = rl.dataset.reqLink; S.reqScrolled = false; S.reqFilter = 'all'; setHash(); return render(); }
+      const rf = t.closest('[data-reqfilter]');
+      if (rf) { S.reqFilter = rf.dataset.reqfilter; return renderRequirements(); }
       const tab = t.closest('[data-tab]');
       if (tab) {
         S.tab = tab.dataset.tab; setHash();
@@ -1834,7 +1942,7 @@
       }
       if (/INPUT|TEXTAREA|SELECT/.test(t.tagName) || e.metaKey || e.ctrlKey || e.altKey) return undefined;
       if (e.key === '/') { e.preventDefault(); ($('#q') || $('#gq'))?.focus(); return undefined; }
-      if (['1', '2', '3'].includes(e.key)) { S.tab = ['overview', 'graph', 'history'][Number(e.key) - 1]; setHash(); return render(); }
+      if (['1', '2', '3', '4'].includes(e.key)) { S.tab = ['overview', 'requirements', 'graph', 'history'][Number(e.key) - 1]; setHash(); return render(); }
       if ((e.key === 'j' || e.key === 'k') && S.tab === 'overview') {
         const ids = visibleRowIds();
         if (!ids.length) return undefined;

@@ -45,7 +45,8 @@ CREATE TABLE IF NOT EXISTS runs(
   git_branch TEXT, git_sha TEXT,
   total INTEGER DEFAULT 0, passed INTEGER DEFAULT 0, failed INTEGER DEFAULT 0,
   error INTEGER DEFAULT 0, blocked INTEGER DEFAULT 0, skipped INTEGER DEFAULT 0,
-  duration REAL
+  duration REAL,
+  requirements TEXT
 );
 CREATE INDEX IF NOT EXISTS runs_by_project ON runs(project_id, id);
 CREATE TABLE IF NOT EXISTS results(
@@ -59,6 +60,7 @@ CREATE TABLE IF NOT EXISTS results(
   duration REAL,
   message TEXT,
   steps TEXT,
+  evidence TEXT,
   PRIMARY KEY(run_id, scenario_id)
 );
 CREATE TABLE IF NOT EXISTS events(
@@ -103,6 +105,14 @@ class History:
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("PRAGMA synchronous=NORMAL")
         self.conn.executescript(SCHEMA)
+        self._migrate()
+
+    def _migrate(self) -> None:
+        """Columns added after a database was first created."""
+        for table, column in (("results", "evidence"), ("runs", "requirements")):
+            have = {r[1] for r in self.conn.execute(f"PRAGMA table_info({table})")}
+            if column not in have:
+                self.conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} TEXT")
 
     # -- plumbing ---------------------------------------------------------- #
     def close(self) -> None:
@@ -164,15 +174,15 @@ class History:
 
     def start_run(self, project_id: int, scenarios: list, *, args: list = (), full: bool = True,
                   trigger: str = "terminal", pid: Optional[int] = None, invocation_dir: str = "",
-                  git_branch: str = "", git_sha: str = "") -> int:
+                  git_branch: str = "", git_sha: str = "", requirements: Optional[dict] = None) -> int:
         """``scenarios``: ``[{"id", "nodeid", "meta"}]`` in execution order, all queued."""
         now = time.time()
         with self._tx():
             cur = self.conn.execute(
-                "INSERT INTO runs(project_id, started, status, pid, trigger, args, full, git_branch, git_sha, total)"
-                " VALUES (?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO runs(project_id, started, status, pid, trigger, args, full, git_branch, git_sha, total,"
+                " requirements) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                 (project_id, now, "running", pid, trigger, json.dumps(list(args)), 1 if full else 0,
-                 git_branch, git_sha, len(scenarios)),
+                 git_branch, git_sha, len(scenarios), json.dumps(requirements) if requirements else None),
             )
             run_id = cur.lastrowid
             self.conn.executemany(
@@ -200,11 +210,13 @@ class History:
             self._event(project_id, run_id, "test_start", scenario_id)
 
     def set_result(self, project_id: int, run_id: int, scenario_id: str, status: str,
-                   duration: float = 0.0, message: Optional[str] = None, steps: Optional[list] = None) -> None:
+                   duration: float = 0.0, message: Optional[str] = None, steps: Optional[list] = None,
+                   evidence: Optional[dict] = None) -> None:
         with self._tx():
             self.conn.execute(
-                "UPDATE results SET status=?, duration=?, message=?, steps=? WHERE run_id=? AND scenario_id=?",
-                (status, duration, message, json.dumps(steps or []), run_id, scenario_id),
+                "UPDATE results SET status=?, duration=?, message=?, steps=?, evidence=? WHERE run_id=? AND scenario_id=?",
+                (status, duration, message, json.dumps(steps or []), json.dumps(evidence) if evidence else None,
+                 run_id, scenario_id),
             )
             self._event(project_id, run_id, "test_end", scenario_id)
 
@@ -399,7 +411,19 @@ class History:
                 k: delta.get(k, []) for k in ("fixed", "regressed", "new")}},
             "trend": trend,
             "runs_total": len(runs_by_id),
+            "requirements": self._requirements(runs_by_id, run_id, scenarios),
         }
+
+    def _requirements(self, runs_by_id: dict, run_id: Optional[int], scenarios: list) -> Optional[dict]:
+        """The requirements report for the board: the file as of the viewed (or latest) run."""
+        from .requirements import report_dicts
+
+        ids = sorted((r for r in runs_by_id if run_id is None or r <= run_id), reverse=True)
+        snap = next((json.loads(runs_by_id[r]["requirements"]) for r in ids if runs_by_id[r].get("requirements")), None)
+        if snap is None and not any(s.get("covers") for s in scenarios):
+            return None
+        snap = snap or {"requirements": [], "problems": [], "file": None}
+        return report_dicts(snap["requirements"], scenarios, file=snap.get("file"), problems=snap.get("problems", []))
 
     def summary(self, project: dict) -> dict:
         b = self.board(project["id"])
@@ -429,6 +453,7 @@ def _meta_fields(meta: dict, row: dict) -> dict:
         "line": meta.get("line"),
         "function": meta.get("function"),
         "parametrized": bool(meta.get("parametrized")),
+        "covers": list(meta.get("covers") or []),
         "nodeid": row["nodeid"],
     }
 
@@ -441,6 +466,9 @@ def _entry(sid: str, row: dict, meta: dict, status: str) -> dict:
     e["duration"] = row["duration"] if ran else None
     e["message"] = row["message"] if ran else None
     e["steps"] = json.loads(row["steps"] or "[]") if ran and row["steps"] else []
+    ev = json.loads(row.get("evidence") or "null") if ran else None
+    e["examples_used"] = (ev or {}).get("examples_used", [])
+    e["covers"] = list(dict.fromkeys([*e["covers"], *(u[0] for u in e["examples_used"])]))
     return e
 
 
