@@ -1,0 +1,58 @@
+# What specdeck must be true of itself. Written by hand; the tests are the
+# evidence. `specdeck validate` lints this file; `specdeck requirements` reports
+# which entries are met.
+requirements:
+- id: spec.generated
+  says: The spec is generated from the tests, so it cannot drift from them.
+  why: >-
+    Every other arrangement — a .feature file, a hand-written spec — needs someone
+    to keep two things in step, and nobody does. If the spec is output, there is
+    nothing to keep in step.
+
+- id: spec.valid
+  says: A generated spec has no validation errors or warnings.
+  why: >-
+    A document that is merely usually well-formed cannot be a contract. specdeck
+    validates its own output rather than depending on another project to do it.
+
+- id: spec.narrates-unrun
+  says: Scenarios that were skipped or failed early still read as prose.
+  why: >-
+    A tests-first suite is mostly red. If the spec only narrated what executed, it
+    would be useless exactly when it is most wanted — before the code exists.
+
+- id: spec.safe-yaml
+  says: Step text containing a colon never produces an unparseable spec.
+  why: >-
+    Unquoted `key: value` inside a scalar silently broke the hand-written specs
+    this replaces; two files were unloadable for months before anyone noticed.
+
+- id: deps.document-only
+  says: A dependency orders reading and reporting, never test execution.
+  why: >-
+    Tests that must run in order are an anti-pattern — they cannot be run alone or
+    in parallel, and they pass for the wrong reasons. The graph is for readers.
+
+- id: deps.resolvable
+  says: Every depends_on in a generated spec names a scenario that exists.
+  why: >-
+    A dangling reference is an error in the format, and silently emitting one
+    makes the graph lie about what blocks what.
+
+- id: gate.optional
+  says: Adding specdeck to a suite never changes its exit code unless a gate is switched on.
+  why: >-
+    A tool that fails other people's builds on arrival gets uninstalled. Gates are
+    opt-in, by flag or config.
+
+- id: gate.enforceable
+  says: An unmet requirement or an unknown covers= id can fail the run.
+  why: >-
+    Traceability that can only warn is decorative. For the link to mean anything,
+    CI has to be able to refuse.
+
+- id: run.partial-safe
+  says: A partial run never silently shrinks the spec.
+  why: >-
+    `-k` collects a subset; rewriting the spec from it would delete every scenario
+    that did not run. The default refuses, and --specdeck-merge updates in place.

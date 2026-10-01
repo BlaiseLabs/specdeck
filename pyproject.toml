@@ -31,3 +31,8 @@ specdeck = ["web/*"]
 testpaths = ["tests"]
 specdeck_feature = "specdeck"
 specdeck_description = "The spec generator, specified by its own tests."
+# specdeck gates itself: an unmet requirement, an unknown covers= id, or an
+# invalid generated spec fails the run.
+specdeck_fail_on_unmet = "true"
+specdeck_fail_on_unknown_covers = "true"
+specdeck_fail_on_invalid = "true"

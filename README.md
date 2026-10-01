@@ -5,7 +5,7 @@
 A pytest plugin that turns an ordinary test suite into a *test-failure-DX* spec —
 `feature → groups → scenarios → Given/When/Then`, with a scenario dependency DAG
 and every scenario stamped with its real outcome. The YAML it writes renders in
-[dx-spec-viewer](../dx-spec-viewer) unchanged and validates with zero warnings.
+its own viewer, and `specdeck validate` checks it with zero warnings.
 It also writes a minimal sphinx-needs `needs.json`, so the same graph is reachable
 by requirements/traceability tooling and by coding agents.
 
@@ -213,11 +213,42 @@ Every string goes through `yaml.safe_dump`, so `key: value` text inside a step c
 never produce an unparseable file (the bug that silently broke the hand-written
 specs this replaces).
 
+## Commands
+
+```bash
+specdeck serve                  # the viewer, on 127.0.0.1
+specdeck validate               # lint spec.yaml + requirements.yaml; non-zero on error
+specdeck requirements           # the requirements report, --fail-on-unmet for CI
+specdeck watch -- -q            # re-run the suite when a file changes
+specdeck runs                   # recorded runs, newest first
+specdeck diff 7 12              # what moved between two runs
+specdeck prune --keep 200       # bound the shared history
+specdeck forget <project>       # drop a project entirely
+specdeck where                  # the history database path
+```
+
+### Gates (opt-in)
+
+Nothing changes a suite's exit code until you ask. By flag or in config:
+
+```toml
+[tool.pytest.ini_options]
+specdeck_fail_on_unmet = "true"            # a requirement nothing proves
+specdeck_fail_on_unknown_covers = "true"   # covers= names a requirement that doesn't exist
+specdeck_fail_on_invalid = "true"          # the generated spec has validation errors
+```
+
+specdeck runs these on itself.
+
 ## Relation to the other projects
 
-- **test-failure-dx** defines the format and a runner; specdeck emits the format
-  but *pytest is the runner*, so `logic` is the node id to re-run.
-- **dx-spec-viewer** renders the output; point its `SPECS_DIR` at `.specdeck/` or
-  copy `spec.yaml` into its `specs/`. The `status:*` tags are filterable in the
-  Workspace Atlas.
-- **tapedeck** is the first suite specified this way.
+specdeck stands alone: it generates the spec, validates it, and renders it.
+
+- **tapedeck** records real SDK traffic so tests replay ground truth instead of a
+  guess. The first suite specified in specdeck.
+- **proofdeck** asks whether the tests would notice if the code were wrong, and
+  flags tests that only prove the code agrees with itself. specdeck says what is
+  covered; proofdeck says whether that coverage means anything.
+- **test-failure-dx** is where the YAML format came from; specdeck emits it, but
+  *pytest is the runner*, so `logic` is the node id to re-run.
+- **dx-spec-viewer** is superseded — `specdeck serve` replaces it.

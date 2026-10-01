@@ -425,6 +425,78 @@ class History:
         snap = snap or {"requirements": [], "problems": [], "file": None}
         return report_dicts(snap["requirements"], scenarios, file=snap.get("file"), problems=snap.get("problems", []))
 
+    def compare(self, project_id: int, left_run: int, right_run: int) -> dict:
+        """What changed between two runs: fixed, regressed, new, gone, still failing.
+
+        History shows deltas against the previous run only; this answers
+        "what moved between run 7 and run 12".
+        """
+        n = self._ordinals(project_id)
+
+        def results(run_id: int) -> dict:
+            rows = self._all(
+                "SELECT r.scenario_id, r.status, r.message FROM results r JOIN runs u ON u.id=r.run_id"
+                " WHERE u.project_id=? AND r.run_id=?", (project_id, run_id))
+            return {r["scenario_id"]: r for r in rows}
+
+        a, b = results(left_run), results(right_run)
+        ok = lambda s: s == "passed"  # noqa: E731
+        buckets: dict = {"fixed": [], "regressed": [], "new": [], "gone": [], "still_failing": [], "unchanged": []}
+        for sid in sorted(set(a) | set(b)):
+            l, r = a.get(sid), b.get(sid)
+            if l is None:
+                buckets["new"].append({"id": sid, "status": r["status"]})
+            elif r is None:
+                buckets["gone"].append({"id": sid, "status": l["status"]})
+            elif l["status"] == r["status"]:
+                (buckets["unchanged"] if ok(r["status"]) else buckets["still_failing"]).append(
+                    {"id": sid, "status": r["status"], "message": r["message"]})
+            elif ok(r["status"]):
+                buckets["fixed"].append({"id": sid, "from": l["status"]})
+            else:
+                buckets["regressed"].append({"id": sid, "from": l["status"], "status": r["status"],
+                                             "message": r["message"]})
+        return {"left": {"id": left_run, "n": n.get(left_run)},
+                "right": {"id": right_run, "n": n.get(right_run)},
+                **buckets,
+                "counts": {k: len(v) for k, v in buckets.items()}}
+
+    def prune(self, *, keep_runs: int = 200, project_id: Optional[int] = None, vacuum: bool = True) -> dict:
+        """Drop all but the newest `keep_runs` runs per project.
+
+        Runs and their results were never pruned, so the shared database only
+        grew. Events are already capped; this bounds the rest.
+        """
+        pids = [project_id] if project_id is not None else [p["id"] for p in self.projects()]
+        removed_runs = 0
+        for pid in pids:
+            doomed = [r["id"] for r in self._all(
+                "SELECT id FROM runs WHERE project_id=? ORDER BY id DESC LIMIT -1 OFFSET ?", (pid, keep_runs))]
+            if not doomed:
+                continue
+            marks = ",".join("?" * len(doomed))
+            with self._tx():
+                self.conn.execute(f"DELETE FROM results WHERE run_id IN ({marks})", doomed)
+                self.conn.execute(f"DELETE FROM events WHERE run_id IN ({marks})", doomed)
+                self.conn.execute(f"DELETE FROM runs WHERE id IN ({marks})", doomed)
+            removed_runs += len(doomed)
+        if vacuum and removed_runs:
+            self.conn.execute("VACUUM")
+        return {"removed_runs": removed_runs, "projects": len(pids), "db": str(self.path)}
+
+    def forget(self, slug: str) -> bool:
+        """Remove a project and everything recorded for it."""
+        p = self.project(slug)
+        if not p:
+            return False
+        with self._tx():
+            self.conn.execute("DELETE FROM results WHERE run_id IN (SELECT id FROM runs WHERE project_id=?)", (p["id"],))
+            self.conn.execute("DELETE FROM events WHERE project_id=?", (p["id"],))
+            self.conn.execute("DELETE FROM runs WHERE project_id=?", (p["id"],))
+            self.conn.execute("DELETE FROM projects WHERE id=?", (p["id"],))
+        self.conn.execute("VACUUM")
+        return True
+
     def summary(self, project: dict) -> dict:
         b = self.board(project["id"])
         return {

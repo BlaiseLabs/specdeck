@@ -8,9 +8,12 @@ from pathlib import Path
 
 import pytest
 
+from specdeck import scenario
+
 from .conftest import scenario_by_id
 
 
+@scenario("generate-zero-config", group="generation", covers=["spec.generated"])
 def test_unannotated_tests_become_scenarios_with_derived_metadata(pytester, run):
     pytester.makepyfile(
         test_alpha='''
@@ -62,6 +65,7 @@ def test_name_is_first_sentence_not_first_line(pytester, run):
     assert s["description"] == "Body paragraph becomes the description."
 
 
+@scenario("generate-runtime-steps", group="generation", covers=["spec.generated"])
 def test_marker_overrides_and_runtime_steps(pytester, run):
     pytester.makepyfile(
         test_beta='''
@@ -128,6 +132,7 @@ def test_failing_then_records_expected_observed_and_decision_context(pytester, r
     assert needs["versions"]["generated"]["needs"]["gamma--priority"]["status"] == "failed"
 
 
+@scenario("deps-skip-blocked", group="generation", covers=["deps.document-only"])
 def test_dependent_is_skipped_when_prerequisite_fails(pytester, run):
     pytester.makepyfile(
         test_delta='''
@@ -154,6 +159,7 @@ def test_dependent_is_skipped_when_prerequisite_fails(pytester, run):
     assert scenario_by_id(spec, "by-function-name")["depends_on"] == ["base"]  # bare name resolved
 
 
+@scenario("deps-unknown-dropped", group="generation", covers=["deps.resolvable"])
 def test_unknown_dependency_is_dropped_with_a_warning(pytester, run):
     pytester.makepyfile(
         test_eps='''
@@ -169,6 +175,7 @@ def test_unknown_dependency_is_dropped_with_a_warning(pytester, run):
     assert "depends_on" not in scenario_by_id(spec, "a")
 
 
+@scenario("deps-cycle-warned", group="generation", covers=["deps.resolvable"])
 def test_cycle_is_reported(pytester, run):
     pytester.makepyfile(
         test_zeta='''
@@ -192,6 +199,7 @@ def test_no_specdeck_flag_suppresses_output(pytester, run):
     assert spec is None and needs is None
 
 
+@scenario("generate-safe-yaml", group="generation", covers=["spec.safe-yaml"])
 def test_step_text_with_colons_stays_parseable(pytester, run):
     """The classic test-failure-dx foot-gun: `key: value` text inside a step."""
     pytester.makepyfile(
@@ -208,14 +216,13 @@ def test_step_text_with_colons_stays_parseable(pytester, run):
     assert spec["scenarios"][0]["steps"][0]["text"].startswith("set_env(var: FEATURE_X_ENABLED")
 
 
-VIEWER_ROOT = Path("/workspaces/python/dx-spec-viewer")
+@scenario("generate-valid-output", group="generation", covers=["spec.valid", "spec.generated"])
+def test_generated_spec_is_warning_free_under_our_own_validator(pytester, run):
+    """A generated spec must produce zero diagnostics — not merely zero errors.
 
-
-@pytest.mark.skipif(not (VIEWER_ROOT / "spec_validator").exists(), reason="dx-spec-viewer not checked out alongside")
-def test_generated_spec_is_warning_free_under_dx_spec_viewer_validator(pytester, run):
-    """Import the viewer's validator in-process (pytester rewrites HOME, which
-    hides user-site packages from a subprocess) and require zero diagnostics —
-    not just zero errors."""
+    Checked with specdeck's own validator: specdeck does not depend on any other
+    project to know whether the file it writes is valid.
+    """
     pytester.makepyfile(
         test_eta='''
         from specdeck import scenario, given, then
@@ -239,14 +246,13 @@ def test_generated_spec_is_warning_free_under_dx_spec_viewer_validator(pytester,
     result.assert_outcomes(passed=2)
     out = pytester.path / ".specdeck" / "spec.yaml"
 
-    if str(VIEWER_ROOT) not in sys.path:
-        sys.path.insert(0, str(VIEWER_ROOT))
-    from spec_validator import validate_text  # type: ignore[import-not-found]
+    from specdeck.validation import validate_text
 
     diags = validate_text(out.read_text(encoding="utf-8"), source="spec.yaml")
     assert diags == [], [d.to_dict() for d in diags]
 
 
+@scenario("narrate-skipped", group="generation", covers=["spec.narrates-unrun"])
 def test_skipped_scenario_keeps_its_narrated_steps(pytester, run):
     """Steps are read from the test source, so a scenario that never ran still reads as a spec."""
     pytester.makepyfile(
@@ -282,6 +288,7 @@ def test_skipped_scenario_keeps_its_narrated_steps(pytester, run):
     assert steps[2]["assertion"] == {"expected_label": "surviving-mutant", "observed_label": "not run"}
 
 
+@scenario("narrate-failed-tail", group="generation", covers=["spec.narrates-unrun"])
 def test_error_is_pinned_to_the_step_that_raised_and_later_steps_are_not_reached(pytester, run):
     """A non-assertion error lands on the step where it happened; the intended Then steps still show."""
     pytester.makepyfile(
@@ -329,6 +336,7 @@ def test_parametrized_step_text_is_rendered_per_instance(pytester, run):
     assert texts == ["a line containing 'log.info'", "a line containing 'print('"]
 
 
+@scenario("narrate-between-steps", group="generation", covers=["spec.narrates-unrun"])
 def test_failure_between_steps_is_still_reported(pytester, run):
     """If the test fails outside any step, the failure is appended rather than hidden by 'not reached' steps."""
     pytester.makepyfile(
@@ -352,6 +360,7 @@ def test_failure_between_steps_is_still_reported(pytester, run):
     assert "RuntimeError" in steps[-1]["assertion"]["observed_label"]
 
 
+@scenario("deps-blocking-cascade", group="generation", covers=["deps.document-only"])
 def test_blocking_cascades_through_a_chain(pytester, run):
     """If a prerequisite was itself skipped as blocked, its dependents are blocked too (not run)."""
     pytester.makepyfile(

@@ -4,8 +4,8 @@ On every run the plugin records, per test: scenario metadata (declared via the
 ``scenario`` marker or derived from module / function name / docstring), the
 Given/When/Then steps that actually executed, the outcome, and — for a failing
 ``then`` — the expected/observed labels and decision context. At session end it
-writes a test-failure-DX YAML (readable by dx-spec-viewer, warning-free under its
-validator) plus a minimal sphinx-needs ``needs.json``.
+writes a test-failure-DX YAML (warning-free under :mod:`specdeck.validation`)
+plus a minimal sphinx-needs ``needs.json``.
 
 Design rules, deliberately:
 - ``depends_on`` is *documentation order* plus skip-if-a-prerequisite-failed.
@@ -332,6 +332,18 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     g.addoption("--specdeck-port", type=int, default=None, help="viewer port (default 7357)")
     parser.addini("specdeck_live", "record runs for the viewer: true (and start it), record, or false", default="false")
     parser.addini("specdeck_port", "viewer port", default="7357")
+    # CI gates — all off by default; adding specdeck must not change an exit code.
+    g.addoption("--specdeck-fail-on-unmet", action="store_true", default=False,
+                help="exit non-zero if any requirement is not met")
+    g.addoption("--specdeck-fail-on-unknown-covers", action="store_true", default=False,
+                help="exit non-zero if a covers= names a requirement that doesn't exist")
+    g.addoption("--specdeck-fail-on-invalid", action="store_true", default=False,
+                help="exit non-zero if the generated spec has validation errors")
+    parser.addini("specdeck_fail_on_unmet", "fail the run if a requirement is not met", default="false")
+    parser.addini("specdeck_fail_on_unknown_covers", "fail the run on an unknown covers= id", default="false")
+    parser.addini("specdeck_fail_on_invalid", "fail the run if the generated spec is invalid", default="false")
+    g.addoption("--specdeck-merge", action="store_true", default=False,
+                help="on a partial run, merge the scenarios that ran into the existing spec instead of skipping the write")
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -378,9 +390,10 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
 
         fn_slug = _slug(re.sub(r"^test_", "", item.name))  # keeps [param] ids -> -param
         parametrized = bool(item.originalname) and item.name != item.originalname
+        alias_for = None
         if kw.get("id") and parametrized:  # one id per case: tier-examples-qty-100
             sid = _slug(f"{kw['id']}-{item.name[len(item.originalname):].strip('[]')}")
-            store.aliases.setdefault(_slug(kw["id"]), []).append(sid)
+            alias_for = _slug(kw["id"])
         else:
             sid = _slug(kw["id"]) if kw.get("id") else f"{group}--{fn_slug}"
         base = sid
@@ -390,6 +403,11 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
         if sid != base:
             store.warnings.append(f"duplicate scenario id {base!r} -> {sid!r} ({item.nodeid})")
         seen_ids.add(sid)
+        if alias_for is not None:
+            # Register AFTER de-duplication: `sid` may have just been renamed, and
+            # an alias pointing at the pre-rename id would resolve to a scenario
+            # that does not exist — a dangling depends_on in the emitted spec.
+            store.aliases.setdefault(alias_for, []).append(sid)
         fn_name = item.originalname or item.name
         store.fn_index.setdefault((group, fn_name), []).append(sid)
         store.fn_global.setdefault(fn_name, []).append(sid)
@@ -432,7 +450,10 @@ def _resolve_dependencies(store: _Store) -> None:
         resolved: list[str] = []
         for dep in rec.depends_on:
             dep_s = str(dep)
-            hits = _resolve_one(store, by_id, rec, dep_s)
+            # Every hit is checked against the real scenario ids: whatever a
+            # resolution route returns, a reference that is not a scenario must
+            # never reach the spec (the validator rightly calls that an error).
+            hits = [h for h in _resolve_one(store, by_id, rec, dep_s) if h in by_id]
             if hits:
                 resolved.extend(h for h in hits if h not in resolved and h != rec.id)
             else:
@@ -619,6 +640,63 @@ def _scenario_dict(rec: ScenarioRecord) -> dict:
     return d
 
 
+def _merge_partial(config: pytest.Config, store: _Store) -> None:
+    """Update only the scenarios that ran, leaving the rest of the spec intact.
+
+    A partial run (`-k`, a node id, one file) knows nothing about the scenarios
+    it did not collect, so rewriting the file would delete them. Merging keeps
+    every untouched scenario exactly as it was and replaces the ones that ran,
+    in place, so the order of the file is stable.
+    """
+    out = Path(config.getini("specdeck_out"))
+    out = out if out.is_absolute() else Path(str(config.rootpath)) / out
+    tr = config.pluginmanager.get_plugin("terminalreporter")
+    if not out.exists():
+        if tr is not None:
+            tr.write_line(f"specdeck: --specdeck-merge needs an existing {out.name}; "
+                          f"run the whole suite once first", yellow=True)
+        return
+    try:
+        existing = yaml.safe_load(out.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as e:
+        if tr is not None:
+            tr.write_line(f"specdeck: cannot merge, {out.name} is not valid YAML: {e}", yellow=True)
+        return
+
+    # Only scenarios that actually RAN may replace what is on disk. Collection
+    # happens before -k/-m deselection, so `store` also holds scenarios that were
+    # collected and then dropped; merging those would overwrite a real recorded
+    # outcome with `pending`.
+    fresh = {r.id: _scenario_dict(r)
+             for r in (store.records[n] for n in store.order if n in store.records)
+             if r.status != "pending"}
+    scenarios = existing.get("scenarios") if isinstance(existing.get("scenarios"), list) else []
+    merged, replaced = [], 0
+    for sc in scenarios:
+        sid = str(sc.get("id") or "") if isinstance(sc, dict) else ""
+        if sid in fresh:
+            merged.append(fresh.pop(sid))
+            replaced += 1
+        else:
+            merged.append(sc)
+    added = list(fresh.values())  # scenarios that are new since the last full run
+    existing["scenarios"] = merged + added
+
+    known = {g.get("id") for g in existing.get("groups", []) if isinstance(g, dict)}
+    for gid, gname in store.groups.items():
+        if gid not in known:
+            existing.setdefault("groups", []).append({"id": gid, "name": gname})
+
+    header = (f"# GENERATED by specdeck {__version__} from pytest — do not edit.\n"
+              f"# Re-run pytest to regenerate. Scenarios carry a status:<outcome> tag.\n")
+    out.write_text(header + yaml.safe_dump(existing, sort_keys=False, allow_unicode=True, width=100),
+                   encoding="utf-8")
+    if tr is not None:
+        extra = f", {len(added)} added" if added else ""
+        tr.write_line(f"specdeck: merged {replaced} scenario(s){extra} into {out.name} "
+                      f"({len(merged) + len(added)} total)")
+
+
 def build_spec(config: pytest.Config, store: _Store) -> dict:
     ordered = [store.records[n] for n in store.order if n in store.records]
     spec: dict = {"feature": _feature_name(config)}
@@ -637,11 +715,16 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
         return
     from .recorder import is_full_run
 
-    if not is_full_run(config) and not config.getoption("--specdeck-out"):
+    partial = not is_full_run(config) and not config.getoption("--specdeck-out")
+    if partial and config.getoption("--specdeck-merge"):
+        _merge_partial(config, store)
+        return
+    if partial:
         # A selection (one file, -k, a node id) would shrink the spec to that subset.
         tr = config.pluginmanager.get_plugin("terminalreporter")
         if tr is not None:
-            tr.write_line("specdeck: partial run, spec not rewritten (run the whole suite to regenerate it)")
+            tr.write_line("specdeck: partial run, spec not rewritten "
+                          "(run the whole suite, or --specdeck-merge to update just these scenarios)")
         return
     spec = build_spec(config, store)
     out = Path(config.getoption("--specdeck-out") or config.getini("specdeck_out"))
@@ -661,6 +744,17 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     ordered = [store.records[n] for n in store.order if n in store.records]
     write_needs(needs_path, spec["feature"], ordered, stamp)
 
+    # The requirements report is written whether or not a terminal reporter is
+    # present (`-p no:terminal` used to drop it silently); only printing is
+    # conditional.
+    rep = requirements_report(config, store)
+    rp = None
+    if rep is not None:
+        rp = Path(config.getini("specdeck_requirements_out"))
+        rp = rp if rp.is_absolute() else Path(str(config.rootpath)) / rp
+        rp.parent.mkdir(parents=True, exist_ok=True)
+        rp.write_text(json.dumps(rep, indent=2, default=str), encoding="utf-8")
+
     tr = config.pluginmanager.get_plugin("terminalreporter")
     if tr is not None:
         edges = sum(len(r.depends_on) for r in ordered)
@@ -673,12 +767,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
             f"({len(ordered)} scenarios, {len(store.groups)} groups, {edges} edges; {summary}) "
             f"+ {needs_path.name}"
         )
-        rep = requirements_report(config, store)
         if rep is not None:
-            rp = Path(config.getini("specdeck_requirements_out"))
-            rp = rp if rp.is_absolute() else Path(str(config.rootpath)) / rp
-            rp.parent.mkdir(parents=True, exist_ok=True)
-            rp.write_text(json.dumps(rep, indent=2, default=str), encoding="utf-8")
             c = rep["counts"]
             bits = [f"{c['met']} of {c['total']} met"]
             bits += [f"{c[k]} {k}" for k in ("failing", "blocked", "not-run", "untested") if c[k]]
@@ -690,3 +779,48 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
                 tr.write_line(f"specdeck: warning: {prob}", yellow=True)
         for w in store.warnings:
             tr.write_line(f"specdeck: warning: {w}", yellow=True)
+
+    _apply_gates(config, session, rep, out, tr)
+
+
+def _apply_gates(config: pytest.Config, session: pytest.Session, rep, spec_path: Path, tr) -> None:
+    """Turn advisory findings into a failing run, when asked.
+
+    Off by default: adding specdeck to an existing suite must never change its
+    exit code until someone opts in.
+    """
+    def enabled(flag: str, ini: str) -> bool:
+        return bool(config.getoption(flag) or _ini_bool(config, ini))
+
+    failures: list = []
+
+    if enabled("--specdeck-fail-on-unknown-covers", "specdeck_fail_on_unknown_covers") and rep:
+        for u in rep["unknown"]:
+            failures.append(f"{', '.join(u['scenarios'])} covers {u['id']!r}, which isn't in the requirements file")
+
+    if enabled("--specdeck-fail-on-unmet", "specdeck_fail_on_unmet") and rep:
+        for r in rep["requirements"]:
+            if r["status"] != "met":
+                failures.append(f"requirement {r['id']!r} is {r['status']}")
+
+    if enabled("--specdeck-fail-on-invalid", "specdeck_fail_on_invalid"):
+        from .validation import is_valid, validate_file
+
+        diags = validate_file(spec_path)
+        if not is_valid(diags):
+            for d in diags:
+                if d.severity == "error":
+                    failures.append(f"spec invalid: {d.code}: {d.message}")
+
+    if not failures:
+        return
+    if tr is not None:
+        tr.write_line("")
+        tr.write_line(f"specdeck: gate failed ({len(failures)}):", red=True)
+        for f in failures:
+            tr.write_line(f"  {f}", red=True)
+    session.exitstatus = 1
+
+
+def _ini_bool(config: pytest.Config, name: str) -> bool:
+    return str(config.getini(name) or "").strip().lower() in ("1", "true", "yes", "on")
