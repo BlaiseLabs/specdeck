@@ -112,3 +112,19 @@ Biases: the "also covers" annotation was designed after seeing Q6/Q7 fail, on th
 questions, so it is fitted to them; a fresh question set would test it honestly. n=3. The
 copy's own specdeck/context.py now contains the fix's code (an agent reading it sees the
 new section described). Ledger: trials_v3.jsonl, 325,972 tokens.
+
+## Replication on proofdeck (2026-10-04)
+
+A fresh subject (proofdeck) with 16 requirements whose whys come from its own rationale,
+56 tests linked by covers=, and 10 new questions; all of them were frozen before any session. 3
+sessions per arm, same limits. specdeck was frozen at e7a06fc.
+
+| Arm | Right, strict | Hand | Tokens per session | Q10 (exclusive tests) |
+|---|---|---|---|---|
+| plain | 22/30 | 22 | ~71k | 0/3 |
+| separate_doc | 27/30 | 27 | ~62k | 0/3 |
+| specdeck_prompt (`--task why`, 4,244 tokens) | 29/30 | 30 | ~5.8k | 3/3 |
+
+Details, sources, hashes, harness changes and biases: `proofdeck/RESULTS.md`.
+The ledger is `proofdeck/trials_proofdeck.jsonl` (479,398 tokens). The on-disk specdeck
+arm was not run because the budget ran out.

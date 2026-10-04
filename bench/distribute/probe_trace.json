@@ -1,0 +1,346 @@
+{
+ "res": {
+  "plain": [
+   {
+    "verdict": "no",
+    "why": "The function appears to properly handle mutant switching logic, and the failure indicates that the mutant behavior might not be set correctly elsewhere."
+   },
+   {
+    "verdict": "bug",
+    "why": "The conditional rewriting logic in the `switch_line` function fails to appropriately handle the switching mechanism for the `bulk_discount` function, leading to incorrect behavior."
+   },
+   {
+    "verdict": "no",
+    "why": "The function appears to handle mutant switching logically, and the failure in tests is likely due to a different issue, such as the mutants not being set correctly or the source code not reflecting the expected modifications."
+   }
+  ],
+  "trace": [
+   {
+    "verdict": "no",
+    "why": "The logic in the `switch_line` function appears to handle mutant line transformations correctly based on the provided context."
+   },
+   {
+    "verdict": "no",
+    "why": "The function correctly handles the transformation of mutants and returns None for cases that cannot be switched, indicating it is functioning as intended."
+   },
+   {
+    "verdict": "no",
+    "why": "The function appears to correctly handle the rewriting of mutants based on the conditions checked in the test."
+   }
+  ],
+  "trace+expect": [
+   {
+    "verdict": "bug",
+    "why": "The function should return a switched line for the mutant that modifies `if qty > 100:` to `if qty >= 100:` but returns None due to the `src.col(mutant.line, stmt.col_offset) != len(indent)` check failing."
+   },
+   {
+    "verdict": "bug",
+    "why": "The function does not handle the case where the mutant's operator is 'if qty >= 100:' correctly, returning None instead of the appropriate switched line."
+   },
+   {
+    "verdict": "bug",
+    "why": "The function fails to return a valid switched line for the mutant 'if qty >= 100:' because it returns None instead, indicating a possible issue with the conditions that determine when to switch lines."
+   }
+  ],
+  "walkthrough": [
+   {
+    "verdict": "no",
+    "why": "The function correctly switches the operator from '>' to '>=' and should return the properly formatted line if the conditions are met."
+   },
+   {
+    "verdict": "bug",
+    "why": "The logic in line 66 does not correctly handle the change from '>' to '>=' in the context of switching, causing the function to return None instead of a valid mutated line."
+   },
+   {
+    "verdict": "bug",
+    "why": "The function does not correctly recognize that 'qty > 100' can be switched to 'qty >= 100' in line 66, returning None instead of a valid switched line."
+   }
+  ],
+  "values:verdict": [
+   {
+    "verdict": "bug",
+    "why": "Line 66 incorrectly compares the constructed line with the mutant, which leads to returning None instead of the appropriate switched line for the mutant condition."
+   },
+   {
+    "verdict": "bug",
+    "why": "The condition in line 66 incorrectly checks if the modified line with the switch applied matches the mutant, causing it to return None instead of the correct modified line."
+   },
+   {
+    "verdict": "bug",
+    "why": "The function fails to find the correct mutated line because it incorrectly validates the expression change, returning None instead of switching to the mutant with 'qty >= 100'."
+   }
+  ],
+  "values:fix": [
+   {
+    "start": 65,
+    "end": 66,
+    "new": "          if orig[:a] + mut_expr + orig[b:] == mut:\n"
+   },
+   {
+    "start": 66,
+    "end": 66,
+    "new": "          if _parses_as_expr(orig_expr) and _parses_as_expr(mut_expr) and orig[:a] + mut_expr + orig[b:] == mut:"
+   },
+   {
+    "start": 54,
+    "end": 70,
+    "new": "    a0, b0 = _region(orig, mut)\n    delta = len(mut) - len(orig)\n    nodes = []\n    for node in src.nodes_on_line(mutant.line):\n        if not isinstance(node, ast.expr):\n            continue\n        a, b = src.col(node.lineno, node.col_offset), src.col(node.lineno, node.end_col_offset)\n        inside = (a <= a0 and b0 <= b) if a0 < b0 else (a < a0 < b)\n        if inside:\n            nodes.append((b - a, a, b))\n    for _, a, b in sorted(nodes):\n        orig_expr, mut_expr = orig[a:b], mut[a:b - delta]\n        if orig[:a] + mut_expr + orig[b:] == mut:\n            if _parses_as_expr(orig_expr) and _parses_as_expr(mut_expr):\n                return f\"{orig[:a]}({mut_expr} if {SWITCH}({key}) else {orig_expr}){orig[b:]}\n    return None"
+   }
+  ]
+ },
+ "tokens": 31863,
+ "ledger": [
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1144,
+   "completion": 37,
+   "total": 1181,
+   "cached": 0,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1144,
+   "completion": 43,
+   "total": 1187,
+   "cached": 1024,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1144,
+   "completion": 52,
+   "total": 1196,
+   "cached": 1024,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1229,
+   "completion": 34,
+   "total": 1263,
+   "cached": 1024,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1229,
+   "completion": 37,
+   "total": 1266,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1229,
+   "completion": 31,
+   "total": 1260,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1283,
+   "completion": 63,
+   "total": 1346,
+   "cached": 1024,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1283,
+   "completion": 43,
+   "total": 1326,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1283,
+   "completion": 51,
+   "total": 1334,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1229,
+   "completion": 37,
+   "total": 1266,
+   "cached": 1024,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1229,
+   "completion": 49,
+   "total": 1278,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1229,
+   "completion": 49,
+   "total": 1278,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1335,
+   "completion": 48,
+   "total": 1383,
+   "cached": 0,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1335,
+   "completion": 48,
+   "total": 1383,
+   "cached": 1280,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1335,
+   "completion": 33,
+   "total": 1368,
+   "cached": 1280,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1267,
+   "completion": 48,
+   "total": 1315,
+   "cached": 1024,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1267,
+   "completion": 47,
+   "total": 1314,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1267,
+   "completion": 75,
+   "total": 1342,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1334,
+   "completion": 40,
+   "total": 1374,
+   "cached": 1024,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1363,
+   "completion": 39,
+   "total": 1402,
+   "cached": 1024,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1334,
+   "completion": 44,
+   "total": 1378,
+   "cached": 1280,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1367,
+   "completion": 55,
+   "total": 1422,
+   "cached": 0,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1334,
+   "completion": 45,
+   "total": 1379,
+   "cached": 1280,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1367,
+   "completion": 255,
+   "total": 1622,
+   "cached": 1024,
+   "reasoning": 0
+  }
+ ],
+ "fix": {
+  "trace+expect": [
+   {
+    "start": 51,
+    "end": 51,
+    "new": "        if src.col(mutant.line, stmt.col_offset) != len(indent) and stmt.lineno == mutant.line and stmt.end_lineno == mutant.line:"
+   },
+   {
+    "start": 51,
+    "end": 51,
+    "new": "            if src.col(mutant.line, stmt.col_offset) != len(indent) and stmt.lineno == mutant.line and stmt.end_lineno == mutant.line:"
+   },
+   {
+    "start": 51,
+    "end": 51,
+    "new": "        if src.col(mutant.line, stmt.col_offset) < len(indent):"
+   }
+  ],
+  "walkthrough": [
+   {
+    "start": 66,
+    "end": 66,
+    "new": "          if orig[:a] + mut_expr + orig[b:] == mut and _parses_as_expr(orig_expr) and _parses_as_expr(mut_expr):"
+   },
+   {
+    "start": 66,
+    "end": 66,
+    "new": "          if _parses_as_expr(orig_expr) and _parses_as_expr(mut_expr) and orig[:a] + mut_expr + orig[b:] == mut:\n"
+   },
+   {
+    "start": 66,
+    "end": 66,
+    "new": "          if _parses_as_expr(orig_expr) and _parses_as_expr(mut_expr) and orig_expr != mut_expr:\n              return f\"{orig[:a]}({mut_expr} if {SWITCH}({key}) else {orig_expr}){orig[b:]}\""
+   }
+  ]
+ }
+}

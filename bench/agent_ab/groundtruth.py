@@ -43,7 +43,7 @@ REPO = Path(SUBJECTS[SUBJECT]["repo"])
 OUT = Path(__file__).parent / "data" / ("" if SUBJECT == "tapedeck" else SUBJECT)
 SOURCES = sorted(p for p in (REPO / SUBJECTS[SUBJECT]["package"]).rglob("*.py") if "__pycache__" not in p.parts)
 
-_FAIL = re.compile(r"^(FAILED|ERROR) (\S+)")
+_FAIL = re.compile(r"^(FAILED|ERROR) (.+?)(?: - .*)?$")   # node ids can contain spaces: test_x[a b]
 
 
 def _base(nodeid: str) -> str:

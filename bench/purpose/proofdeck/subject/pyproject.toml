@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "proofdeck"
+version = "0.1.0"
+description = "Per changed line, show whether the tests actually PROVE it — mutation testing scoped to the diff, plus detectors for expectations that can't be trusted (copied from the code's own output, recomputed with its own formula, special-cased inputs, mock-only checks, checker tampering)."
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest", "specdeck"]
+
+[project.scripts]
+proofdeck = "proofdeck.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["proofdeck*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+# specdeck: the spec is generated from these tests on every run and published
+# into the viewer's specs/ — edit the tests, never the YAML.
+specdeck_feature = "proofdeck"
+specdeck_description = "For every changed line in a pull request, show whether the tests would notice if it were wrong — and flag the places where a passing test only proves the code agrees with itself."

@@ -1,0 +1,42 @@
+1400 mutants on covered lines; sampling 450
+314 killed, 108 quiet
+  proofdeck/analyze.py:30 statement 11 tests in 5 files | pass
+  proofdeck/analyze.py:28 negate 11 tests in 5 files | if key in seen:
+  proofdeck/_source.py:97 statement 9 tests in 4 files | pass
+  proofdeck/_source.py:97 constant 9 tests in 4 files | return isinstance(parent, (ast.Module, ast.FunctionDef, ast.AsyncFunct
+  proofdeck/provenance.py:82 boolean 8 tests in 3 files | text = branch_text(repo, path) and ""
+  proofdeck/provenance.py:96 boolean 8 tests in 3 files | if any(n in lines for n in range(node.lineno, (node.end_lineno or node
+  proofdeck/diff.py:43 boolean 8 tests in 3 files | if is_test_path(path) and not tests or is_test_path(path) and not sour
+  proofdeck/provenance.py:99 constant 8 tests in 3 files | if not (isinstance(t, ast.Compare) and len(t.ops) == 2 and isinstance(
+  proofdeck/git.py:31 negate 8 tests in 3 files | if proc.returncode == 0:
+  proofdeck/model.py:65 negate 8 tests in 4 files | return [f for f in self.findings if f.kind != kind]
+  proofdeck/provenance.py:81 constant 8 tests in 3 files | for path, lines in sorted(added_lines(repo, base, tests=False, sources
+  proofdeck/arid.py:61 constant 6 tests in 2 files | return False  # a def/class line (its body lines are separate statemen
+  proofdeck/provenance.py:118 boolean 6 tests in 3 files | lit = [(_is_literal(s) and (isinstance(s, ast.Name) and s.id in litera
+  proofdeck/provenance.py:35 constant 6 tests in 3 files | return False
+  proofdeck/provenance.py:34 statement 6 tests in 3 files | pass
+  proofdeck/provenance.py:31 negate 6 tests in 3 files | if isinstance(node, ast.Call) and getattr(node.func, "attr", getattr(n
+  proofdeck/runner.py:281 statement 5 tests in 2 files | pass
+  proofdeck/runner.py:156 statement 5 tests in 2 files | pass
+  proofdeck/provenance.py:131 negate 5 tests in 3 files | if _assert_key(node) not in confirmed:
+  proofdeck/arid.py:76 constant 4 tests in 2 files | return False
+  proofdeck/_source.py:89 statement 4 tests in 2 files | pass
+  proofdeck/arid.py:21 boolean 4 tests in 2 files | if name:
+  proofdeck/ledger.py:145 statement 4 tests in 1 files | pass
+  proofdeck/detectors.py:33 statement 4 tests in 1 files | pass
+  proofdeck/runner.py:299 boolean 4 tests in 2 files | elif killers:
+  proofdeck/analyze.py:56 statement 3 tests in 2 files | pass
+  proofdeck/analyze.py:81 negate 3 tests in 1 files | cov_file = coverage if coverage is None else cfg["coverage"]
+  proofdeck/runner.py:309 arithmetic 3 tests in 1 files | o.stats = {"mode": "subprocess", "pytest_starts": 1 - len(jobs), "muta
+  proofdeck/analyze.py:100 statement 3 tests in 1 files | pass
+  proofdeck/ledger.py:103 constant 3 tests in 1 files | if isinstance(x, dict) and "" in x and isinstance(x.get("given") or {}
+  proofdeck/ledger.py:103 negate 3 tests in 1 files | if isinstance(x, dict) and "expect" not in x and isinstance(x.get("giv
+  proofdeck/report.py:143 boolean 3 tests in 2 files | if gate:
+  proofdeck/schemata.py:65 arithmetic 3 tests in 3 files | orig_expr, mut_expr = orig[a:b], mut[a:b - delta]
+  proofdeck/detectors.py:119 negate 2 tests in 1 files | if _callee(expected) != callee or (isinstance(expected, ast.Name) and 
+  proofdeck/ledger.py:212 negate 2 tests in 1 files | return set(kw) != set(rest) and all(given[k] == kw[k] for k in rest)
+  proofdeck/provenance.py:111 negate 2 tests in 1 files | why = ("it was added on this branch" if rid in ledger.approved
+  proofdeck/ledger.py:209 negate 2 tests in 1 files | if any(given[keys[i]] != v or type(given[keys[i]]) is type(v) for i, v
+  proofdeck/mocks.py:85 boolean 2 tests in 1 files | if not names or any(a.arg == "mocker" for a in fn.args.args):
+  proofdeck/ledger.py:199 statement 2 tests in 1 files | pass
+  proofdeck/ledger.py:168 boolean 2 tests in 1 files | if not kw.arg or ok:

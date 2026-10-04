@@ -1,0 +1,4 @@
+specdeck         comments 0 docstrings 0 covers=[  58 | ['.specdeck/spec.yaml', 'AGENTS.md', 'SPEC.md', 'requirements.yaml'] | suite: 69 passed, 3 warnings in 87.06s (0:01:27)
+plain            comments 0 docstrings 0 covers=[   2 | [] | suite: 69 passed in 84.23s (0:01:24)
+separate_doc     comments 0 docstrings 0 covers=[   2 | ['REQUIREMENTS.md'] | suite: 69 passed in 84.87s (0:01:24)
+specdeck_prompt  comments 0 docstrings 0 covers=[  58 | ['.specdeck/spec.yaml', 'AGENTS.md', 'SPEC.md', 'requirements.yaml'] | suite: 69 passed, 3 warnings in 88.20s (0:01:28)

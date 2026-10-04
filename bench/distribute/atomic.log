@@ -1,0 +1,12 @@
+A   seed0 green=False tests_pass={'q0': False, 'q1': False, 'q2': False} restored={'q0': False, 'q1': False, 'q2': False} redaction=True calls=9 instr=24,477 work=47,707 | spent 72,184
+B   seed0 green=False tests_pass={'q0': True, 'q1': True, 'q2': False} restored={'q0': False, 'q1': True, 'q2': False} redaction=False calls=6 instr=21,270 work=42,479 | spent 135,933
+C0  seed0 green=False tests_pass={'q0': False, 'q1': False, 'q2': False} restored={'q0': False, 'q1': False, 'q2': False} redaction=True calls=144 instr=26,873 work=145,051 | spent 307,857
+C1  seed0 green=False tests_pass={'q0': False, 'q1': False, 'q2': True} restored={'q0': False, 'q1': False, 'q2': True} redaction=True calls=128 instr=42,711 work=109,602 | spent 460,170
+C1  seed1 green=True tests_pass={'q0': True, 'q1': True, 'q2': True} restored={'q0': False, 'q1': True, 'q2': True} redaction=False calls=14 instr=33,890 work=11,779 | spent 505,839
+C0  seed1 green=False tests_pass={'q0': False, 'q1': True, 'q2': False} restored={'q0': False, 'q1': True, 'q2': False} redaction=True calls=98 instr=22,764 work=101,567 | spent 630,170
+C0  seed2 green=False tests_pass={'q0': False, 'q1': False, 'q2': False} restored={'q0': False, 'q1': False, 'q2': False} redaction=True calls=86 instr=22,281 work=91,594 | spent 744,045
+C1  seed2 green=False tests_pass={'q0': True, 'q1': True, 'q2': True} restored={'q0': False, 'q1': False, 'q2': False} redaction=False calls=11 instr=27,925 work=8,953 | spent 780,923
+C0  seed3 green=False tests_pass={'q0': True, 'q1': True, 'q2': False} restored={'q0': False, 'q1': True, 'q2': False} redaction=False calls=96 instr=19,786 work=78,830 | spent 879,539
+C1  seed3 green=True tests_pass={'q0': True, 'q1': True, 'q2': True} restored={'q0': False, 'q1': True, 'q2': True} redaction=False calls=11 instr=15,359 work=9,152 | spent 904,050
+C1  seed4 green=True tests_pass={'q0': True, 'q1': True, 'q2': True} restored={'q0': False, 'q1': True, 'q2': True} redaction=False calls=11 instr=15,340 work=9,109 | spent 928,499
+C0  seed4 green=False tests_pass={'q0': True, 'q1': False, 'q2': False} restored={'q0': False, 'q1': False, 'q2': False} redaction=False calls=111 instr=22,560 work=123,646 | spent 1,074,705

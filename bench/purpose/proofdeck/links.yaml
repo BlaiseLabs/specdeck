@@ -1,0 +1,70 @@
+# Which requirements each proofdeck test checks, added as covers= to its existing
+# @scenario(...) decorator in the specdeck copy only. A test is linked to every requirement
+# its steps genuinely check; tests checking something no requirement states (diff scoping,
+# hanging mutants) stay unlinked.
+test_arid.py:
+  test_noise_lines_are_arid: [mutants.arid-skipped]
+  test_logic_lines_are_not_arid: [mutants.arid-skipped]
+  test_default_argument_values_are_arid: [mutants.arid-skipped]
+test_mutants.py:
+  test_comparison_boundary_is_tried_first: [mutants.most-useful-first]
+  test_arithmetic_boolean_and_constants_are_mutated: [mutants.most-useful-first]
+  test_arid_lines_produce_no_mutants: [mutants.arid-skipped]
+  test_selection_takes_one_per_line_and_caps_each_file: [mutants.most-useful-first]
+test_line_status.py:
+  test_line_is_checked_when_its_mutant_is_killed: [status.unproven-lines-fail]
+  test_line_is_ran_only_when_its_mutant_survives: [status.unproven-lines-fail]
+  test_line_is_never_ran_when_no_test_executes_it: [status.unproven-lines-fail]
+  test_line_is_mock_only_when_checked_only_through_mocks: [status.mock-only]
+  test_docstrings_on_changed_lines_get_no_status: [mutants.arid-skipped]
+  test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode: [status.import-time, report.json-evidence]
+  test_redirecting_stdin_or_argv_does_not_make_a_test_mock_only: [status.mock-only]
+test_report.py:
+  test_markdown_lists_each_finding_at_its_line_with_the_mutant: [report.no-score]
+  test_no_percentage_or_score_is_ever_reported: [report.no-score]
+  test_guidance_never_tells_the_author_to_assert_current_output: [report.guidance-from-requirement]
+  test_gate_fails_when_a_mutant_survives: [status.unproven-lines-fail]
+  test_unconfirmed_expectations_do_not_fail_the_gate: [gate.unconfirmed-advisory]
+  test_json_says_which_tests_ran_and_noticed_each_line_and_what_they_fake: [report.json-evidence]
+test_tampering.py:
+  test_added_skip_marker_is_a_weakened_test: [tamper.reported]
+  test_removed_assertion_on_main_is_a_weakened_test: [tamper.reported]
+  test_new_pragma_no_mutate_is_checker_tampering: [tamper.reported]
+  test_editing_proofdeck_config_is_checker_tampering: [tamper.reported]
+  test_branch_config_cannot_exclude_its_own_code: [config.from-base, tamper.reported]
+  test_ordinary_branch_has_no_tampering_findings: [tamper.reported]
+test_provenance.py:
+  test_expectation_born_with_the_code_is_unconfirmed: [provenance.independent-source, report.guidance-from-requirement]
+  test_correct_new_expectations_are_also_unconfirmed: [provenance.independent-source]
+  test_expectation_that_existed_on_main_is_confirmed: [provenance.independent-source]
+  test_expectation_loaded_from_a_preexisting_data_file_is_confirmed: [provenance.independent-source]
+  test_a_confirmation_comment_written_on_the_branch_does_not_count: [provenance.independent-source]
+test_detectors.py:
+  test_expected_value_recomputed_with_the_codes_formula: [detect.untrustworthy-oracles]
+  test_expected_value_from_calling_the_code_itself: [detect.untrustworthy-oracles]
+  test_independent_literal_is_not_flagged_as_recomputed: [detect.untrustworthy-oracles]
+  test_code_branching_on_the_exact_test_input: [detect.untrustworthy-oracles]
+  test_genuine_threshold_is_not_special_casing: [detect.untrustworthy-oracles]
+  test_assertions_that_cannot_fail_for_a_wrong_result: [detect.untrustworthy-oracles]
+  test_value_assertion_is_not_vacuous: [detect.untrustworthy-oracles]
+test_requirements.py:
+  test_a_linked_test_that_disagrees_with_an_approved_example_fails: [requirements.contradiction-gates]
+  test_an_expected_value_that_agrees_with_an_approved_example_is_confirmed: [requirements.contradiction-gates, provenance.independent-source]
+  test_a_test_that_doesnt_claim_the_requirement_is_not_judged_by_it: [requirements.contradiction-gates]
+  test_a_requirement_added_on_the_branch_is_a_draft: [requirements.approved-on-base]
+  test_changing_an_approved_requirement_on_the_branch_fails: [requirements.approved-on-base]
+  test_deleting_an_approved_requirement_is_reported: [requirements.approved-on-base]
+  test_the_requirements_file_location_comes_from_the_base_branch: [config.from-base, requirements.approved-on-base]
+test_fork_mode.py:
+  test_fork_mode_gives_the_same_answers_as_one_process_per_mutant: [speed.fork-mode]
+  test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers: [speed.fork-mode]
+  test_per_test_coverage_from_ci_replaces_the_traced_run: [speed.fork-mode]
+  test_a_coverage_file_without_per_test_contexts_falls_back_to_tracing: [speed.fork-mode]
+  test_tests_that_fake_nothing_run_first_fastest_first: [speed.fork-mode]
+  test_without_fork_it_runs_one_process_per_mutant: [speed.fork-mode]
+test_acceptance.py:
+  test_correct_branch_passes_with_its_new_expectations_marked_unconfirmed: [provenance.independent-source, gate.unconfirmed-advisory]
+  test_vacuous_tests_fail_the_gate_at_the_buggy_line: [status.unproven-lines-fail, detect.untrustworthy-oracles]
+  test_pasted_expectations_are_surfaced_even_though_every_mutant_dies: [provenance.independent-source]
+  test_mocked_away_code_is_not_reported_as_tested: [status.unproven-lines-fail, status.mock-only]
+  test_code_checked_against_itself_fails_the_gate: [status.unproven-lines-fail, detect.untrustworthy-oracles]

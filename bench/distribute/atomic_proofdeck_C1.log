@@ -1,0 +1,3 @@
+C1  seed1 green=False tests_pass={'p0': True, 'p1': True, 'p2': False} restored={'p0': False, 'p1': False, 'p2': False} redaction=None calls=92 instr=40,745 work=107,241 | spent 284,200
+C1  seed2 green=False tests_pass={'p0': False, 'p1': True, 'p2': False} restored={'p0': False, 'p1': False, 'p2': False} redaction=None calls=60 instr=45,599 work=57,142 | spent 531,323
+stop: 531,323 of 520,000 spent

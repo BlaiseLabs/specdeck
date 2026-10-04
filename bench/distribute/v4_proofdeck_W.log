@@ -1,0 +1,2 @@
+W   seed1 green=False tests_pass={'p0': True, 'p1': True, 'p2': False} restored={'p0': False, 'p1': False, 'p2': False} redaction=None calls=155 instr=82,741 work=240,018 | spent 322,759
+stop: 322,759 of 230,000 spent

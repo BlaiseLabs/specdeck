@@ -1,0 +1,12 @@
+{
+ "q0": [
+  "tests/test_units_narrow.py::test_snapshot_redacts_a_secret_inside_a_plain_string",
+  "tests/test_units_narrow.py::test_snapshot_keeps_a_plain_string_unquoted"
+ ],
+ "q1": [
+  "tests/test_units_narrow.py::test_is_stream_is_false_for_an_indexable_iterable"
+ ],
+ "q2": [
+  "tests/test_units_narrow.py::test_diff_tapes_finds_no_drift_between_identical_tapes"
+ ]
+}

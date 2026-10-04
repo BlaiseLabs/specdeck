@@ -1,0 +1,2 @@
+W   seed1 green=True tests_pass={'q0': True, 'q1': True, 'q2': True} restored={'q0': False, 'q1': True, 'q2': True} redaction=True calls=11 instr=26,641 work=10,049 | spent 36,690
+W   seed2 green=True tests_pass={'q0': True, 'q1': True, 'q2': True} restored={'q0': True, 'q1': True, 'q2': True} redaction=True calls=17 instr=56,569 work=14,898 | spent 108,157

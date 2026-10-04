@@ -1,0 +1,75 @@
+[
+ {
+  "id": "p0",
+  "path": "proofdeck/_source.py",
+  "line": 97,
+  "operator": "statement",
+  "original": "    return isinstance(parent, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and parent.body[0] is node",
+  "mutated": "    pass",
+  "failing": [
+   "tests/test_arid.py::test_noise_lines_are_arid[\"\"\"Sum item]",
+   "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[mockonly]",
+   "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[tautological]",
+   "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[vacuous]",
+   "tests/test_fork_mode.py::test_per_test_coverage_from_ci_replaces_the_traced_run[pytest-cov]",
+   "tests/test_fork_mode.py::test_per_test_coverage_from_ci_replaces_the_traced_run[test_function]",
+   "tests/test_line_status.py::test_docstrings_on_changed_lines_get_no_status",
+   "tests/test_line_status.py::test_line_is_checked_when_its_mutant_is_killed",
+   "tests/test_report.py::test_unconfirmed_expectations_do_not_fail_the_gate",
+   "tests/test_acceptance.py::test_correct_branch_passes_with_its_new_expectations_marked_unconfirmed"
+  ],
+  "direct": [
+   "tests/test_arid.py::test_noise_lines_are_arid[\"\"\"Sum item]",
+   "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[mockonly]",
+   "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[tautological]",
+   "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[vacuous]",
+   "tests/test_fork_mode.py::test_per_test_coverage_from_ci_replaces_the_traced_run[pytest-cov]",
+   "tests/test_fork_mode.py::test_per_test_coverage_from_ci_replaces_the_traced_run[test_function]",
+   "tests/test_line_status.py::test_docstrings_on_changed_lines_get_no_status",
+   "tests/test_line_status.py::test_line_is_checked_when_its_mutant_is_killed",
+   "tests/test_report.py::test_unconfirmed_expectations_do_not_fail_the_gate",
+   "tests/test_acceptance.py::test_correct_branch_passes_with_its_new_expectations_marked_unconfirmed"
+  ],
+  "blocked": []
+ },
+ {
+  "id": "p1",
+  "path": "proofdeck/arid.py",
+  "line": 76,
+  "operator": "constant",
+  "original": "        return True",
+  "mutated": "        return False",
+  "failing": [
+   "tests/test_arid.py::test_noise_lines_are_arid[log.info]",
+   "tests/test_arid.py::test_noise_lines_are_arid[print(]",
+   "tests/test_arid.py::test_noise_lines_are_arid[time.sleep]",
+   "tests/test_mutants.py::test_arid_lines_produce_no_mutants"
+  ],
+  "direct": [
+   "tests/test_arid.py::test_noise_lines_are_arid[log.info]",
+   "tests/test_arid.py::test_noise_lines_are_arid[print(]",
+   "tests/test_arid.py::test_noise_lines_are_arid[time.sleep]",
+   "tests/test_mutants.py::test_arid_lines_produce_no_mutants"
+  ],
+  "blocked": []
+ },
+ {
+  "id": "p2",
+  "path": "proofdeck/schemata.py",
+  "line": 65,
+  "operator": "arithmetic",
+  "original": "        orig_expr, mut_expr = orig[a:b], mut[a:b + delta]",
+  "mutated": "        orig_expr, mut_expr = orig[a:b], mut[a:b - delta]",
+  "failing": [
+   "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+   "tests/test_line_status.py::test_line_is_ran_only_when_its_mutant_survives",
+   "tests/test_report.py::test_markdown_lists_each_finding_at_its_line_with_the_mutant"
+  ],
+  "direct": [
+   "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+   "tests/test_line_status.py::test_line_is_ran_only_when_its_mutant_survives",
+   "tests/test_report.py::test_markdown_lists_each_finding_at_its_line_with_the_mutant"
+  ],
+  "blocked": []
+ }
+]

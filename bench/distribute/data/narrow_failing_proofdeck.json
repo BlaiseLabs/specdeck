@@ -1,0 +1,13 @@
+{
+ "p0": [
+  "tests/test_units_narrow.py::test_is_docstring_is_true_for_the_first_string_of_a_function",
+  "tests/test_units_narrow.py::test_is_docstring_is_false_for_a_later_bare_string"
+ ],
+ "p1": [
+  "tests/test_units_narrow.py::test_is_arid_for_a_logging_call"
+ ],
+ "p2": [
+  "tests/test_units_narrow.py::test_switch_line_compiles_a_longer_operator_mutant_behind_its_switch",
+  "tests/test_units_narrow.py::test_switch_line_compiles_a_shorter_operator_mutant_behind_its_switch"
+ ]
+}

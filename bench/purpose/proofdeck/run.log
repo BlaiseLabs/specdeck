@@ -1,0 +1,14 @@
+spent 0 of 520,000
+  plain            seed0   7/10  24 cmds  10 turns   70,211 tok  forced=True  read: -  | spent 70,211
+  separate_doc     seed0   0/10  19 cmds   7 turns   62,415 tok  forced=True  read: REQUIREMENTS.md  | spent 132,626
+  specdeck_prompt  seed0  10/10   0 cmds   1 turns    5,821 tok  forced=False  read: -  | spent 138,447
+spent 138,447 of 520,000
+  separate_doc     seed0   9/10  13 cmds  14 turns   60,446 tok  forced=True  read: REQUIREMENTS.md  | spent 198,893
+spent 198,893 of 520,000
+  separate_doc     seed1   9/10  16 cmds   9 turns   55,744 tok  forced=True  read: REQUIREMENTS.md  | spent 254,637
+  specdeck_prompt  seed1   9/10   0 cmds   1 turns    5,784 tok  forced=False  read: -  | spent 260,421
+  plain            seed1   8/10  16 cmds   8 turns   68,984 tok  forced=True  read: -  | spent 329,405
+spent 329,405 of 520,000
+  specdeck_prompt  seed2  10/10   0 cmds   1 turns    5,708 tok  forced=False  read: -  | spent 335,113
+  plain            seed2   7/10  19 cmds   8 turns   74,772 tok  forced=True  read: -  | spent 409,885
+  separate_doc     seed2   9/10  19 cmds  11 turns   69,513 tok  forced=True  read: REQUIREMENTS.md  | spent 479,398

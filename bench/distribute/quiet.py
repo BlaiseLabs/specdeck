@@ -24,7 +24,7 @@ from bugs import REPO, fresh_copy  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 _TB = re.compile(r"^(/\S+?):(\d+): (.*)$")
-_FAILED = re.compile(r"^(FAILED|ERROR) (\S+)")
+_FAILED = re.compile(r"^(FAILED|ERROR) (.+?)(?: - .*)?$")   # node ids can contain spaces
 
 
 def run(tree: Path) -> dict:

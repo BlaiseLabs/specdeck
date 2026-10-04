@@ -1,0 +1,116 @@
+{
+ "plan": {
+  "investigations": [
+   {
+    "id": "i1",
+    "tests": [
+     "tests/test_arid.py::test_noise_lines_are_arid[log.info]",
+     "tests/test_mutants.py::test_arid_lines_produce_no_mutants"
+    ],
+    "expectation": "Noise/arid source lines must be classified as arid and therefore yield no mutation candidates. In particular, a logging call such as `logging.info(\"x=%s\", x)` on line 3 must make `is_arid(...) is True` and `mutants_for_line(...) == []`; instead it is currently non-arid and produces a statement-to-`pass` mutant."
+   },
+   {
+    "id": "i2",
+    "tests": [
+     "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers"
+    ],
+    "expectation": "Schemata compilation must preserve the exact number of source lines and leave every unchosen line textually unchanged. With no switch active, `bulk_discount(100)` must return 5; activating the chosen mutant for `if qty > 100` must execute the equivalent boundary mutant and return 15; activating the statement mutant for `pct = bulk_discount(qty)` must remove that assignment and make `order_total(10, 1)` raise `NameError`. Instead the boundary switch remains behaviorally original and returns 5."
+   }
+  ]
+ },
+ "res": [
+  {
+   "file": "proofdeck/schemata.py",
+   "function": "switch_line",
+   "span": [
+    43,
+    70
+   ],
+   "verdict": "no",
+   "why": "The function correctly reconstructs mutants by adding switch conditions, so it should preserve behavior, and the logic does not indicate any apparent issues that would lead to the failing test."
+  },
+  {
+   "file": "proofdeck/schemata.py",
+   "function": "switch_line",
+   "span": [
+    43,
+    70
+   ],
+   "verdict": "bug",
+   "why": "The function does not correctly handle the switching logic for the boundary mutant, resulting in the original behavior being preserved when it should have activated the mutated line.",
+   "start": 53,
+   "end": 54,
+   "new": "            return f'{indent}else: {mut.lstrip()}'"
+  },
+  {
+   "file": "proofdeck/schemata.py",
+   "function": "switch_line",
+   "span": [
+    43,
+    70
+   ],
+   "verdict": "bug",
+   "why": "The function does not seem to handle the condition for the boundary switch properly, as it returns the original logic instead of the mutant when expected.",
+   "start": 53,
+   "end": 53,
+   "new": "            return f\"{indent}if {SWITCH}({key}): {mut.lstrip()} else: {orig.lstrip()}\""
+  }
+ ],
+ "tokens": 17195,
+ "ledger": [
+  {
+   "role": "instructor",
+   "model": "gpt-5.6-terra",
+   "prompt": 9906,
+   "completion": 730,
+   "total": 10636,
+   "cached": 0,
+   "reasoning": 446
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1258,
+   "completion": 46,
+   "total": 1304,
+   "cached": 0,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1258,
+   "completion": 42,
+   "total": 1300,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1289,
+   "completion": 30,
+   "total": 1319,
+   "cached": 0,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1258,
+   "completion": 40,
+   "total": 1298,
+   "cached": 1152,
+   "reasoning": 0
+  },
+  {
+   "role": "worker",
+   "model": "gpt-4o-mini",
+   "prompt": 1287,
+   "completion": 51,
+   "total": 1338,
+   "cached": 1024,
+   "reasoning": 0
+  }
+ ]
+}

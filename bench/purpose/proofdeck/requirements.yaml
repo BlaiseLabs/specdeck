@@ -1,0 +1,111 @@
+# What proofdeck must do, and why. Written for the business-purpose replication from
+# proofdeck's own rationale (README, module docstrings, test docstrings, commit messages);
+# the source of every `why` is in SOURCES.md. Tests link to these with covers=.
+requirements:
+- id: mutants.arid-skipped
+  says: Arid lines (logging, print, sleeps, imports, docstrings, signatures and their default values, bare annotations, __main__ blocks) are never mutated; lines that compute results always are.
+  why: >-
+    A mutant on an arid line only produces noise. Reviewers ignore findings there, and a
+    default argument value is the most-rejected Python mutant at Google.
+
+- id: mutants.most-useful-first
+  says: Each changed line gets one mutant, the most useful first (a comparison boundary, then a negated condition, arithmetic, boolean, constant, deleting the statement), with a cap per file.
+  why: >-
+    The order follows what reviewers found actionable, and comparison boundaries are where
+    off-by-one bugs live. One mutant per line with a per-file cap is how Google cut 820
+    mutants per change to 7.
+
+- id: status.unproven-lines-fail
+  says: A changed line counts as checked only when breaking it makes a test fail; a line the tests run without noticing a change (ran-only) or that no test runs (never-ran) fails the gate.
+  why: >-
+    The question proofdeck answers is whether the tests would notice if a line were wrong.
+    Tests can execute a line while asserting nothing that depends on it, or mock it away
+    entirely, and still pass; such code must not be reported as tested.
+
+- id: status.mock-only
+  says: A line whose change is noticed only by tests that replace its collaborators with fakes is reported mock-only, not checked; feeding input through sys.stdin or sys.argv does not count as faking.
+  why: >-
+    A line only noticed through fakes has never been checked against the real
+    collaborators. Swapping stdin or argv only feeds the code its input and fakes no
+    collaborator, so such a test is trusted like any other.
+
+- id: status.import-time
+  says: In fork mode a changed line that runs when its module is imported is reported import-time (not checked and not survived); subprocess mode checks it for real.
+  why: >-
+    A module-level line has already run when the child process forks, so its mutant's switch
+    is never reached. Reporting it as survived would be false; fork mode must say "not
+    checked".
+
+- id: report.no-score
+  says: The report never gives a mutation score or percentage; every finding is anchored to a path and line, with the change nobody noticed.
+  why: >-
+    Google found mutation scores "neither concrete nor actionable"; a finding on a line with
+    the exact change nobody noticed is both.
+
+- id: report.guidance-from-requirement
+  says: Guidance for a surviving mutant or an unconfirmed expectation asks for the value the requirement gives, never the code's current output.
+  why: >-
+    A gate that says "add an assertion that kills this mutant" teaches an agent to paste the
+    current behaviour, which locks the bug in. Asking for the requirement's value means an
+    agent following the guidance cannot.
+
+- id: report.json-evidence
+  says: The JSON report names, for each changed line, the tests that ran it and the tests that noticed its mutant, what each of those tests fakes, and whether the line ran only at import.
+  why: >-
+    A tool that knows what a test is for (specdeck's requirements) can then tell a
+    requirement met by a real check from one met only through fakes, or met but unproven.
+
+- id: config.from-base
+  says: proofdeck's configuration, including where the requirements file is, is read from the base branch, never from the branch being checked.
+  why: >-
+    So a pull request can't loosen its own checks: a branch cannot exempt its own code or
+    move the file it is judged against.
+
+- id: tamper.reported
+  says: Weakening the tests (a new skip or xfail, an assertion from the base branch removed, a test deleted) or the checker (a pragma no mutate, an edit to proofdeck, coverage or pytest configuration) is reported and fails the gate.
+  why: >-
+    These changes hide code or tests from the checker. A pragma can only appear on a changed
+    line and every changed line is analysed, so pragmas never exempt anything; adding one is
+    still reported, as is a configuration change that cannot take effect in the same pull
+    request.
+
+- id: provenance.independent-source
+  says: An expected value counts as confirmed only when it comes from a source independent of the branch (an assertion or data file that existed on the base branch, or an approved requirement); anything written on the branch, correct new tests and confirmation comments included, is listed as unconfirmed.
+  why: >-
+    Mutation testing can't tell a correct test from one whose expected values were pasted
+    from buggy output; both kill the same mutants. Nothing written on the branch can confirm
+    a value, not even a comment saying so, because the agent that wrote the code could write
+    that too. The honest cost is that correct new tests are flagged exactly like copied ones.
+
+- id: gate.unconfirmed-advisory
+  says: Unconfirmed expectations are listed for the reviewer but never fail the gate on their own.
+  why: >-
+    Unconfirmed expectations can't be told apart from correct new ones, so the tool lists
+    them for a person to check against the requirement instead of blocking the change.
+
+- id: detect.untrustworthy-oracles
+  says: Tests whose expected value is the code's own formula or another call to the same function, code that branches on exactly a test's inputs, and assertions that cannot fail are flagged; hand-written literals, genuine thresholds and real value assertions are not.
+  why: >-
+    These are places where a passing test only proves that the code agrees with itself:
+    the expected value can't disagree with the code, or the assertion can't fail at all.
+
+- id: requirements.contradiction-gates
+  says: A test that claims a requirement (covers= or example()/examples()) and asserts a literal that disagrees with an approved example fails the gate; tests that don't claim the requirement are never compared with it.
+  why: >-
+    It catches the test pasted from buggy output that every mutant misses. Only tests that
+    claim a requirement are compared with it, so the same argument values in an unrelated
+    test never count.
+
+- id: requirements.approved-on-base
+  says: A requirement is approved only if it exists on the base branch; editing or deleting an approved entry on the branch fails the gate, and entries added on the branch are drafts listed for review whose values stay unconfirmed until merged.
+  why: >-
+    An entry on the base branch was reviewed by a person when it was merged. The code and the
+    requirement it is checked against can't both come from the branch: requirements change
+    in their own reviewed change, not alongside the code.
+
+- id: speed.fork-mode
+  says: A check starts pytest once, compiles every mutant in behind a switch and runs each in a forked child with exactly the answers of one process per mutant; without fork it runs one process per mutant, and per-test coverage from CI can replace the traced run.
+  why: >-
+    Pytest start-up and collection was about 95% of each mutant's cost. Forking shares
+    everything already imported, so a mutant costs its tests' run time, not a pytest start
+    (a real commit went from 9.4 s to 3.3 s, and 2.6 s with CI's coverage file).
