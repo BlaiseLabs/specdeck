@@ -304,7 +304,9 @@ def validate_requirements_file(path) -> list:
     if not p.exists():
         return [Diagnostic("error", "NO_FILE", f"No requirements file at {p}.")]
     reqs = load(p)
-    diags = [Diagnostic("warning", "REQUIREMENT", prob) for prob in reqs.problems]
+    diags = [Diagnostic("error" if "is not valid YAML" in prob or "expected a list" in prob else "warning",
+                        "REQUIREMENTS_UNREADABLE" if "is not valid YAML" in prob else "REQUIREMENT", prob)
+             for prob in reqs.problems]
     if not reqs.items:
         diags.append(Diagnostic("warning", "NO_REQUIREMENTS", f"{p} declares no requirements."))
     return diags

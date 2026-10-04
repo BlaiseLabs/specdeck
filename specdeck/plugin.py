@@ -92,6 +92,7 @@ class _Store:
         self.fn_index: dict[tuple[str, str], list[str]] = {}  # (group, fn) -> ids
         self.fn_global: dict[str, list[str]] = {}  # fn -> ids across groups
         self.aliases: dict[str, list[str]] = {}  # explicit id of a parametrized test -> its cases' ids
+        self.tracer = None  # tracing.Recorder, when --specdeck-coverage is on
 
     def by_id(self) -> dict[str, ScenarioRecord]:
         return {r.id: r for r in self.records.values()}
@@ -342,6 +343,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini("specdeck_fail_on_unmet", "fail the run if a requirement is not met", default="false")
     parser.addini("specdeck_fail_on_unknown_covers", "fail the run on an unknown covers= id", default="false")
     parser.addini("specdeck_fail_on_invalid", "fail the run if the generated spec is invalid", default="false")
+    g.addoption("--specdeck-coverage", action="store_true", default=False,
+                help="record which source functions each scenario executes (needs coverage.py), for "
+                     "`specdeck context`")
+    parser.addini("specdeck_coverage", "record per-scenario source coverage: true or false", default="false")
+    parser.addini("specdeck_coverage_out", "coverage map output path (relative to rootdir)",
+                  default=".specdeck/coverage.json")
     g.addoption("--specdeck-merge", action="store_true", default=False,
                 help="on a partial run, merge the scenarios that ran into the existing spec instead of skipping the write")
 
@@ -354,6 +361,16 @@ def pytest_configure(config: pytest.Config) -> None:
     )
     config.addinivalue_line("markers", "specdeck_example(requirement, given): a case built by specdeck.examples()")
     config._specdeck = _Store()  # type: ignore[attr-defined]
+    if (config.getoption("--specdeck-coverage") or _ini_bool(config, "specdeck_coverage")) \
+            and not hasattr(config, "workerinput"):
+        from . import tracing
+
+        recorder = tracing.Recorder([str(config.rootpath)])
+        try:
+            recorder.start()  # before collection, so module-level lines land in the import context
+            config._specdeck.tracer = recorder
+        except tracing.Unavailable as exc:
+            config._specdeck.warnings.append(f"coverage not recorded: {exc}")
     from . import requirements as _reqs
 
     req_path = Path(config.getini("specdeck_requirements") or _reqs.DEFAULT_FILE)
@@ -366,6 +383,21 @@ def pytest_configure(config: pytest.Config) -> None:
         mode = live_mode(config)
         if mode:
             config.pluginmanager.register(LiveRecorder(config, mode), "specdeck-live")
+
+
+def _finish_coverage(config: pytest.Config, store: "_Store") -> Optional[dict]:
+    """Stop the tracer and map the lines each test ran to the functions that own them."""
+    if store.tracer is None:
+        return None
+    from . import tracing
+
+    per_test = store.tracer.stop()
+    store.tracer = None
+    if not per_test:
+        return None
+    # A suite's own test files are not what a reviewer holds a diff of; leave them out.
+    test_dirs = tuple({str(Path(n.split("::")[0]).parent) + "/" for n in per_test} | {"/test_", "conftest.py"})
+    return tracing.to_functions(per_test, config.rootpath, skip=test_dirs)
 
 
 def _store(config: pytest.Config) -> Optional[_Store]:
@@ -510,7 +542,11 @@ def _warn_cycles(store: _Store) -> None:
 
 def pytest_runtest_setup(item: pytest.Item) -> None:
     store = _store(item.config)
-    if store is None or item.nodeid not in store.records:
+    if store is None:
+        return
+    if store.tracer is not None:
+        store.tracer.switch(item.nodeid)
+    if item.nodeid not in store.records:
         return
     rec = store.records[item.nodeid]
     by_id = store.by_id()
@@ -600,8 +636,9 @@ def requirements_report(config: pytest.Config, store: "_Store") -> Optional[dict
     ordered = [store.records[n] for n in store.order if n in store.records]
     if not reqs.items and not reqs.problems and not any(covered_requirements(r) for r in ordered):
         return None
-    scenarios = [{"id": r.id, "name": r.name, "status": _outcome(r), "covers": covered_requirements(r),
-                  "examples_used": [[rid, g] for rid, g in r.examples_used]} for r in ordered]
+    scenarios = [{"id": r.id, "name": r.name, "status": _outcome(r), "nodeid": r.nodeid,
+                  "covers": covered_requirements(r), "examples_used": [[rid, g] for rid, g in r.examples_used]}
+                 for r in ordered]
     return _reqs.report(reqs, scenarios)
 
 
@@ -711,7 +748,10 @@ def build_spec(config: pytest.Config, store: _Store) -> dict:
 def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     config = session.config
     store = _store(config)
-    if store is None or not store.records or config.getoption("--no-specdeck"):
+    if store is None:
+        return
+    coverage_map = _finish_coverage(config, store)   # always stop the tracer, whatever else happens
+    if not store.records or config.getoption("--no-specdeck"):
         return
     from .recorder import is_full_run
 
@@ -736,8 +776,22 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     header = (
         f"# GENERATED by specdeck {__version__} from pytest — do not edit.\n"
         f"# Re-run pytest to regenerate. Scenarios carry a status:<outcome> tag.\n"
+        f"#\n"
+        f"# depends_on is documentation order, not execution order: specdeck never reorders\n"
+        f"# tests, and scenarios are listed below in the order they run. A scenario is skipped\n"
+        f"# as blocked only when a prerequisite that ran EARLIER did not pass; blocking\n"
+        f"# cascades. A scenario whose only failed prerequisite runs later is not skipped —\n"
+        f"# it runs, and can fail on its own. (Omitting this cost 60 points of accuracy when\n"
+        f"# an agent was asked to sort real failures from blocked ones; see specdeck context.)\n"
     )
     out.write_text(header + yaml.safe_dump(spec, sort_keys=False, allow_unicode=True, width=100), encoding="utf-8")
+
+    if coverage_map is not None:
+        cp = Path(config.getini("specdeck_coverage_out"))
+        cp = cp if cp.is_absolute() else Path(str(config.rootpath)) / cp
+        cp.parent.mkdir(parents=True, exist_ok=True)
+        by_scenario = {store.records[n].id: places for n, places in coverage_map.items() if n in store.records}
+        cp.write_text(json.dumps(by_scenario, indent=1, sort_keys=True), encoding="utf-8")
 
     needs_path = Path(config.getini("specdeck_needs"))
     needs_path = needs_path if needs_path.is_absolute() else Path(str(config.rootpath)) / needs_path

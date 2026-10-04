@@ -56,3 +56,46 @@ requirements:
   why: >-
     `-k` collects a subset; rewriting the spec from it would delete every scenario
     that did not run. The default refuses, and --specdeck-merge updates in place.
+- id: trust.proven-not-passing
+  says: A met requirement whose covering tests ran a changed line without noticing it changed is reported as unproven, not as done.
+  why: Passing is not proving. proofdeck knows what a test noticed; specdeck knows what the test is for; only the join says both.
+- id: report.pr-comment
+  says: One run's result is one Markdown document a pull-request comment can carry, with fix-first, blocked, requirements and proof.
+- id: context.states-the-rule
+  says: The agent document states that a prerequisite only blocks a scenario that runs after it.
+  why: >-
+    Measured: without this sentence every reader, model or human, applies the obvious
+    rule — "anything upstream failed means blocked" — and sorts failures from blocked
+    at 40% exact instead of 100%. It costs about 100 tokens.
+- id: context.names-the-code
+  says: The agent document maps source functions to the scenarios that execute them.
+  why: >-
+    Measured: the spec alone could not say which tests a changed line affects (0.80 F1
+    against 0.93 for the raw test files, 25 real failures missed). With the map that
+    falls to 4 missed, for fewer tokens than the test files cost.
+- id: context.hubs-are-not-evidence
+  says: A function that most of the suite runs is reported as a count, not as a list of scenarios.
+  why: >-
+    Measured: the list for one such function (47 of 88 scenarios) made an agent name 87
+    tests as failing when the answer was none; the same agent without the map named 9. The
+    list is identical for every change in that function, so it is noise shaped like evidence.
+- id: context.scales-to-a-diff
+  says: The agent document can be written for the files a change touches, keeping unrelated scenarios in brief.
+  why: >-
+    On a large suite most scenarios are irrelevant to a given diff. Trimming them to id,
+    name, dependencies and node id cuts the document to roughly a third for a change in a
+    leaf module, while keeping the dependency graph whole.
+- id: context.states-the-why
+  says: The agent document carries each requirement's says and why, with the tests linked to it, and a profile that sends only that.
+  why: >-
+    What a test is for is not in the tests. With comments and docs stripped, an agent given
+    the spec without the requirements scored 6/10 on why tests exist: it saw requirement ids
+    as tags but never what they said or why, and the 23k-token document left no budget to
+    go and find requirements.yaml.
+- id: context.strategies
+  says: The agent context comes in named strategies, each stating what it carries and what that measured.
+  why: >-
+    No arrangement measured is best at both questions: the dependency rule that takes
+    root-cause sorting from 40% to 100% costs 'which tests break' accuracy, in the generated
+    document and in the raw test files alike. Choosing is unavoidable, so the choice is named
+    and its numbers published rather than buried.

@@ -138,3 +138,16 @@ def test_missing_requirements_file_is_an_error(tmp_path):
         diags = validate_requirements_file(tmp_path / "nope.yaml")
     with then("NO_FILE is reported", expected="NO_FILE"):
         assert [d.code for d in diags] == ["NO_FILE"]
+
+
+@scenario("validate-unreadable-requirements", group="validation", tags=["validator"], depends_on=["validate-requirements-file"])
+def test_a_requirements_file_that_does_not_parse_is_an_error(tmp_path):
+    """Bad indentation turned a 9-entry file into 'no requirements'; that must fail validation, not warn."""
+    with given("a requirements file whose second entry is indented differently"):
+        p = tmp_path / "requirements.yaml"
+        p.write_text("requirements:\n- id: one\n  says: A thing.\n  - id: two\n    says: Another.\n")
+    with when("it is validated"):
+        diags = validate_requirements_file(p)
+    with then("an error names the file as unreadable", expected="REQUIREMENTS_UNREADABLE"):
+        assert [d.code for d in diags if d.severity == "error"] == ["REQUIREMENTS_UNREADABLE"]
+        assert not is_valid(diags)

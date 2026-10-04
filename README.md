@@ -213,12 +213,129 @@ Every string goes through `yaml.safe_dump`, so `key: value` text inside a step c
 never produce an unparseable file (the bug that silently broke the hand-written
 specs this replaces).
 
+## For a coding agent
+
+```bash
+pytest --specdeck-coverage          # also records which scenarios run which source functions
+specdeck context --out AGENTS.md    # one document describing the suite
+```
+
+What goes in that document was decided by measurement, not taste. `bench/agent_ab`
+puts the generated spec against the raw test files, same model, same questions,
+ground truth from applying each change and running the suite. Two findings shaped it:
+
+- **It states what `depends_on` means.** Asked to sort real failures from ones merely
+  blocked by a failed prerequisite, every arm scored 40% exact — what the *obvious*
+  rule scores. The obvious rule is wrong: specdeck never reorders tests, so a
+  prerequisite listed later cannot block anything. Saying so, in about 100 tokens,
+  took both the spec and the raw test files to **100%**.
+- **It names the code.** The spec describes behaviour without naming a single
+  function, so an agent holding a diff cannot connect `file.py:31` to any scenario.
+  With a coverage map — which scenarios execute which functions, import-time lines
+  excluded — "which tests does this change break" went from 0.80 to 0.88 F1 and from
+  25 missed failures to 4 (the raw test files: 0.93 and 2), for fewer tokens than
+  those files cost.
+
+What it deliberately does *not* claim is whether a test would **notice** a change;
+running a line is not checking it. That is `proofdeck check`, and it is the one
+question no amount of reading material settles.
+
+Coverage recording is off by default and needs `coverage.py`; it costs about a second
+on a suite of 38 tests. Without it `specdeck context` still writes the rest.
+
+### On a large suite
+
+Two things in the document exist only because a bigger suite (88 tests) was measured
+and a naive version of it made an agent *worse*:
+
+- **A function most of the suite runs is reported as `most (47 of 88)`, not as a list.**
+  Handed that list, the agent answered "which tests does this change break" with 87 test
+  names where the true answer was none; the same agent without the map named 9. The list
+  is identical for every change in that function — noise shaped like evidence. Collapsing
+  it cut the wrong names across the whole benchmark from 97 to 18, matching what the raw
+  test files produce, with no loss of correct answers.
+- **The map is a bound, and the document says so.** The scenarios listed against a
+  function are the only ones that can fail when you change it; a function absent from the
+  map is run by nobody. Stating that cut impossible answers — tests named that do not even
+  execute the changed function — from 43 to 5.
+
+```bash
+specdeck context --for specdeck/ci.py,specdeck/trust.py --out AGENTS.md
+```
+
+`--for` takes the files a change touches. Scenarios that run none of them are kept in
+brief — id, name, dependencies, node id, no steps — because `depends_on` reaches across
+the whole suite and an invisible prerequisite is worse than a terse one. For a change in
+a leaf module that is about a third of the full document; for a change in the module every
+test exercises it is most of it, which is the honest answer.
+
+### What a test is for
+
+```bash
+specdeck context --task why --out WHY.md   # the requirements alone: says, why, and the tests linked to each
+```
+
+The reasons behind a test are not in the test. With comments and docs stripped from
+specdeck's own repo (`bench/purpose`), an agent asked why tests exist scored 10/20 from
+the tests alone and 14/20 with a prose requirements document. With the document's earlier
+version pasted in — requirement ids as tags, but not what they say or why — it scored 6/10.
+So the document now carries a **Requirements** section: each requirement's says, why and
+status, the tests linked to it, and beside each test any other requirement it also covers.
+It is part of the default document; `--task why` sends it alone (about 2k tokens here) and
+scored 29/30 over three sessions, the full document on disk 27/30.
+
+## In the pull request
+
+The viewer is for the desk. For the review, `specdeck report` writes one
+Markdown document from the files a run leaves behind: how many scenarios pass,
+the root causes to fix first, who is blocked by them, and every requirement
+with its status.
+
+```bash
+pytest -q                                   # writes .specdeck/spec.yaml + requirements.json
+proofdeck check --base main --format json --no-gate > proof.json
+specdeck report --proofdeck proof.json --out .specdeck/report.md
+```
+
+With proofdeck's JSON, the report answers the question neither tool can alone:
+is a *met* requirement **proven, or just passing?** specdeck knows what each
+test is for (`covers=`) and that it passes; proofdeck knows which tests
+executed each changed line, whether any of them noticed the line being wrong,
+and what each test replaces with fakes. Joined on the pytest node id, every met
+requirement gets a verdict for this change:
+
+| verdict | meaning |
+|---|---|
+| ✔ checked | every changed line its tests ran was noticed, by a test that fakes nothing |
+| ✖ unproven | a covering test ran a changed line and did **not** notice its mutant |
+| ≈ mock-only | changed lines were only noticed through fakes |
+| · untouched | the change didn't reach anything the covering tests run |
+
+A requirement whose every covering test fakes a collaborator is flagged
+regardless of the change. `specdeck trust proof.json` prints just this join;
+`--fail-on-untrusted` gates on it, and `specdeck report` takes the same flag
+plus `--fail-on-failing` and `--fail-on-unmet`. Nothing fails until asked.
+
+```yaml
+# .github/workflows/specdeck.yml
+- run: pip install -e . specdeck proofdeck
+- run: pytest -q
+- run: proofdeck check --base origin/${{ github.base_ref }} --format json --no-gate > proof.json
+- run: specdeck report --proofdeck proof.json --out report.md --fail-on-untrusted
+- if: always()
+  run: gh pr comment ${{ github.event.pull_request.number }} --body-file report.md
+  env: { GH_TOKEN: "${{ github.token }}" }
+```
+
 ## Commands
 
 ```bash
 specdeck serve                  # the viewer, on 127.0.0.1
 specdeck validate               # lint spec.yaml + requirements.yaml; non-zero on error
 specdeck requirements           # the requirements report, --fail-on-unmet for CI
+specdeck trust proof.json       # met, or just passing? joins requirements with proofdeck's JSON
+specdeck report --proofdeck proof.json --out report.md   # Markdown for a PR comment
+specdeck context --out AGENTS.md   # the suite described for a coding agent
 specdeck watch -- -q            # re-run the suite when a file changes
 specdeck runs                   # recorded runs, newest first
 specdeck diff 7 12              # what moved between two runs
@@ -248,7 +365,8 @@ specdeck stands alone: it generates the spec, validates it, and renders it.
   guess. The first suite specified in specdeck.
 - **proofdeck** asks whether the tests would notice if the code were wrong, and
   flags tests that only prove the code agrees with itself. specdeck says what is
-  covered; proofdeck says whether that coverage means anything.
+  covered; proofdeck says whether that coverage means anything; `specdeck trust`
+  joins the two so a requirement can be *met* without being *proven* — and say so.
 - **test-failure-dx** is where the YAML format came from; specdeck emits it, but
   *pytest is the runner*, so `logic` is the node id to re-run.
 - **dx-spec-viewer** is superseded — `specdeck serve` replaces it.

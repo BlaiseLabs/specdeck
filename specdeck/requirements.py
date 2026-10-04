@@ -264,7 +264,8 @@ def report_dicts(req_dicts: list, scenarios: list, *, file: Optional[str] = None
         d["examples"] = [dict(e, checked=_key(e.get("given")) in used) for e in req.get("examples", [])]
         d.update({
             "status": status_of([s["status"] for s in sc]),
-            "scenarios": [{"id": s["id"], "name": s.get("name"), "status": s["status"]} for s in sc],
+            "scenarios": [{k: v for k, v in (("id", s["id"]), ("name", s.get("name")), ("status", s["status"]),
+                                             ("nodeid", s.get("nodeid"))) if v is not None} for s in sc],
             "examples_checked": sum(1 for e in d["examples"] if e["checked"]),
         })
         out.append(d)

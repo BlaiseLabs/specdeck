@@ -36,3 +36,6 @@ specdeck_description = "The spec generator, specified by its own tests."
 specdeck_fail_on_unmet = "true"
 specdeck_fail_on_unknown_covers = "true"
 specdeck_fail_on_invalid = "true"
+
+[tool.proofdeck]
+exclude = ["bench/*"]   # the agent A/B experiment: scripts, not library code
