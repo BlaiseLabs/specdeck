@@ -232,3 +232,14 @@ matter: tests passed after gpt-4o-mini's fix in only 1/16 direct proofdeck cases
 Built into proofdeck (commit b53fb27): both tracers record the calls from each test to each
 function it enters; `--format json` carries `reach`; `proofdeck check --profile distribute`
 lists changed functions no test calls directly.
+
+## Rigged narrow tests on proofdeck (v4n_proofdeck_W.jsonl, W arm, 1 trial, 105.9k tokens)
+
+With direct unit tests of the three bug functions added, gpt-4o-mini workers (map routing +
+instructor expectations, weak model writes fixes) flagged all three buggy functions in round 1
+(un-rigged: one of three per trial). It also flagged 9 helper functions the tiny coverage sets
+contain (Source.tree, cached, Source.line...). Final: p0 and p2 tests pass, p1 not; nothing
+restored exactly. Round 2 was cut by the per-trial cap (65k). The second trial did not fit.
+
+Together with tapedeck (rigged W 2/2 green, no leak): direct tests make the weak model find the
+bug; fixing stays the weak step on proofdeck, which the strong fixer (arm S) handled.
