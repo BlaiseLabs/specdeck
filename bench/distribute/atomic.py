@@ -61,7 +61,9 @@ C_VERSION = 3
 # differ in one thing: in S the strong model (terra) writes each fix, in W the worker does.
 MAPPED_ARMS = ("C1", "S", "W")
 V4_ARMS = ("S", "W")
-TRIAL_CAP = 200_000        # stop dispatching in a trial that has spent this much
+# Stop spending in a trial past this. Checked before every model call, not only between
+# rounds: one proofdeck round once cost 250k on its own.
+TRIAL_CAP = int(os.environ.get("ATOMIC_TRIAL_CAP", "200000"))
 POOL = 8
 
 # --------------------------------------------------------------------------- prompts
@@ -340,12 +342,14 @@ def fn_job(client, tree, tests, output, key_or_span, ledger, expect: str = "", f
     ttext = [f"--- {t} ---\n{base.test_source(tree, t)}\n\nfailure output:\n{base.failure_of(output, t)}"
              for t in tests]
     prompt = WORKER_FN.format(tests="\n\n".join(ttext), path=rel, func=numbered(text, s))
+    if sum(c["total"] for c in ledger) > TRIAL_CAP:
+        return {"file": rel, "function": name, "span": [s, e], "verdict": "skipped", "why": "trial cap"}
     lead = f"What your lead says these tests need:\n{expect}\n\n" if expect else ""
     prompt = prompt.replace("Is the cause of these failures in this function?",
                             lead + "Is the cause of these failures in this function?")
     rep = base.parse(base.call(client, WORKER_MODEL, [{"role": "user", "content": prompt}], ledger, "worker"))
     rep = {k: rep.get(k) for k in ("verdict", "why")} if isinstance(rep, dict) else {}
-    if rep.get("verdict") == "bug":
+    if rep.get("verdict") == "bug" and sum(c["total"] for c in ledger) <= TRIAL_CAP:
         prompt = WORKER_FIX.format(tests="\n\n".join(ttext), path=rel, func=numbered(text, s), why=rep.get("why"),
                                    first=s, last=e)
         prompt = prompt.replace("Replace the wrong line or lines.", lead + "Replace the wrong line or lines.")

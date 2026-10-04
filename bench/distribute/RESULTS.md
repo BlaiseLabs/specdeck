@@ -209,3 +209,26 @@ with its narrowest failing test; 55k tokens):
 Breadth (functions the test runs: 1-9 -> 10/17 recognised, 50+ -> 9/17) and test length did
 not predict. Call depth did. One repo, n=40: a lead, not a law. Not run (budget): rigged tests
 on proofdeck, and the identifier study on proofdeck.
+
+## Identifier study, replicated on proofdeck (identifiers_proofdeck.jsonl, 40 bugs, 57.5k tokens)
+
+| calls from test to bug function | tapedeck recognised | proofdeck recognised | both |
+|---|---|---|---|
+| 1 (direct) | 11/13 | 12/16 | 23/29 (79%) |
+| 2-3 | 8/16 | 4/21 | 12/37 (32%) |
+| 4+ | 4/9 | 1/3 | 5/12 (42%) |
+
+Depth vs breadth, both repos (78 traced bugs), recognised:
+
+| | test runs <=9 functions | test runs >=10 |
+|---|---|---|
+| test calls the function directly | 16/18 (89%) | 7/11 (64%) |
+| function 2+ calls deep | 7/17 (41%) | 10/32 (31%) |
+
+Depth 1 vs 2+: odds ratio 7.2, Fisher p = 0.00016. Breadth <=9 vs >=10: odds ratio 2.9,
+p = 0.025. Depth is the main signal, breadth secondary, test length none. Fixes are another
+matter: tests passed after gpt-4o-mini's fix in only 1/16 direct proofdeck cases.
+
+Built into proofdeck (commit b53fb27): both tracers record the calls from each test to each
+function it enters; `--format json` carries `reach`; `proofdeck check --profile distribute`
+lists changed functions no test calls directly.
