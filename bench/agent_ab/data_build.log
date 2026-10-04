@@ -1,0 +1,39 @@
+563 mutable lines in 17 files
+baseline green: 38 passed, 3 warnings in 0.42s
+  1: tapedeck/gateway/services.py:67 statement -> 2 fail | killed 1 survived 0 triage 0 | 3s
+  2: tapedeck/gateway/services.py:122 statement -> 1 fail | killed 2 survived 0 triage 0 | 6s
+  3: tapedeck/gateway/app/implementations.py:41 statement -> 10 fail | killed 3 survived 0 triage 1 | 9s
+  4: tapedeck/engine/proxies.py:222 statement -> 17 fail | killed 4 survived 0 triage 2 | 12s
+  5: tapedeck/gateway/services.py:139 statement -> 0 fail | killed 4 survived 1 triage 2 | 13s
+  6: tapedeck/engine/tape_player.py:68 statement -> 1 fail | killed 5 survived 1 triage 2 | 16s
+  7: tapedeck/gateway/services.py:87 statement -> 2 fail | killed 6 survived 1 triage 2 | 19s
+  8: tapedeck/gateway/app/implementations.py:230 constant -> 1 fail | killed 7 survived 1 triage 3 | 22s
+  9: tapedeck/gateway/services.py:149 negate -> 1 fail | killed 8 survived 1 triage 4 | 25s
+  10: tapedeck/engine/proxies.py:220 statement -> 17 fail | killed 9 survived 1 triage 5 | 29s
+  11: tapedeck/engine/proxies.py:256 statement -> 0 fail | killed 9 survived 2 triage 5 | 30s
+  12: tapedeck/engine/proxies.py:133 negate -> 5 fail | killed 10 survived 2 triage 6 | 33s
+  13: tapedeck/gateway/app/implementations.py:80 statement -> 1 fail | killed 11 survived 2 triage 6 | 36s
+  14: tapedeck/gateway/services.py:105 statement -> 6 fail | killed 12 survived 2 triage 7 | 39s
+  15: tapedeck/engine/serialize.py:109 statement -> 9 fail | killed 13 survived 2 triage 8 | 42s
+  16: tapedeck/engine/proxies.py:77 statement -> 0 fail | killed 13 survived 3 triage 8 | 43s
+  17: tapedeck/engine/proxies.py:131 constant -> 5 fail | killed 14 survived 3 triage 9 | 46s
+  18: tapedeck/gateway/app/implementations.py:258 statement -> 2 fail | killed 15 survived 3 triage 9 | 49s
+  19: tapedeck/cli.py:193 statement -> 1 fail | killed 16 survived 3 triage 9 | 52s
+  20: tapedeck/gateway/app/app.py:31 statement -> 21 fail | killed 17 survived 3 triage 10 | 55s
+  21: tapedeck/engine/serialize.py:64 arithmetic -> 0 fail | killed 17 survived 4 triage 10 | 56s
+  22: tapedeck/gateway/services.py:61 statement -> 3 fail | killed 18 survived 4 triage 10 | 58s
+  23: tapedeck/engine/tape_player.py:110 statement -> 9 fail | killed 19 survived 4 triage 10 | 59s
+  24: tapedeck/engine/tape_player.py:109 statement -> 9 fail | killed 20 survived 4 triage 10 | 61s
+  25: tapedeck/gateway/app/implementations.py:240 constant -> 1 fail | killed 21 survived 4 triage 10 | 62s
+  26: tapedeck/gateway/services.py:49 statement -> 0 fail | killed 21 survived 5 triage 10 | 64s
+  27: tapedeck/cli.py:85 statement -> 2 fail | killed 22 survived 5 triage 10 | 65s
+  28: tapedeck/cli.py:165 statement -> 8 fail | killed 23 survived 5 triage 10 | 66s
+  29: tapedeck/engine/serialize.py:85 statement -> 0 fail | killed 23 survived 6 triage 10 | 68s
+  30: tapedeck/engine/serialize.py:66 statement -> 18 fail | killed 24 survived 6 triage 10 | 70s
+  31: tapedeck/gateway/services.py:147 negate -> 1 fail | killed 24 survived 6 triage 10 | 71s
+  32: tapedeck/engine/proxies.py:258 statement -> 0 fail | killed 24 survived 7 triage 10 | 72s
+  33: tapedeck/gateway/app/implementations.py:239 statement -> 2 fail | killed 24 survived 7 triage 10 | 74s
+  34: tapedeck/gateway/services.py:100 arithmetic -> 6 fail | killed 24 survived 7 triage 10 | 75s
+  35: tapedeck/gateway/app/app.py:46 statement -> 17 fail | killed 24 survived 7 triage 10 | 78s
+  36: tapedeck/engine/netguard.py:37 statement -> 0 fail | killed 24 survived 8 triage 10 | 80s
+wrote 32 impact questions (24 killed, 8 survived) and 10 triage questions

@@ -1,0 +1,4 @@
+spent 0 of 90,000
+  raw   seed0  28/28 tests  12/12 rules  11,208 tok  | spent 11,208
+  plan  seed0  28/28 tests  12/12 rules  21,669 tok  | spent 32,877
+  spec  seed0  28/28 tests  12/12 rules  21,259 tok  | spent 54,136

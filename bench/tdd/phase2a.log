@@ -1,0 +1,27 @@
+spent so far 758,875 of 2,000,000
+
+=== speconly run 0
+    1/1 (netguard.py, recorder.py, serialize.py, tape_player.py, proxies.py, tape.py, implementations.py, services.py, cli.py, import_hook.py, app.py): visible 8/31 | held-out 0/7 | regression 2/7
+    final: visible 8/31 | held-out 0/7 | regression 2/7
+  -> visible 8/31, held-out 0/7, 51,472 tokens | running total 810,347
+
+=== speconly run 1
+    1/1 (netguard.py, recorder.py, serialize.py, tape_player.py, proxies.py, tape.py, implementations.py, services.py, cli.py, import_hook.py, app.py): visible 8/31 | held-out 0/7 | regression 2/7
+    final: visible 8/31 | held-out 0/7 | regression 2/7
+  -> visible 8/31, held-out 0/7, 50,952 tokens | running total 861,299
+
+=== speconly run 2
+    1/1 (netguard.py, recorder.py, serialize.py, tape_player.py, proxies.py, tape.py, implementations.py, services.py, cli.py, import_hook.py, app.py): visible 10/31 | held-out 1/7 | regression 2/7
+    final: visible 10/31 | held-out 1/7 | regression 2/7
+  -> visible 10/31, held-out 1/7, 52,482 tokens | running total 913,781
+spent so far 913,781 of 2,000,000
+
+=== mono run 2
+    1/1 (netguard.py, recorder.py, serialize.py, tape_player.py, proxies.py, tape.py, implementations.py, services.py, cli.py, import_hook.py, app.py): visible 27/31 | held-out 3/7 | regression 6/7
+    final: visible 27/31 | held-out 3/7 | regression 6/7
+  -> visible 27/31, held-out 3/7, 48,097 tokens | running total 961,878
+
+=== mono run 3
+    1/1 (netguard.py, recorder.py, serialize.py, tape_player.py, proxies.py, tape.py, implementations.py, services.py, cli.py, import_hook.py, app.py): visible 17/31 | held-out 0/7 | regression 6/7
+    final: visible 17/31 | held-out 0/7 | regression 6/7
+  -> visible 17/31, held-out 0/7, 47,102 tokens | running total 1,008,980

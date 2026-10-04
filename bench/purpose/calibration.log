@@ -1,0 +1,6 @@
+spent 0 of 450,000
+  plain        seed0   8/10  28 commands  103,328 tok  read: covers  | spent 187,530
+  separate_doc seed0   8/10  25 commands   84,202 tok  read: REQUIREMENTS.md,covers  | spent 187,530
+  specdeck     seed0   0/10   0 commands  110,243 tok  read: -  ABORTED  | spent 297,773
+spent 297,773 of 450,000
+  specdeck     seed1   8/10  17 commands  122,931 tok  read: SPEC.md,AGENTS.md,covers  | spent 420,704

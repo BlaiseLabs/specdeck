@@ -1,0 +1,434 @@
+[
+ {
+  "id": "m016",
+  "path": "specdeck/watch.py",
+  "line": 20,
+  "original": "WATCH_SUFFIXES = {\".py\", \".yaml\", \".yml\", \".toml\", \".cfg\", \".ini\"}",
+  "mutated": "pass",
+  "operator": "statement",
+  "snippet": "  14  import sys\n  15  import time\n  16  from pathlib import Path\n  17  \n  18  IGNORE_DIRS = {\".git\", \".specdeck\", \"__pycache__\", \".pytest_cache\", \".venv\", \"venv\",\n  19                 \"node_modules\", \".mypy_cache\", \".ruff_cache\", \"build\", \"dist\", \".tox\"}\n  20  WATCH_SUFFIXES = {\".py\", \".yaml\", \".yml\", \".toml\", \".cfg\", \".ini\"}\n  21  \n  22  \n  23  MAX_HASH_BYTES = 4 * 1024 * 1024\n  24  \n  25  \n  26  def _signature(p: Path) -> tuple:",
+  "failing": [
+   "tests/test_maintenance.py::test_watch_snapshot_notices_edits"
+  ]
+ },
+ {
+  "id": "m015",
+  "path": "specdeck/recorder.py",
+  "line": 217,
+  "original": "        store = self._store()",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 211              self.hist.set_running(self.project[\"id\"], self.run_id, sid)\n 212          except Exception as exc:\n 213              self._fail(exc)\n 214  \n 215      def pytest_runtest_logfinish(self, nodeid: str, location) -> None:\n 216          sid = self.ids.get(nodeid)\n 217          store = self._store()\n 218          if self.run_id is None or sid is None or store is None:\n 219              return\n 220          rec = store.records.get(nodeid)\n 221          if rec is None:\n 222              return\n 223          status = rec.status",
+  "failing": [
+   "tests/test_graph_scale.py::test_a_large_suite_opens_on_a_feature_map_and_narrows_down",
+   "tests/test_history.py::test_a_run_is_recorded_with_status_steps_and_source",
+   "tests/test_history.py::test_each_run_reports_what_started_and_stopped_passing",
+   "tests/test_history.py::test_running_one_test_updates_it_without_forgetting_the_others",
+   "tests/test_requirements.py::test_the_viewer_shows_requirements_as_they_were_in_each_run",
+   "tests/test_requirements_ui.py::test_a_developer_sees_which_requirements_are_met_and_why",
+   "tests/test_server.py::test_a_run_started_from_the_viewer_streams_back_live",
+   "tests/test_server.py::test_every_recorded_project_gets_a_page",
+   "tests/test_ui_journey.py::test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green"
+  ]
+ },
+ {
+  "id": "m017",
+  "path": "specdeck/plugin.py",
+  "line": 688,
+  "original": "    out = Path(config.getini(\"specdeck_out\"))",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 682  \n 683      A partial run (`-k`, a node id, one file) knows nothing about the scenarios\n 684      it did not collect, so rewriting the file would delete them. Merging keeps\n 685      every untouched scenario exactly as it was and replaces the ones that ran,\n 686      in place, so the order of the file is stable.\n 687      \"\"\"\n 688      out = Path(config.getini(\"specdeck_out\"))\n 689      out = out if out.is_absolute() else Path(str(config.rootpath)) / out\n 690      tr = config.pluginmanager.get_plugin(\"terminalreporter\")\n 691      if not out.exists():\n 692          if tr is not None:\n 693              tr.write_line(f\"specdeck: --specdeck-merge needs an existing {out.name}; \"\n 694                            f\"run the whole suite once first\", yellow=True)",
+  "failing": [
+   "tests/test_maintenance.py::test_merge_without_an_existing_spec_explains_itself",
+   "tests/test_maintenance.py::test_partial_run_can_merge_instead_of_skipping"
+  ]
+ },
+ {
+  "id": "m001",
+  "path": "specdeck/cli.py",
+  "line": 199,
+  "original": "    path = Path(args.report)",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 193                  print(d.format())\n 194          print(f\"{'\u2716' if failed else '\u2714'} {errors} errors, {warnings} warnings across {len(results)} file(s)\")\n 195      return 1 if failed else 0\n 196  \n 197  \n 198  def cmd_requirements(args) -> int:\n 199      path = Path(args.report)\n 200      if not path.exists():\n 201          print(f\"specdeck: no report at {path} \u2014 run pytest first\", file=sys.stderr)\n 202          return 2\n 203      rep = json.loads(path.read_text(encoding=\"utf-8\"))\n 204      if args.format == \"json\":\n 205          print(json.dumps(rep, indent=2))",
+  "failing": []
+ },
+ {
+  "id": "m004",
+  "path": "specdeck/ci.py",
+  "line": 36,
+  "original": "    by = {r[\"id\"]: r for r in rows}",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": "  30              if isinstance(t, str) and t.startswith(\"status:\"):\n  31                  status = t[len(\"status:\"):]\n  32          if status == \"pending\":\n  33              status = \"notrun\"\n  34          rows.append({\"id\": sc[\"id\"], \"name\": sc.get(\"name\", sc[\"id\"]), \"group\": sc.get(\"group\", \"\"),\n  35                       \"status\": status, \"depends_on\": list(sc.get(\"depends_on\") or [])})\n  36      by = {r[\"id\"]: r for r in rows}\n  37      changed = True\n  38      while changed:  # a skip under a failing or blocked prerequisite is a block; cascades\n  39          changed = False\n  40          for r in rows:\n  41              if r[\"status\"] == \"skipped\" and any(by[d][\"status\"] in (*BAD, \"blocked\")\n  42                                                  for d in r[\"depends_on\"] if d in by):",
+  "failing": [
+   "tests/test_ci.py::test_statuses_come_from_the_spec_tags_and_blocks_cascade",
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind",
+   "tests/test_ci.py::test_the_report_exits_zero_unless_a_gate_is_asked_for",
+   "tests/test_ci.py::test_the_report_is_one_markdown_document_with_fix_first_and_requirements"
+  ]
+ },
+ {
+  "id": "m013",
+  "path": "specdeck/tracing.py",
+  "line": 56,
+  "original": "            return {}",
+  "mutated": "            pass",
+  "operator": "statement",
+  "snippet": "  50          if self._cov is not None:\n  51              self._cov.switch_context(nodeid)\n  52  \n  53      def stop(self) -> dict:\n  54          \"\"\"``{nodeid: {(abs path, line)}}``, import-time lines removed.\"\"\"\n  55          if self._cov is None:\n  56              return {}\n  57          self._cov.stop()\n  58          data = self._cov.get_data()\n  59          per_test: dict = {}\n  60          at_import: set = set()\n  61          for path in data.measured_files():\n  62              for line, contexts in (data.contexts_by_lineno(path) or {}).items():",
+  "failing": []
+ },
+ {
+  "id": "m029",
+  "path": "specdeck/editing.py",
+  "line": 161,
+  "original": "    return s[:1].upper() + s[1:]",
+  "mutated": "    return s[:1].upper() - s[1:]",
+  "operator": "arithmetic",
+  "snippet": " 155      details = parts[1].strip() if len(parts) > 1 else \"\"\n 156      return title, details\n 157  \n 158  \n 159  def _humanize(name: str) -> str:\n 160      s = re.sub(r\"^test_\", \"\", name).replace(\"_\", \" \").strip()\n 161      return s[:1].upper() + s[1:]\n 162  \n 163  \n 164  # --------------------------------------------------------------------------- #\n 165  # Load: what the editor form shows\n 166  # --------------------------------------------------------------------------- #\n 167  def load(path, function: str, line: Optional[int] = None) -> dict:",
+  "failing": [
+   "tests/test_editing.py::test_adding_a_marker_adds_its_import_when_missing",
+   "tests/test_editing.py::test_tags_and_dependencies_edit_the_scenario_marker",
+   "tests/test_editing.py::test_title_and_details_rewrite_the_docstring"
+  ]
+ },
+ {
+  "id": "m031",
+  "path": "specdeck/plugin.py",
+  "line": 569,
+  "original": "    token = _ACTIVE.set(rec.steps if rec is not None else None)",
+  "mutated": "    token = _ACTIVE.set(rec.steps if rec is None else None)",
+  "operator": "negate",
+  "snippet": " 563  @pytest.hookimpl(hookwrapper=True)\n 564  def pytest_runtest_call(item: pytest.Item):\n 565      store = _store(item.config)\n 566      rec = store.records.get(item.nodeid) if store else None\n 567      from .requirements import _USED\n 568  \n 569      token = _ACTIVE.set(rec.steps if rec is not None else None)\n 570      used = _USED.set(rec.examples_used if rec is not None else None)\n 571      try:\n 572          yield\n 573      finally:\n 574          _ACTIVE.reset(token)\n 575          _USED.reset(used)",
+  "failing": [
+   "tests/test_generation.py::test_error_is_pinned_to_the_step_that_raised_and_later_steps_are_not_reached",
+   "tests/test_generation.py::test_failing_then_records_expected_observed_and_decision_context",
+   "tests/test_generation.py::test_failure_between_steps_is_still_reported",
+   "tests/test_generation.py::test_marker_overrides_and_runtime_steps",
+   "tests/test_generation.py::test_step_text_with_colons_stays_parseable",
+   "tests/test_history.py::test_a_run_is_recorded_with_status_steps_and_source",
+   "tests/test_requirements.py::test_expected_values_come_from_the_requirement_and_are_tracked",
+   "tests/test_ui_journey.py::test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green"
+  ]
+ },
+ {
+  "id": "m026",
+  "path": "specdeck/editing.py",
+  "line": 427,
+  "original": "            keyword, call, text_node, exp_kw = calls[i]",
+  "mutated": "            pass",
+  "operator": "statement",
+  "snippet": " 421  \n 422      # steps\n 423      calls = step_calls(fn)\n 424      for st in edits.get(\"steps\") or []:\n 425          try:\n 426              i = int(st[\"index\"])\n 427              keyword, call, text_node, exp_kw = calls[i]\n 428          except (KeyError, ValueError, IndexError):\n 429              raise EditError(f\"step {st.get('index')!r} does not exist any more; reopen the editor\")\n 430          if \"text\" in st:\n 431              new = str(st[\"text\"])\n 432              if not _is_str(text_node):\n 433                  raise EditError(f\"the text of step {i + 1} ({keyword}) is computed in code and can't be edited here\")",
+  "failing": [
+   "tests/test_editing.py::test_editing_a_step_changes_only_that_string",
+   "tests/test_editing.py::test_expected_labels_can_be_changed_added_and_removed",
+   "tests/test_editing.py::test_review_shows_a_diff_without_writing",
+   "tests/test_editing.py::test_stale_forms_and_computed_text_are_refused",
+   "tests/test_server.py::test_editing_through_the_viewer_rewrites_the_test_file",
+   "tests/test_ui_journey.py::test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green"
+  ]
+ },
+ {
+  "id": "m012",
+  "path": "specdeck/plugin.py",
+  "line": 289,
+  "original": "        return \"\".join(parts)",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 283          parts = []\n 284          for v in expr.values:\n 285              if isinstance(v, ast.Constant):\n 286                  parts.append(str(v.value))\n 287              else:\n 288                  parts.append(\"{\" + ast.unparse(v.value) + \"}\")\n 289          return \"\".join(parts)\n 290      return ast.unparse(expr)\n 291  \n 292  \n 293  def _planned_steps(item: pytest.Item) -> list:\n 294      fn = getattr(item, \"function\", None)\n 295      if fn is None:",
+  "failing": []
+ },
+ {
+  "id": "m000",
+  "path": "specdeck/ci.py",
+  "line": 162,
+  "original": "    reqs, trust = model[\"requirements\"], model[\"trust\"]",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 156  \n 157  \n 158  def exit_code(model: dict, *, fail_on_failing=False, fail_on_unmet=False, fail_on_untrusted=False) -> int:\n 159      c = model[\"counts\"]\n 160      if fail_on_failing and (c[\"failed\"] or c[\"error\"] or c[\"blocked\"]):\n 161          return 1\n 162      reqs, trust = model[\"requirements\"], model[\"trust\"]\n 163      if fail_on_unmet and reqs and reqs[\"counts\"][\"met\"] != reqs[\"counts\"][\"total\"]:\n 164          return 1\n 165      if fail_on_untrusted and trust and trust[\"counts\"][\"untrusted\"]:\n 166          return 1\n 167      return 0",
+  "failing": [
+   "tests/test_ci.py::test_the_report_exits_zero_unless_a_gate_is_asked_for"
+  ]
+ },
+ {
+  "id": "m033",
+  "path": "specdeck/ci.py",
+  "line": 124,
+  "original": "    if ch is not None:",
+  "mutated": "    if ch is None:",
+  "operator": "negate",
+  "snippet": " 118          for p in reqs.get(\"problems\", []):\n 119              out.append(f\"- \u26a0 {p}\")\n 120          if reqs.get(\"problems\"):\n 121              out.append(\"\")\n 122  \n 123      ch = model[\"changed\"]\n 124      if ch is not None:\n 125          total = sum(ch.values())\n 126          if total:\n 127              parts = [f\"{ch['checked']} checked\"]\n 128              for k, label in ((\"ran-only\", \"ran but not checked\"), (\"never-ran\", \"never ran\"),\n 129                               (\"mock-only\", \"only checked through fakes\"),\n 130                               (\"import-time\", \"run at import time, not checked\")):",
+  "failing": [
+   "tests/test_ci.py::test_statuses_come_from_the_spec_tags_and_blocks_cascade",
+   "tests/test_ci.py::test_the_report_exits_zero_unless_a_gate_is_asked_for",
+   "tests/test_ci.py::test_the_report_is_one_markdown_document_with_fix_first_and_requirements"
+  ]
+ },
+ {
+  "id": "m036",
+  "path": "specdeck/plugin.py",
+  "line": 242,
+  "original": "        if expected is not None or observed is not None:",
+  "mutated": "        if expected is None or observed is not None:",
+  "operator": "negate",
+  "snippet": " 236              try:\n 237                  exc._specdeck_pinned = True  # type: ignore[attr-defined]\n 238              except Exception:\n 239                  pass\n 240          raise\n 241      else:\n 242          if expected is not None or observed is not None:\n 243              st.assertion = {\n 244                  \"expected_label\": expected,\n 245                  \"observed_label\": observed if observed is not None else expected,\n 246              }\n 247  \n 248  ",
+  "failing": [
+   "tests/test_generation.py::test_marker_overrides_and_runtime_steps",
+   "tests/test_requirements.py::test_expected_values_come_from_the_requirement_and_are_tracked"
+  ]
+ },
+ {
+  "id": "m037",
+  "path": "specdeck/cli.py",
+  "line": 68,
+  "original": "    r.add_argument(\"--spec\", default=DEFAULT_SPEC, help=f\"generated spec (default {DEFAULT_SPEC})\")",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": "  62      t.add_argument(\"--fail-on-untrusted\", action=\"store_true\",\n  63                     help=\"exit non-zero if a met requirement is unproven or mock-only on this change\")\n  64  \n  65  \n  66  def _add_report(sub) -> None:\n  67      r = sub.add_parser(\"report\", help=\"a Markdown report shaped for a pull-request comment\")\n  68      r.add_argument(\"--spec\", default=DEFAULT_SPEC, help=f\"generated spec (default {DEFAULT_SPEC})\")\n  69      r.add_argument(\"--requirements-report\", default=\".specdeck/requirements.json\",\n  70                     help=\"requirements report from the last run, if it exists\")\n  71      r.add_argument(\"--proofdeck\", default=None, metavar=\"FILE\",\n  72                     help=\"proofdeck check --format json output, to say whether met requirements are proven\")\n  73      r.add_argument(\"--format\", choices=(\"markdown\", \"json\"), default=\"markdown\")\n  74      r.add_argument(\"--out\", default=None, help=\"write here instead of stdout\")",
+  "failing": [
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind"
+  ]
+ },
+ {
+  "id": "m006",
+  "path": "specdeck/cli.py",
+  "line": 273,
+  "original": "    return 1 if args.fail_on_untrusted and result[\"counts\"][\"untrusted\"] else 0",
+  "mutated": "    return 1 if args.fail_on_untrusted or result[\"counts\"][\"untrusted\"] else 0",
+  "operator": "boolean",
+  "snippet": " 267          return 2\n 268      result = join(reqs, proof, spec=_load_spec(args.spec))\n 269      if args.format == \"json\":\n 270          print(json.dumps(result, indent=2))\n 271      else:\n 272          print(render_text(result))\n 273      return 1 if args.fail_on_untrusted and result[\"counts\"][\"untrusted\"] else 0\n 274  \n 275  \n 276  def cmd_report(args) -> int:\n 277      from .ci import build, exit_code, render_markdown\n 278  \n 279      spec = _load_spec(args.spec)",
+  "failing": [
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind"
+  ]
+ },
+ {
+  "id": "m014",
+  "path": "specdeck/plugin.py",
+  "line": 376,
+  "original": "    req_path = Path(config.getini(\"specdeck_requirements\") or _reqs.DEFAULT_FILE)",
+  "mutated": "    req_path = Path(config.getini(\"specdeck_requirements\") and _reqs.DEFAULT_FILE)",
+  "operator": "boolean",
+  "snippet": " 370              recorder.start()  # before collection, so module-level lines land in the import context\n 371              config._specdeck.tracer = recorder\n 372          except tracing.Unavailable as exc:\n 373              config._specdeck.warnings.append(f\"coverage not recorded: {exc}\")\n 374      from . import requirements as _reqs\n 375  \n 376      req_path = Path(config.getini(\"specdeck_requirements\") or _reqs.DEFAULT_FILE)\n 377      req_path = req_path if req_path.is_absolute() else Path(str(config.rootpath)) / req_path\n 378      config._specdeck_reqs = _reqs.load(req_path)  # type: ignore[attr-defined]\n 379      _reqs.set_loaded(config._specdeck_reqs)\n 380      if not hasattr(config, \"workerinput\"):  # xdist workers don't record\n 381          from .recorder import LiveRecorder, live_mode\n 382  ",
+  "failing": []
+ },
+ {
+  "id": "m009",
+  "path": "specdeck/plugin.py",
+  "line": 296,
+  "original": "        return []",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 290      return ast.unparse(expr)\n 291  \n 292  \n 293  def _planned_steps(item: pytest.Item) -> list:\n 294      fn = getattr(item, \"function\", None)\n 295      if fn is None:\n 296          return []\n 297      try:\n 298          tree = ast.parse(textwrap.dedent(inspect.getsource(inspect.unwrap(fn))))\n 299      except (OSError, TypeError, SyntaxError):\n 300          return []\n 301      ns = dict(getattr(fn, \"__globals__\", {}))\n 302      callspec = getattr(item, \"callspec\", None)",
+  "failing": []
+ },
+ {
+  "id": "m005",
+  "path": "specdeck/trust.py",
+  "line": 99,
+  "original": "    bits = [f\"{c['checked']} checked\"]",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": "  93  \n  94  \n  95  def summary_line(result: dict) -> str:\n  96      c = result[\"counts\"]\n  97      if not c[\"met\"]:\n  98          return \"trust: no requirement is met, nothing to check\"\n  99      bits = [f\"{c['checked']} checked\"]\n 100      if c[\"unproven\"]:\n 101          bits.append(f\"{c['unproven']} unproven\")\n 102      if c[\"mock-only\"]:\n 103          bits.append(f\"{c['mock-only']} mock-only\")\n 104      if c[\"untouched\"]:\n 105          bits.append(f\"{c['untouched']} untouched by this change\")",
+  "failing": [
+   "tests/test_ci.py::test_each_met_requirement_gets_a_verdict_from_proofdecks_evidence",
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind",
+   "tests/test_ci.py::test_the_report_is_one_markdown_document_with_fix_first_and_requirements"
+  ]
+ },
+ {
+  "id": "m011",
+  "path": "specdeck/tracing.py",
+  "line": 143,
+  "original": "    if not per_scenario:",
+  "mutated": "    if per_scenario:",
+  "operator": "boolean",
+  "snippet": " 137              file, _, fn = place.partition(\":\")\n 138              out.setdefault(file, {}).setdefault(fn or \"(module level)\", []).append(n)\n 139      return {f: {fn: sorted(set(ns)) for fn, ns in sorted(fns.items())} for f, fns in sorted(out.items())}\n 140  \n 141  \n 142  def summarize(per_scenario: dict) -> Optional[str]:\n 143      if not per_scenario:\n 144          return None\n 145      total = len({p for places in per_scenario.values() for p in places})\n 146      return f\"coverage: {len(per_scenario)} scenarios mapped to {total} source functions\"",
+  "failing": []
+ },
+ {
+  "id": "m022",
+  "path": "specdeck/ci.py",
+  "line": 146,
+  "original": "        \"mock-only\": \"\u2248 **mock-only** \u2014 \" + where(\"mock-only\") + \" only noticed through fakes\",",
+  "mutated": "        \"mock-only\": \"\u2248 **mock-only** \u2014 \" + where(\"mock-only\") - \" only noticed through fakes\",",
+  "operator": "arithmetic",
+  "snippet": " 140      if v[\"status\"] != \"met\":\n 141          return \"\u2014\"\n 142      where = lambda kind: \", \".join(f\"`{x}`\" for x in v[\"lines\"][kind][:3])  # noqa: E731\n 143      text = {\n 144          \"checked\": \"\u2714 checked\",\n 145          \"unproven\": \"\u2716 **unproven** \u2014 a covering test ran \" + where(\"unproven\") + \" and didn't notice it changed\",\n 146          \"mock-only\": \"\u2248 **mock-only** \u2014 \" + where(\"mock-only\") + \" only noticed through fakes\",\n 147          \"untouched\": \"\u00b7 untouched by this change\",\n 148      }[v[\"verdict\"]]\n 149      if v[\"through_fakes\"]:\n 150          text += f\" \u00b7 every covering test fakes {', '.join(f'`{n}`' for n in v['fakes'][:4])}\"\n 151      return text\n 152  ",
+  "failing": [
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind",
+   "tests/test_ci.py::test_the_report_is_one_markdown_document_with_fix_first_and_requirements"
+  ]
+ },
+ {
+  "id": "m008",
+  "path": "specdeck/validation.py",
+  "line": 102,
+  "original": "    groups = data.get(\"groups\")",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": "  96      elif not isinstance(data[\"scenarios\"], list):\n  97          diags.append(Diagnostic(\"error\", \"BAD_SCENARIOS\",\n  98                                  f\"`scenarios` must be a list, found {type(data['scenarios']).__name__}.\"))\n  99  \n 100  \n 101  def _check_groups(data: dict, diags: list) -> set:\n 102      groups = data.get(\"groups\")\n 103      ids: set = set()\n 104      if groups is None:\n 105          return ids\n 106      if not isinstance(groups, list):\n 107          diags.append(Diagnostic(\"error\", \"BAD_GROUPS\", f\"`groups` must be a list, found {type(groups).__name__}.\"))\n 108          return ids",
+  "failing": [
+   "tests/test_gates.py::test_fail_on_invalid_spec",
+   "tests/test_gates.py::test_parametrized_alias_survives_an_id_collision",
+   "tests/test_generation.py::test_generated_spec_is_warning_free_under_our_own_validator",
+   "tests/test_validation.py::test_a_well_formed_spec_has_no_diagnostics",
+   "tests/test_validation.py::test_dangling_dependency_is_an_error",
+   "tests/test_validation.py::test_dependency_cycle_is_an_error",
+   "tests/test_validation.py::test_structural_problems_are_caught"
+  ]
+ },
+ {
+  "id": "m010",
+  "path": "specdeck/cli.py",
+  "line": 294,
+  "original": "        Path(args.out).write_text(text, encoding=\"utf-8\")",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 288          if proof is None:\n 289              return 2\n 290      model = build(spec, reqs, proof)\n 291      text = json.dumps(model, indent=2) if args.format == \"json\" else render_markdown(model)\n 292      if args.out:\n 293          Path(args.out).parent.mkdir(parents=True, exist_ok=True)\n 294          Path(args.out).write_text(text, encoding=\"utf-8\")\n 295          print(f\"specdeck: wrote {args.out}\", file=sys.stderr)\n 296      else:\n 297          print(text, end=\"\" if text.endswith(\"\\n\") else \"\\n\")\n 298      return exit_code(model, fail_on_failing=args.fail_on_failing, fail_on_unmet=args.fail_on_unmet,\n 299                       fail_on_untrusted=args.fail_on_untrusted)\n 300  ",
+  "failing": [
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind"
+  ]
+ },
+ {
+  "id": "m025",
+  "path": "specdeck/ci.py",
+  "line": 127,
+  "original": "            parts = [f\"{ch['checked']} checked\"]",
+  "mutated": "            pass",
+  "operator": "statement",
+  "snippet": " 121              out.append(\"\")\n 122  \n 123      ch = model[\"changed\"]\n 124      if ch is not None:\n 125          total = sum(ch.values())\n 126          if total:\n 127              parts = [f\"{ch['checked']} checked\"]\n 128              for k, label in ((\"ran-only\", \"ran but not checked\"), (\"never-ran\", \"never ran\"),\n 129                               (\"mock-only\", \"only checked through fakes\"),\n 130                               (\"import-time\", \"run at import time, not checked\")):\n 131                  if ch.get(k):\n 132                      parts.append(f\"{ch[k]} {label}\")\n 133              out += [\"### Changed lines (proofdeck)\", \"\", f\"{total} changed source lines: \" + \", \".join(parts) + \".\", \"\"]",
+  "failing": [
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind",
+   "tests/test_ci.py::test_the_report_is_one_markdown_document_with_fix_first_and_requirements"
+  ]
+ },
+ {
+  "id": "m039",
+  "path": "specdeck/server.py",
+  "line": 198,
+  "original": "            self._dispatch(\"POST\")",
+  "mutated": "            pass",
+  "operator": "statement",
+  "snippet": " 192              self._dispatch(\"GET\")\n 193  \n 194          def do_HEAD(self):\n 195              self._dispatch(\"GET\")\n 196  \n 197          def do_POST(self):\n 198              self._dispatch(\"POST\")\n 199  \n 200          def _dispatch(self, method: str) -> None:\n 201              if not self._host_ok():\n 202                  return self._send(403, {\"error\": \"host not allowed\"})\n 203              url = urlparse(self.path)\n 204              q = {k: v[-1] for k, v in parse_qs(url.query).items()}",
+  "failing": [
+   "tests/test_server.py::test_a_run_started_from_the_viewer_streams_back_live",
+   "tests/test_server.py::test_editing_through_the_viewer_rewrites_the_test_file",
+   "tests/test_server.py::test_writes_need_the_token_and_a_loopback_host",
+   "tests/test_ui_journey.py::test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green"
+  ]
+ },
+ {
+  "id": "m023",
+  "path": "specdeck/editing.py",
+  "line": 423,
+  "original": "    calls = step_calls(fn)",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 417          raw_line = src.lines[first_line - 1]\n 418          indent = raw_line[: len(raw_line) - len(raw_line.lstrip())]\n 419          kws = \", \".join(f\"{f}={_list_literal(v)}\" for f, v in lists.items() if v)\n 420          ed.insert(src.line_start(first_line), f\"{indent}@{name}({kws})\\n\")\n 421  \n 422      # steps\n 423      calls = step_calls(fn)\n 424      for st in edits.get(\"steps\") or []:\n 425          try:\n 426              i = int(st[\"index\"])\n 427              keyword, call, text_node, exp_kw = calls[i]\n 428          except (KeyError, ValueError, IndexError):\n 429              raise EditError(f\"step {st.get('index')!r} does not exist any more; reopen the editor\")",
+  "failing": [
+   "tests/test_editing.py::test_editing_a_step_changes_only_that_string",
+   "tests/test_editing.py::test_expected_labels_can_be_changed_added_and_removed",
+   "tests/test_editing.py::test_review_shows_a_diff_without_writing",
+   "tests/test_editing.py::test_stale_forms_and_computed_text_are_refused",
+   "tests/test_server.py::test_editing_through_the_viewer_rewrites_the_test_file",
+   "tests/test_ui_journey.py::test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green"
+  ]
+ },
+ {
+  "id": "m020",
+  "path": "specdeck/tracing.py",
+  "line": 139,
+  "original": "    return {f: {fn: sorted(set(ns)) for fn, ns in sorted(fns.items())} for f, fns in sorted(out.items())}",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 133          n = numbers.get(sid)\n 134          if n is None:\n 135              continue\n 136          for place in places:\n 137              file, _, fn = place.partition(\":\")\n 138              out.setdefault(file, {}).setdefault(fn or \"(module level)\", []).append(n)\n 139      return {f: {fn: sorted(set(ns)) for fn, ns in sorted(fns.items())} for f, fns in sorted(out.items())}\n 140  \n 141  \n 142  def summarize(per_scenario: dict) -> Optional[str]:\n 143      if not per_scenario:\n 144          return None\n 145      total = len({p for places in per_scenario.values() for p in places})",
+  "failing": [
+   "tests/test_context.py::test_the_command_builds_the_document_from_what_a_run_left_behind",
+   "tests/test_context.py::test_the_document_connects_source_functions_to_the_scenarios_that_run_them"
+  ]
+ },
+ {
+  "id": "m028",
+  "path": "specdeck/cli.py",
+  "line": 148,
+  "original": "        return cmd_report(args)",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 142          return cmd_validate(args)\n 143      if args.cmd == \"requirements\":\n 144          return cmd_requirements(args)\n 145      if args.cmd == \"trust\":\n 146          return cmd_trust(args)\n 147      if args.cmd == \"report\":\n 148          return cmd_report(args)\n 149      if args.cmd == \"context\":\n 150          return cmd_context(args)\n 151      if args.cmd == \"watch\":\n 152          from .watch import watch\n 153  \n 154          extra = [a for a in (args.pytest_args or []) if a != \"--\"]",
+  "failing": [
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind"
+  ]
+ },
+ {
+  "id": "m021",
+  "path": "specdeck/server.py",
+  "line": 315,
+  "original": "            self._send(200, {\"started\": True, **info})",
+  "mutated": "            self._send(201, {\"started\": True, **info})",
+  "operator": "constant",
+  "snippet": " 309                      raise HttpError(400, \"nothing to run\")\n 310                  args, cwd = nodeids, p[\"root\"]\n 311              if not Path(cwd).is_dir():\n 312                  raise HttpError(400, f\"{cwd} does not exist any more\")\n 313              cmd = [python, \"-m\", \"pytest\", *args, \"--specdeck-live\", \"--specdeck-port\", str(app.port)]\n 314              info = app.launcher.start(slug, cmd, cwd, scope)\n 315              self._send(200, {\"started\": True, **info})\n 316  \n 317          def stop(self, q, slug):\n 318              self._body()\n 319              self._send(200, {\"stopped\": app.launcher.stop(slug)})\n 320  \n 321          def stream(self, q, slug):",
+  "failing": [
+   "tests/test_server.py::test_a_run_started_from_the_viewer_streams_back_live"
+  ]
+ },
+ {
+  "id": "m007",
+  "path": "specdeck/history.py",
+  "line": 394,
+  "original": "        ][-40:]",
+  "mutated": "        ][-41:]",
+  "operator": "constant",
+  "snippet": " 388          delta_run = viewed or last_run\n 389          delta = deltas.get(delta_run[\"id\"], {}) if delta_run else {}\n 390          trend = [\n 391              {k: r[k] for k in (\"id\", \"started\", \"finished\", \"status\", \"total\", \"passed\", \"failed\",\n 392                                 \"error\", \"blocked\", \"skipped\", \"duration\")}\n 393              for r in sorted(finished, key=lambda r: r[\"id\"]) if r[\"full\"]\n 394          ][-40:]\n 395  \n 396          n = self._ordinals(project_id)\n 397          for r in (viewed, active_run, last_run, *trend):\n 398              if r is not None:\n 399                  r[\"n\"] = n.get(r[\"id\"])\n 400          return {",
+  "failing": []
+ },
+ {
+  "id": "m003",
+  "path": "specdeck/tracing.py",
+  "line": 20,
+  "original": "IMPORT_CONTEXT = \"::specdeck-import::\"",
+  "mutated": "IMPORT_CONTEXT = \"\"",
+  "operator": "constant",
+  "snippet": "  14  \n  15  import ast\n  16  from functools import lru_cache\n  17  from pathlib import Path\n  18  from typing import Optional\n  19  \n  20  IMPORT_CONTEXT = \"::specdeck-import::\"\n  21  \n  22  \n  23  class Unavailable(RuntimeError):\n  24      \"\"\"coverage.py is missing, or something else is already measuring.\"\"\"\n  25  \n  26  ",
+  "failing": []
+ },
+ {
+  "id": "m035",
+  "path": "specdeck/history.py",
+  "line": 262,
+  "original": "        ids = [r[\"id\"] for r in self._all(\"SELECT id FROM runs WHERE project_id=? ORDER BY id\", (project_id,))]",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 256          for run in self._all(\"SELECT id, pid FROM runs WHERE project_id=? AND status='running'\", (project_id,)):\n 257              if not _alive(run[\"pid\"]):\n 258                  self.finish_run(project_id, run[\"id\"], status=\"abandoned\")\n 259  \n 260      def _ordinals(self, project_id: int) -> dict:\n 261          \"\"\"Run id -> its number within the project (1, 2, 3...), which is what people see.\"\"\"\n 262          ids = [r[\"id\"] for r in self._all(\"SELECT id FROM runs WHERE project_id=? ORDER BY id\", (project_id,))]\n 263          return {rid: i + 1 for i, rid in enumerate(ids)}\n 264  \n 265      def runs(self, project_id: int, limit: int = 100) -> list:\n 266          runs = self._all(\"SELECT * FROM runs WHERE project_id=? ORDER BY id DESC LIMIT ?\", (project_id, limit))\n 267          deltas = self._deltas(project_id)\n 268          n = self._ordinals(project_id)",
+  "failing": [
+   "tests/test_graph_scale.py::test_a_large_suite_opens_on_a_feature_map_and_narrows_down",
+   "tests/test_history.py::test_a_deleted_test_leaves_the_board_after_the_next_full_run",
+   "tests/test_history.py::test_a_run_in_progress_keeps_last_results_visible",
+   "tests/test_history.py::test_a_run_is_recorded_with_status_steps_and_source",
+   "tests/test_history.py::test_a_run_whose_process_died_is_marked_abandoned",
+   "tests/test_history.py::test_each_run_reports_what_started_and_stopped_passing",
+   "tests/test_history.py::test_running_one_test_updates_it_without_forgetting_the_others",
+   "tests/test_live_flag.py::test_a_second_project_joins_the_running_viewer",
+   "tests/test_maintenance.py::test_compare_two_runs",
+   "tests/test_maintenance.py::test_prune_keeps_the_newest_runs",
+   "tests/test_requirements.py::test_the_viewer_shows_requirements_as_they_were_in_each_run",
+   "tests/test_requirements_ui.py::test_a_developer_sees_which_requirements_are_met_and_why",
+   "tests/test_server.py::test_a_run_started_from_the_viewer_streams_back_live",
+   "tests/test_server.py::test_editing_through_the_viewer_rewrites_the_test_file",
+   "tests/test_server.py::test_every_recorded_project_gets_a_page",
+   "tests/test_ui_journey.py::test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green"
+  ]
+ },
+ {
+  "id": "m002",
+  "path": "specdeck/server.py",
+  "line": 204,
+  "original": "            q = {k: v[-1] for k, v in parse_qs(url.query).items()}",
+  "mutated": "            q = {k: v[-2] for k, v in parse_qs(url.query).items()}",
+  "operator": "constant",
+  "snippet": " 198              self._dispatch(\"POST\")\n 199  \n 200          def _dispatch(self, method: str) -> None:\n 201              if not self._host_ok():\n 202                  return self._send(403, {\"error\": \"host not allowed\"})\n 203              url = urlparse(self.path)\n 204              q = {k: v[-1] for k, v in parse_qs(url.query).items()}\n 205              try:\n 206                  for m, rx, name in ROUTES:\n 207                      if m == method:\n 208                          mt = rx.fullmatch(url.path)\n 209                          if mt:\n 210                              return getattr(self, name)(q, *[unquote(g) for g in mt.groups()])",
+  "failing": [
+   "tests/test_server.py::test_editing_through_the_viewer_rewrites_the_test_file",
+   "tests/test_ui_journey.py::test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green"
+  ]
+ }
+]

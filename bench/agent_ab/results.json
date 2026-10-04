@@ -1,0 +1,682 @@
+{
+ "triage/brief": [
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 0.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  }
+ ],
+ "impact/brief": [
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.29411764705882354,
+   "recall": 1.0,
+   "f1": 0.45454545454545453,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.3333333333333333,
+   "recall": 1.0,
+   "f1": 0.5,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.8181818181818182,
+   "recall": 1.0,
+   "f1": 0.9,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.25,
+   "recall": 1.0,
+   "f1": 0.4,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.3333333333333333,
+   "recall": 1.0,
+   "f1": 0.5,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.25,
+   "f1": 0.4,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.8181818181818182,
+   "recall": 1.0,
+   "f1": 0.9,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.29411764705882354,
+   "recall": 1.0,
+   "f1": 0.45454545454545453,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.8095238095238095,
+   "f1": 0.8947368421052632,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5882352941176471,
+   "recall": 1.0,
+   "f1": 0.7407407407407407,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  }
+ ],
+ "impact/wiring": [
+  {
+   "precision": 1.0,
+   "recall": 0.8333333333333334,
+   "f1": 0.9090909090909091,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.8333333333333334,
+   "recall": 1.0,
+   "f1": 0.9090909090909091,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.8888888888888888,
+   "recall": 0.8888888888888888,
+   "f1": 0.8888888888888888,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.05555555555555555,
+   "f1": 0.10526315789473684,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.4,
+   "recall": 1.0,
+   "f1": 0.5714285714285715,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.25,
+   "f1": 0.4,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.6666666666666666,
+   "f1": 0.8,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.7142857142857143,
+   "recall": 1.0,
+   "f1": 0.8333333333333333,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.9523809523809523,
+   "f1": 0.975609756097561,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5294117647058824,
+   "recall": 1.0,
+   "f1": 0.6923076923076924,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  }
+ ],
+ "triage/wiring": [
+  {
+   "f1": 0.6000000000000001,
+   "failed_f1": 0.4,
+   "blocked_f1": 0.8,
+   "exact": 0.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 0.47115384615384615,
+   "failed_f1": 0.25,
+   "blocked_f1": 0.6923076923076923,
+   "exact": 0.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 0.47115384615384615,
+   "failed_f1": 0.25,
+   "blocked_f1": 0.6923076923076923,
+   "exact": 0.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 0.7777777777777778,
+   "failed_f1": 0.6666666666666666,
+   "blocked_f1": 0.888888888888889,
+   "exact": 0.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 0.717948717948718,
+   "failed_f1": 0.6666666666666666,
+   "blocked_f1": 0.7692307692307693,
+   "exact": 0.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 1.0,
+   "failed_f1": 1.0,
+   "blocked_f1": 1.0,
+   "exact": 1.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  },
+  {
+   "f1": 0.41666666666666663,
+   "failed_f1": 0.16666666666666669,
+   "blocked_f1": 0.6666666666666666,
+   "exact": 0.0,
+   "fix_first": 1.0,
+   "answered": 1.0
+  }
+ ]
+}

@@ -1,0 +1,215 @@
+Fernhill Supply Slack — #pricing-and-ops
+Export range: 2026-06-01 to 2026-09-30
+Exported by: mark.doyle   (format: plain text)
+Note: tomasz.w is a guest account (freelance, checkout rebuild), added 2026-06-02
+==================================================================
+
+--- Monday, June 1 ---
+
+[08:02] mark.doyle: kofi's first day 🦺 he's already asked why bay 3 is "like that"
+    :wave: 5
+[08:10] priya: welcome Kofi!
+[08:11] kofi.a: thanks all. bay 3 is a hazard
+[08:11] mark.doyle: we know
+[10:40] jules.k: hartwell's C5s arrived. correct size. I checked. twice
+    :tada: 3
+
+--- Tuesday, June 2 ---
+
+[09:00] mark.doyle: adding @tomasz.w — he's rebuilding the checkout pricing. Tomasz I've emailed you the pile. please ask in here rather than DM so everyone sees the answers
+[09:05] tomasz.w: hi all. read most of it last night. a few questions coming today, sorry in advance
+[09:06] priya: ask away
+[11:30] tomasz.w: q1: bulk. I've got "15% off a line when qty is 100 or more". just confirming that's quantity of the line and not the line's £ value
+[11:32] mark.doyle: quantity. 100 of the thing. doesn't matter what it costs
+[11:33] tomasz.w: q2: the old spreadsheet (Orders 2025 tab) does it on total units in the basket. I'm ignoring that, yes?
+[11:33] priya: ignore it. that's the old way
+[11:40] tomasz.w: q3: is there a cap? e.g. 10,000 pens
+[11:42] priya: no cap. it's 15 whether it's 100 or 10,000
+[11:42] dan.whitlock: (no tiers, I've asked)
+[14:15] tomasz.w: q4: clearance. I've read that clearance doesn't get bulk. does it get the Friends 5%?
+[14:16] jules.k: no. clearance gets nothing. it's in my post from 19 may
+[14:17] tomasz.w: q5: same question for gift cards
+[14:18] priya: gift cards get nothing either, no discount of any kind. and no tax. Sam's ticket and the Larkspur thing are in what Mark sent you
+[14:19] tomasz.w: 👍 got both
+
+--- Wednesday, June 3 ---
+
+[10:05] tomasz.w: q6: for Friends members on a bulk line — Jules's post says 15% then 5% of what's left. I'll do line × 0.85 × 0.95
+[10:06] jules.k: yes!
+[10:07] dan.whitlock: does it matter which way round? like 5 first then 15?
+[10:09] tomasz.w: mathematically no, multiplication gives the same answer either way. I'll write it the way Jules described so it reads the same as the post
+[10:09] dan.whitlock: huh. ok. maths
+[10:10] priya: write it the way Jules said please
+[15:30] tomasz.w: q7: shipping. "free when the order is 50 or more after discounts." after discounts but before tax, right? tax doesn't count toward the 50
+[15:34] mark.doyle: right. what's left after the discounts come off. tax isn't part of it
+[15:35] tomasz.w: and 50.00 exactly = free
+[15:35] mark.doyle: yes. in the may meeting notes. "fifty exactly counts"
+[15:40] tomasz.w: q8: tax rate switch. I'll key it off the order's placed date. 8% before 2026-07-01, 10% on/after
+[15:41] priya: yes. Odile's email
+[15:45] tomasz.w: q9: rounding — I'm doing exactly what Odile's 5 May reply says. half-up, discount and tax rounded separately, total = subtotal − discount + tax + shipping, no rounding at the end
+[15:47] mark.doyle: yes please. and please don't let it do bankers rounding, that's what's been costing me fridays
+[15:47] tomasz.w: it won't
+    :pray: 3
+
+--- Friday, June 5 ---
+
+[09:15] dan.whitlock: quick reminder for everyone quoting this week: bulk is 15% when an order hits 100 units
+[09:21] mark.doyle: @dan.whitlock per LINE dan. 100 of one item on one line. not 100 units in the order. you literally asked this on the 15th 😅
+[09:22] dan.whitlock: per line. per line. I typed it too fast. ignore my message above everyone
+    :facepalm: 2
+[11:40] jules.k: the Friends banner on the site still says "launching 25 May!" — fixing
+[16:00] mark.doyle: kofi has rearranged the pick shelves. by how much stuff sells, not alphabetical. I have mixed feelings and they are mostly envy
+
+--- Tuesday, June 9 ---
+
+[11:50] mark.doyle: the archived wiki page bit us — Sam's new starter quoted from it. I've put a comment on it. trying to stop it showing in search
+[11:51] priya: can we not just delete it
+[11:52] mark.doyle: odile likes the history. I'll hide it
+[11:52] priya: fine. hide it
+
+--- Thursday, June 11 ---
+
+[14:00] tomasz.w: staging is up with the new pricing. link + password in the pinned doc. please try to break it
+[14:20] mark.doyle: trying now
+[15:05] mark.doyle: bug: member + clearance line got 5% off. 3x C4 envelopes in a member account, discount showed 0.32
+[15:20] tomasz.w: confirmed, my fault — I had the clearance check only on the bulk branch. fixed on staging. clearance now gets neither
+[15:22] mark.doyle: retested, 0 discount on the C4 now 👍
+[16:30] jules.k: I tried a gift card + 2 notebooks as a member. gift card had no discount, no tax. notebooks got the 5. looks right?
+[16:35] tomasz.w: that's what it should do 👍
+
+--- Friday, June 12 ---
+
+[10:10] jules.k: I've got a draft for the post-launch banner, tell me what you think: "🌿 FREE SHIPPING on orders over £75 — this summer only!"
+[10:11] priya: Jules.
+[10:11] priya: That's not a thing. Shipping hasn't changed.
+[10:12] jules.k: it's a DRAFT. it's for the september conversation
+[10:12] priya: then please don't post drafts of prices in the channel the freelancer is building the checkout from. Tomasz, ignore that.
+[10:13] tomasz.w: ignored 👍 still 50
+[10:13] jules.k: 🤐 sorry. deleting the image from the drive too
+[10:30] mark.doyle: (still 50, after discounts, for anyone reading this later)
+
+--- Monday, June 15 ---
+
+[09:40] mark.doyle: staging test orders today. putting results here so we have them
+[11:15] mark.doyle:
+    1) 2x notebook @ 14.50, non-member, placed 15 jun → 29.00, tax 2.32, ship 5.99, total 37.31 ✅
+    2) 120x pencil @ 0.40 non-member → 48.00, disc 7.20, tax 3.26, ship 5.99 (40.80 after disc, under 50), total 50.05 ✅
+    3) same as 2 but member → disc 9.24, tax 3.10, ship 5.99, total 47.85 ✅
+    4) 3x clearance C4 @ 2.10 member → 6.30, disc 0, tax 0.50, ship 5.99, total 12.79 ✅ (after the fix)
+    5) 1x gift card 50 + 2x organiser @ 32.00, member → disc 3.20, tax 4.86, ship 0.00, total 115.66 ✅
+[11:16] mark.doyle: (all at 8% because staging date is june)
+[11:20] tomasz.w: I can fake the date on staging if you want to do a july one
+[11:21] mark.doyle: yes pls
+[11:45] mark.doyle: 6) same as order 1 but dated 1 jul → tax 2.90, total 37.89 ✅
+[11:50] priya: thank you Mark, this is great
+[11:51] dan.whitlock: wait order 2 is 48 for the pencils and it still pays shipping?
+[11:52] mark.doyle: yes. 40.80 after the discount. it's after discounts dan
+[11:52] dan.whitlock: right. right. the cups guy
+    :joy: 2
+
+--- Tuesday, June 16 ---
+
+[17:00] mark.doyle: ops meeting notes are in the drive. go-live moved to WEDS 24th not the 29th. Priya didn't want a monday
+
+--- Wednesday, June 24 ---
+
+[14:05] mark.doyle: new checkout is LIVE 🚀
+    :rocket: 6   :fern: 3   :tada: 4
+[14:06] tomasz.w: 🤞
+[14:50] priya: first ten orders look right. thank you Tomasz
+[17:30] tomasz.w: one thing — a customer with an order in progress at 2pm got priced on the old checkout. it's one order, a member, it's the old (wrong) tax on full subtotal. Mark, do you want to refund the difference?
+[17:35] priya: yes refund the difference. it's pennies but she's a Friend
+[17:36] mark.doyle: done, 0.38
+
+--- Tuesday, June 30 ---
+
+[16:00] mark.doyle: reminder: 10% tax from orders placed tomorrow. checkout will handle it. if a customer asks: placed today = 8, placed tomorrow = 10, shipped whenever doesn't matter
+[16:02] sam.r: 👍 have told ellie, and there's a macro
+
+--- Wednesday, July 1 ---
+
+[09:35] mark.doyle: first 10% orders through. looks fine
+[13:30] sam.r: fyi ellie told a customer 10% for an order placed 23:41 last night because the invoice email said july 1. corrected — it was 8% and the order was charged 8%. no money issue
+[13:32] tomasz.w: the invoice email shows the send date. I'll add "Order placed: <date>" to it so it's obvious
+[13:33] mark.doyle: 🙏
+
+--- Monday, July 13 ---
+
+[09:10] jules.k: idea for august: "Friends Double Weekend" — members get 10% instead of 5% for one weekend
+[09:30] priya: No. We're not changing the member % even for a weekend this year. Keep it simple until the new checkout's had a few months.
+[09:31] jules.k: noted. writing it in the 2027 doc instead
+[09:31] dan.whitlock: the 2027 doc is going to be very long
+
+--- Wednesday, July 22 ---
+
+[11:00] mark.doyle: sold the old zebra for £25. guy collected it, said he "fixes printers as a hobby". good luck to him
+    :printer: 3   :wave: 2
+[11:05] kofi.a: the bench is in. second printer on order
+[14:40] odile: Hi all — Q2 reconciliation is done. Zero penny differences against Stripe for orders after 24 June. First time ever. Thank you Tomasz and Mark.
+    :tada: 7   :moneybag: 3   :pray: 2
+[14:41] mark.doyle: I'm going to frame this message
+
+--- Thursday, August 6 ---
+
+[10:20] dan.whitlock: putting together a comparison of us vs stockroom and paper & pine for the sales deck. will share when done
+[10:21] priya: please don't put anything in it about our pricing that isn't what we actually do
+[10:21] dan.whitlock: 🫡
+
+--- Tuesday, August 18 ---
+
+[17:10] dan.whitlock: competitor sheet is in the drive. Paper & Pine do 10% at 50+ and 20% at 200+ (!!) and their paid members get 15 on top. not saying we should. just saying
+[17:15] priya: Noted. We're not.
+[17:20] jules.k: their Evergreen tier is basically my Friends+ idea
+[17:21] priya: September, Jules.
+
+--- Thursday, August 20 ---
+
+[13:10] dan.whitlock: northgate learning trust want 20% flat, aggregation across schools, free delivery always, 8% tax fixed for the year, and discounted gift cards 😬 forwarding to P
+[13:11] mark.doyle: lol they want the old world back
+[13:11] dan.whitlock: they literally have a copy of the 2025 trade price list. "10% for 50+ items". no idea where they got it
+[13:12] priya: I'll handle Northgate. That list is dead.
+
+--- Wednesday, August 26 ---
+
+[10:30] mark.doyle: PSA: if you're quoting a big order with clearance in it, clearance gets no member 5% (and no bulk). dan just nearly did it on the northgate quote. the site gets it right, use the site
+[10:31] dan.whitlock: I have written CLEARANCE = NOTHING on my hand
+[10:31] dan.whitlock: it's in biro and it won't come off
+    :joy: 5
+
+--- Friday, September 4 ---
+
+[15:10] dan.whitlock: NORTHGATE SAID YES 🎉 standard pricing + 30 day terms over £500
+    :tada: 8   :fern: 4   :moneybag: 3
+[15:12] priya: 🎉 well done Dan. standard pricing is the important bit
+[15:13] odile: Congratulations. Dan, please send me their finance contact.
+
+--- Thursday, September 10 ---
+
+[09:00] jules.k: the 2027 pricing ideas doc is in the drive, v0.3. comments welcome. it's a DRAFT. NOTHING IN IT IS LIVE. putting it in caps for ellie's sake
+[09:05] sam.r: 🙏
+[09:20] mark.doyle: left comments. you've got the free shipping thing as "before discounts" in the "today" bit — it's after
+[09:25] jules.k: fixed-ish (left the original visible with your comment)
+
+--- Monday, September 21 ---
+
+[11:00] kofi.a: temp ad is up for oct–dec. 14 applicants already
+[11:01] mark.doyle: 14!! I had 12 for the permanent role
+[11:01] kofi.a: I put it on the forklift forum
+[11:02] priya: we don't have a forklift
+[11:02] kofi.a: they don't know that
+
+--- Tuesday, September 29 ---
+
+[17:30] jules.k: september review done. outcome in the 2027 doc. tl;dr: nothing changes for Q4. 75 not agreed. friends+ 20% no. bulk 250 tier no. codes no.
+[17:31] priya: Thank you for writing it up. Nothing changes this year.
+[17:33] mark.doyle: tomasz you can relax
+[17:40] tomasz.w: 🙏 enjoying the relaxing
+[17:45] dan.whitlock: can I get one thing changed in 2027
+[17:45] priya: the business cards. yes. they'll say "Sales Lead".
+[17:46] dan.whitlock: 🥹
+    :tada: 6
+
+--- Wednesday, September 30 ---
+
+[08:50] mark.doyle: envelope price rise for january — draft list in the drive. list prices only, nothing else about pricing changes
+[09:10] priya: will look this afternoon

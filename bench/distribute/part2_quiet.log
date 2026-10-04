@@ -1,0 +1,4 @@
+quiet plain seed0 green=False fixed=1/3 rounds=2 jobs=8 per_bug={'q0': 6, 'q1': 2, 'q2': 2} no_bug=0 located=2 instr=23,746 work=41,031 | spent 64,777
+quiet spec  seed0 green=False fixed=0/3 rounds=2 jobs=6 per_bug={'q0': 4, 'q1': 2, 'q2': 2} no_bug=0 located=1 instr=42,036 work=34,052 | spent 140,865
+quiet plain seed1 green=False fixed=1/3 rounds=2 jobs=6 per_bug={'q0': 4, 'q1': 2, 'q2': 2} no_bug=0 located=2 instr=20,705 work=30,254 | spent 191,824
+stop: 191,824 of 250,000 spent

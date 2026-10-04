@@ -1,0 +1,782 @@
+{
+ "impact/spec": [
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.6923076923076923,
+   "recall": 1.0,
+   "f1": 0.8181818181818181,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.6666666666666666,
+   "recall": 1.0,
+   "f1": 0.8,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.8571428571428571,
+   "recall": 0.75,
+   "f1": 0.7999999999999999,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  }
+ ],
+ "impact/shipped": [
+  {
+   "precision": 0.3333333333333333,
+   "recall": 1.0,
+   "f1": 0.5,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.6923076923076923,
+   "recall": 1.0,
+   "f1": 0.8181818181818181,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.875,
+   "f1": 0.9333333333333333,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  }
+ ],
+ "impact/tests": [
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.8571428571428571,
+   "recall": 0.6666666666666666,
+   "f1": 0.75,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.75,
+   "f1": 0.8571428571428571,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  }
+ ],
+ "impact/bound": [
+  {
+   "precision": 0.3333333333333333,
+   "recall": 1.0,
+   "f1": 0.5,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.6923076923076923,
+   "recall": 1.0,
+   "f1": 0.8181818181818181,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.875,
+   "f1": 0.9333333333333333,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.6666666666666666,
+   "recall": 0.6666666666666666,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  }
+ ],
+ "impact/hub": [
+  {
+   "precision": 0.3333333333333333,
+   "recall": 1.0,
+   "f1": 0.5,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.6923076923076923,
+   "recall": 1.0,
+   "f1": 0.8181818181818181,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.875,
+   "f1": 0.9333333333333333,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.6666666666666666,
+   "f1": 0.8,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  }
+ ],
+ "impact/longlast": [
+  {
+   "precision": 0.3333333333333333,
+   "recall": 1.0,
+   "f1": 0.5,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.6923076923076923,
+   "recall": 1.0,
+   "f1": 0.8181818181818181,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 0.75,
+   "f1": 0.8571428571428571,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.8888888888888888,
+   "recall": 1.0,
+   "f1": 0.9411764705882353,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0,
+   "exact": 0.0,
+   "kind": "survived",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.5,
+   "recall": 1.0,
+   "f1": 0.6666666666666666,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 0.75,
+   "recall": 1.0,
+   "f1": 0.8571428571428571,
+   "exact": 0.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "killed",
+   "answered": 1.0
+  },
+  {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0,
+   "exact": 1.0,
+   "kind": "survived",
+   "answered": 1.0
+  }
+ ]
+}

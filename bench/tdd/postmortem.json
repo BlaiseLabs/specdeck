@@ -1,0 +1,136 @@
+{
+ "arm": "mono",
+ "seed": 99,
+ "model": "gpt-5.6-terra",
+ "detail": "bare",
+ "stages": [
+  {
+   "stage": "1/1 (serialize.py, recorder.py, tape.py)",
+   "all": {
+    "passed": 19,
+    "failed": 14,
+    "errors": 5,
+    "total": 38,
+    "rc": 1,
+    "tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n14 failed, 19 passed, 3 warnings, 5 errors in 0.37s"
+   },
+   "visible": {
+    "passed": 19,
+    "failed": 7,
+    "errors": 5,
+    "total": 31,
+    "rc": 1,
+    "tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n7 failed, 19 passed, 3 warnings, 5 errors in 0.27s"
+   },
+   "held_out": {
+    "passed": 0,
+    "failed": 7,
+    "errors": 0,
+    "total": 7,
+    "rc": 1,
+    "tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n7 failed, 3 warnings in 0.17s"
+   },
+   "regression": {
+    "passed": 6,
+    "failed": 1,
+    "errors": 0,
+    "total": 7,
+    "rc": 1,
+    "tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1 failed, 6 passed, 3 warnings in 0.15s"
+   },
+   "test_edits": [],
+   "banned": []
+  }
+ ],
+ "final": {
+  "stage": "final",
+  "all": {
+   "passed": 19,
+   "failed": 14,
+   "errors": 5,
+   "total": 38,
+   "rc": 1,
+   "tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n14 failed, 19 passed, 3 warnings, 5 errors in 0.39s"
+  },
+  "visible": {
+   "passed": 19,
+   "failed": 7,
+   "errors": 5,
+   "total": 31,
+   "rc": 1,
+   "tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n7 failed, 19 passed, 3 warnings, 5 errors in 0.27s"
+  },
+  "held_out": {
+   "passed": 0,
+   "failed": 7,
+   "errors": 0,
+   "total": 7,
+   "rc": 1,
+   "tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n7 failed, 3 warnings in 0.16s"
+  },
+  "regression": {
+   "passed": 6,
+   "failed": 1,
+   "errors": 0,
+   "total": 7,
+   "rc": 1,
+   "tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1 failed, 6 passed, 3 warnings in 0.14s"
+  },
+  "test_edits": [],
+  "banned": []
+ },
+ "post_mortem": {
+  "outcomes": {
+   "tests/test_cli.py::test_inspect_lists_sdks_and_events": "PASSED",
+   "tests/test_cli.py::test_verify_passes_on_golden_tape": "PASSED",
+   "tests/test_cli.py::test_verify_fails_on_planted_secret": "PASSED",
+   "tests/test_cli.py::test_diff_reports_drift_and_exit_code": "PASSED",
+   "tests/test_cli.py::test_play_replays_discord_via_handler_file": "PASSED",
+   "tests/test_dictlike_responses.py::test_indexable_iterable_is_not_treated_as_a_stream": "PASSED",
+   "tests/test_drift.py::test_identical_tapes_have_no_drift": "PASSED",
+   "tests/test_drift.py::test_detects_removed_method": "PASSED",
+   "tests/test_drift.py::test_detects_return_shape_change": "PASSED",
+   "tests/test_drift.py::test_detects_new_and_missing_inbound_events": "PASSED",
+   "tests/test_drift.py::test_detects_schema_field_changes": "PASSED",
+   "tests/test_integrated_replay.py::test_tape_has_all_three_sdks": "PASSED",
+   "tests/test_integrated_replay.py::test_real_gateway_inbound_events_present": "PASSED",
+   "tests/test_integrated_replay.py::test_twitch_eventsub_inbound_present": "PASSED",
+   "tests/test_integrated_replay.py::test_openai_completion_replays": "PASSED",
+   "tests/test_integrated_replay.py::test_no_secrets_in_tape": "PASSED",
+   "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline": "PASSED",
+   "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape": "PASSED",
+   "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation": "PASSED",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound": "ERROR",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path": "ERROR",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets": "ERROR",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording": "ERROR",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift": "ERROR",
+   "tests/test_cli.py::test_record_captures_toy_script": "FAILED",
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change": "FAILED",
+   "tests/test_cli.py::test_publish_then_pull_via_cli": "FAILED",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay": "FAILED",
+   "tests/test_registry.py::test_publish_then_pull_roundtrip": "FAILED",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying": "FAILED",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable": "FAILED",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply": "FAILED",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks": "FAILED",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline": "FAILED",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays": "FAILED",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg": "FAILED",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field": "FAILED",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly": "FAILED"
+  },
+  "report": "FF....F..F............FF.FFFFFFFFEEEEE                                   [100%]\n==================================== ERRORS ====================================\n___ ERROR at setup of test_timeline_orders_inbound_before_resulting_outbound ___\nE   AttributeError: 'Recorder' object has no attribute 'schemas'\n_____ ERROR at setup of test_chained_async_call_recorded_under_access_path _____\nE   AttributeError: 'Recorder' object has no attribute 'schemas'\n_______________ ERROR at setup of test_tape_contains_no_secrets ________________\nE   AttributeError: 'Recorder' object has no attribute 'schemas'\n___________ ERROR at setup of test_replay_offline_matches_recording ____________\nE   AttributeError: 'Recorder' object has no attribute 'schemas'\n________ ERROR at setup of test_replay_flags_uncaptured_calls_as_drift _________\nE   AttributeError: 'Recorder' object has no attribute 'schemas'\n=================================== FAILURES ===================================\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/tape.py:58: ValueError: Invalid tape: unknown key value_index\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/tape.py:58: ValueError: Invalid tape: unknown key value_index\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n/tmp/tdd_run_mono_99/tapedeck/engine/proxies.py:99: AttributeError: 'Recorder' object has no attribute 'schemas'\n=============================== warnings summary ===============================\n../../home/vscode/.local/lib/python3.13/site-packages/_pytest/config/__init__.py:1441\n  /home/vscode/.local/lib/python3.13/site-packages/_pytest/config/__init__.py:1441: PytestConfigWarning: Unknown config option: specdeck_description\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n../../home/vscode/.local/lib/python3.13/site-packages/_pytest/config/__init__.py:1441\n  /home/vscode/.local/lib/python3.13/site-packages/_pytest/config/__init__.py:1441: PytestConfigWarning: Unknown config option: specdeck_feature\n  \n    self._warn_or_fail_if_strict(f\"Unknown config option: {key}\\n\")\n\n../../workspaces/python/specdeck/specdeck/plugin.py:185\n  /workspaces/python/specdeck/specdeck/plugin.py:185: PytestUnknownMarkWarning: Unknown pytest.mark.scenario - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    return pytest.mark.scenario(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n==================================== PASSES ====================================\n=========================== short test summary info ============================\nPASSED tests/test_cli.py::test_inspect_lists_sdks_and_events\nPASSED tests/test_cli.py::test_verify_passes_on_golden_tape\nPASSED tests/test_cli.py::test_verify_fails_on_planted_secret\nPASSED tests/test_cli.py::test_diff_reports_drift_and_exit_code\nPASSED tests/test_cli.py::test_play_replays_discord_via_handler_file\nPASSED tests/test_dictlike_responses.py::test_indexable_iterable_is_not_treated_as_a_stream\nPASSED tests/test_drift.py::test_identical_tapes_have_no_drift\nPASSED tests/test_drift.py::test_detects_removed_method\nPASSED tests/test_drift.py::test_detects_return_shape_change\nPASSED tests/test_drift.py::test_detects_new_and_missing_inbound_events\nPASSED tests/test_drift.py::test_detects_schema_field_changes\nPASSED tests/test_integrated_replay.py::test_tape_has_all_three_sdks\nPASSED tests/test_integrated_replay.py::test_real_gateway_inbound_events_present\nPASSED tests/test_integrated_replay.py::test_twitch_eventsub_inbound_present\nPASSED tests/test_integrated_replay.py::test_openai_completion_replays\nPASSED tests/test_integrated_replay.py::test_no_secrets_in_tape\nPASSED tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline\nPASSED tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape\nPASSED tests/test_rich_client_capture.py::test_populated_fields_survive_truncation\nERROR tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound\nERROR tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path\nERROR tests/test_toy_roundtrip.py::test_tape_contains_no_secrets - AttributeE...\nERROR tests/test_toy_roundtrip.py::test_replay_offline_matches_recording - At...\nERROR tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift\nFAILED tests/test_cli.py::test_record_captures_toy_script - AttributeError: '...\nFAILED tests/test_cli.py::test_record_captures_inbound_events_zero_code_change\nFAILED tests/test_cli.py::test_publish_then_pull_via_cli - ValueError: Invali...\nFAILED tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay\nFAILED tests/test_registry.py::test_publish_then_pull_roundtrip - ValueError:...\nFAILED tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying\nFAILED tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable\nFAILED tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply\nFAILED tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks - Att...\nFAILED tests/test_stream_roundtrip.py::test_sync_stream_replays_offline - Att...\nFAILED tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays\nFAILED tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg\nFAILED tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field\nFAILED tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly\n14 failed, 19 passed, 3 warnings, 5 errors in 0.27s\n"
+ },
+ "code": {
+  "tapedeck/engine/serialize.py": "from __future__ import annotations\n\nimport re\nfrom typing import Any, Dict, Iterable, List, Optional, Union\n\nSECRET_KEY_RE = re.compile(\n    r\"(token|secret|password|api_key|apikey|authorization|credential|refresh)\", re.I\n)\n\n_PRIMITIVES = (int, float, bool, type(None))\n_MAX_DEPTH = 6\n_MAX_ITEMS = 40\n\n\nclass Redactor:\n    def __init__(self, secret_values: Iterable[str] = ()) -> None:\n        self.secret_values = set(secret_values)\n        self.secret_keys = set()\n\n    @classmethod\n    def from_environ(cls, environ: Dict[str, str], extra: Iterable[str] = ()) -> \"Redactor\":\n        secret_values = set(environ.keys())\n        secret_values.update(extra)\n        return cls(secret_values)\n\n    def scrub(self, text: str) -> str:\n        for key in self.secret_values:\n            if key in text:\n                text = text.replace(key, \"[REDACTED]\")\n        return text\n\n\ndef snapshot(value: Any, redactor: Redactor, schemas: Dict[str, dict], depth: int = 0) -> Any:\n    if depth >= _MAX_DEPTH:\n        return \"[REDACTED]\"\n    \n    if isinstance(value, dict):\n        result = {}\n        for k, v in value.items():\n            if SECRET_KEY_RE.search(k):\n                result[k] = \"[REDACTED]\"\n            else:\n                result[k] = snapshot(v, redactor, schemas, depth + 1)\n        return result\n    \n    if isinstance(value, list):\n        result = []\n        for item in value:\n            result.append(snapshot(item, redactor, schemas, depth + 1))\n        return result\n    \n    if isinstance(value, (int, float, bool, type(None))):\n        return value\n    \n    if isinstance(value, str):\n        return redactor.scrub(value)\n    \n    if hasattr(value, \"__dict__\"):\n        return snapshot(value.__dict__, redactor, schemas, depth + 1)\n    \n    return \"[REDACTED]\"\n\n\ndef _public_attrs(value: Any) -> Dict[str, Any]:\n    if isinstance(value, dict):\n        return value\n    \n    if hasattr(value, \"__dict__\"):\n        return value.__dict__\n    \n    return {}\n",
+  "tapedeck/engine/recorder.py": "from __future__ import annotations\n\nimport time\nfrom typing import Any, Dict, List, Optional\n\n\nclass Recorder:\n    def __init__(self, now=None) -> None:\n        self.calls: List[Dict] = []\n        self.events: List[Dict] = []\n        self.now = now or time.time\n\n    def _stamp(self) -> float:\n        return self.now()\n\n    def record_call(self, container: str, method: str, cfg: dict) -> None:\n        self.calls.append({\n            \"seq\": len(self.calls),\n            \"dir\": \"out\",\n            \"call\": f\"{container}.{method}\",\n            \"args\": cfg.get(\"args\", []),\n            \"kwargs\": cfg.get(\"kwargs\", {}),\n            \"timestamp\": self._stamp()\n        })\n\n    def record_event(self, source: str, event: str, payload: Any) -> None:\n        self.events.append({\n            \"seq\": len(self.events),\n            \"dir\": \"in\",\n            \"source\": source,\n            \"event\": event,\n            \"payload\": payload,\n            \"timestamp\": self._stamp()\n        })\n\n    @property\n    def call_count(self) -> int:\n        return len(self.calls)\n\n    @property\n    def event_count(self) -> int:\n        return len(self.events)\n",
+  "tapedeck/engine/tape.py": "from __future__ import annotations\n\nimport datetime as _dt\nimport json\nfrom typing import Dict\n\nfrom .recorder import Recorder\n\nREQUIRED_KEYS = (\"session\", \"timeline\", \"mocked_modules\", \"metadata\")\n\n\ndef build_tape(recorder: Recorder, session_meta: dict) -> dict:\n    tape = {\n        \"session\": session_meta,\n        \"timeline\": [],\n        \"mocked_modules\": {},\n        \"metadata\": {},\n        \"nested_schemas\": {}\n    }\n    \n    for call in recorder.calls:\n        tape[\"timeline\"].append({\n            \"seq\": call[\"seq\"],\n            \"dir\": \"out\",\n            \"call\": call[\"call\"],\n            \"args\": call[\"args\"],\n            \"kwargs\": call[\"kwargs\"],\n            \"timestamp\": call[\"timestamp\"]\n        })\n    \n    for event in recorder.events:\n        tape[\"timeline\"].append({\n            \"seq\": event[\"seq\"],\n            \"dir\": \"in\",\n            \"source\": event[\"source\"],\n            \"event\": event[\"event\"],\n            \"payload\": event[\"payload\"],\n            \"timestamp\": event[\"timestamp\"]\n        })\n    \n    return tape\n\n\ndef infer_hierarchical_bindings(container_paths) -> Dict[str, str]:\n    bindings = {}\n    for path in container_paths:\n        parts = path.split(\".\")\n        obj = {}\n        for part in parts:\n            obj = {part: obj}\n        bindings.update(obj)\n    return bindings\n\n\ndef validate_tape(tape: dict) -> None:\n    for key in tape:\n        if key not in REQUIRED_KEYS:\n            raise ValueError(f\"Invalid tape: unknown key {key}\")\n    \n    for key in REQUIRED_KEYS:\n        if key not in tape:\n            raise ValueError(f\"Missing required key {key} in tape\")\n    \n    for call in tape[\"timeline\"]:\n        if \"call\" not in call:\n            raise ValueError(\"Missing 'call' in timeline entry\")\n    \n    for event in tape[\"timeline\"]:\n        if \"source\" not in event or \"event\" not in event:\n            raise ValueError(\"Missing 'source' or 'event' in timeline entry\")\n\n\ndef load_tape(path: str) -> dict:\n    with open(path, \"r\") as f:\n        return json.load(f)\n"
+ },
+ "tokens": 24438,
+ "wrote": [
+  "tapedeck/engine/recorder.py",
+  "tapedeck/engine/serialize.py",
+  "tapedeck/engine/tape.py"
+ ]
+}

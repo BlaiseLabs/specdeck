@@ -1,0 +1,10 @@
+spent 0 of 400,000
+  specdeck_prompt seed0  10/10  10 commands   55,864 tok  read: -  | spent 55,864
+  specdeck     seed0  10/10  13 commands   61,243 tok  read: SPEC.md,AGENTS.md  | spent 117,107
+spent 117,107 of 400,000
+  specdeck     seed1  10/10  23 commands   85,247 tok  read: SPEC.md,requirements.yaml,.specdeck,AGENTS.md,covers  | spent 202,354
+  specdeck_prompt seed1  10/10   9 commands   38,493 tok  read: requirements.yaml  | spent 240,847
+spent 240,847 of 400,000
+  specdeck_prompt seed2   9/10  11 commands   28,265 tok  read: -  | spent 269,112
+  specdeck     seed2   7/10  13 commands   56,860 tok  read: covers  | spent 325,972
+ALLDONE

@@ -1,0 +1,498 @@
+[
+ {
+  "id": "m013",
+  "path": "tapedeck/gateway/services.py",
+  "line": 105,
+  "original": "        omm, nmm = om[c][\"methods\"], nm[c][\"methods\"]",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  99      om, nm = old.get(\"mocked_modules\", {}), new.get(\"mocked_modules\", {})\n 100      for c in sorted(om.keys() - nm.keys()):\n 101          drift.append(f\"container removed: {c}\")\n 102      for c in sorted(nm.keys() - om.keys()):\n 103          drift.append(f\"container added: {c}\")\n 104      for c in sorted(om.keys() & nm.keys()):\n 105          omm, nmm = om[c][\"methods\"], nm[c][\"methods\"]\n 106          for m in sorted(omm.keys() - nmm.keys()):\n 107              drift.append(f\"method removed: {c}.{m}\")\n 108          for m in sorted(nmm.keys() - omm.keys()):\n 109              drift.append(f\"method added: {c}.{m}\")\n 110          for m in sorted(omm.keys() & nmm.keys()):\n 111              o, n = omm[m], nmm[m]",
+  "failing": [
+   "tests/test_cli.py::test_diff_reports_drift_and_exit_code",
+   "tests/test_drift.py::test_detects_new_and_missing_inbound_events",
+   "tests/test_drift.py::test_detects_removed_method",
+   "tests/test_drift.py::test_detects_return_shape_change",
+   "tests/test_drift.py::test_detects_schema_field_changes",
+   "tests/test_drift.py::test_identical_tapes_have_no_drift"
+  ]
+ },
+ {
+  "id": "m016",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 131,
+  "original": "            if self._name[:1].isupper():",
+  "mutated": "            if self._name[:2].isupper():",
+  "operator": "constant",
+  "snippet": " 125              self._rec.record_call(self._container, self._name, cfg)\n 126          except Exception as e:  # recording must never break the app\n 127              self._warn(e)\n 128          if _should_wrap_result(result):\n 129              # Constructor result (capitalized name): notify the session so it can\n 130              # auto-tap gateway clients (objects with a dispatch method).\n 131              if self._name[:1].isupper():\n 132                  hook = getattr(self._rec, \"on_instance\", None)\n 133                  if hook is not None:\n 134                      try:\n 135                          hook(result, f\"{self._container}.{self._name}\")\n 136                      except Exception as e:  # tapping must never break the app\n 137                          import sys",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field"
+  ]
+ },
+ {
+  "id": "m003",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 222,
+  "original": "        self._module_path = module_path",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 216  \n 217  class ClassProxy:\n 218      def __init__(self, real, recorder: Recorder, redactor: Redactor, module_path: str):\n 219          self._td_real = real\n 220          self._rec = recorder\n 221          self._red = redactor\n 222          self._module_path = module_path\n 223  \n 224      def __call__(self, *args, **kwargs):\n 225          wrapper = CallableWrapper(\n 226              self._td_real, self._rec, self._red, self._module_path, self._td_real.__name__\n 227          )\n 228          return wrapper(*args, **kwargs)",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ]
+ },
+ {
+  "id": "m007",
+  "path": "tapedeck/gateway/app/implementations.py",
+  "line": 230,
+  "original": "        pumped = 0",
+  "mutated": "        pumped = 1",
+  "operator": "constant",
+  "snippet": " 224      \"\"\"Replay: hand the app a tape-backed client, then feed it the recorded events.\"\"\"\n 225  \n 226      def pump(self, tape: dict, source: str, make_handlers: Callable, client_path: str) -> dict:\n 227          player = TapePlayer(tape)\n 228          client = player.object_at(client_path)\n 229          handlers = make_handlers(client)\n 230          pumped = 0\n 231          for entry in player.events(source):\n 232              handler = handlers.get(f\"on_{entry['event']}\")\n 233              if handler is None:\n 234                  continue\n 235              payload = entry.get(\"payload\")\n 236              args = () if payload in (None, []) else (from_snapshot(payload),)",
+  "failing": [
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "m025",
+  "path": "tapedeck/gateway/services.py",
+  "line": 49,
+  "original": "        patching.uninstall_session(session)",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  43          file_io.write_file(output_file, json.dumps(tape, indent=2, default=str))\n  44          return tape\n  45  \n  46      def uninstall(self, session: dict):\n  47          \"\"\"Remove the import hook and restore tapped dispatchers.\"\"\"\n  48          patching = yield from need(ModulePatching)\n  49          patching.uninstall_session(session)\n  50          return None\n  51  \n  52      def load_tape(self, path: str):\n  53          file_io = yield from need(FileIO)\n  54          tape = json.loads(file_io.read_file(path))\n  55          _validate(tape)",
+  "failing": []
+ },
+ {
+  "id": "m010",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 256,
+  "original": "            return ClassProxy(value, self._rec, self._red, self._td_real.__name__)",
+  "mutated": "            pass",
+  "operator": "statement",
+  "snippet": " 250  \n 251      def __getattr__(self, name):\n 252          value = getattr(self._td_real, name)\n 253          if name.startswith(\"_\"):\n 254              return value\n 255          if inspect.isclass(value):\n 256              return ClassProxy(value, self._rec, self._red, self._td_real.__name__)\n 257          if isinstance(value, types.ModuleType):\n 258              return ModuleProxy(value, self._rec, self._red)\n 259          if callable(value):\n 260              return CallableWrapper(value, self._rec, self._red, self._td_real.__name__, name)\n 261          return value",
+  "failing": []
+ },
+ {
+  "id": "m022",
+  "path": "tapedeck/engine/tape_player.py",
+  "line": 110,
+  "original": "        object.__setattr__(self, \"_path\", path)",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 104          return any(c == path or c.startswith(path + \".\") for c in self.containers)\n 105  \n 106  \n 107  class TapeObject:\n 108      def __init__(self, player: TapePlayer, path: str, snapshot: Any = None):\n 109          object.__setattr__(self, \"_player\", player)\n 110          object.__setattr__(self, \"_path\", path)\n 111          object.__setattr__(self, \"_snapshot\", snapshot)\n 112  \n 113      def __getattr__(self, name):\n 114          player, path = self._player, self._path\n 115          methods = player.containers.get(path, {})\n 116          if name in methods:",
+  "failing": [
+   "tests/test_cli.py::test_play_replays_discord_via_handler_file",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+   "tests/test_integrated_replay.py::test_openai_completion_replays",
+   "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "m029",
+  "path": "tapedeck/engine/serialize.py",
+  "line": 66,
+  "original": "    attrs = _public_attrs(value)",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": "  60                  v, redactor, schemas, depth + 1\n  61              )\n  62          return out\n  63      if isinstance(value, (list, tuple, set)):\n  64          return [snapshot(v, redactor, schemas, depth + 1) for v in list(value)[:_MAX_ITEMS]]\n  65      # Object: snapshot public attrs and record a schema for the type.\n  66      attrs = _public_attrs(value)\n  67      if attrs:\n  68          type_name = type(value).__name__\n  69          schemas.setdefault(\n  70              type_name, {a: type(v).__name__ for a, v in attrs.items()}\n  71          )\n  72          out = {\"__type__\": type_name}",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ]
+ },
+ {
+  "id": "m009",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 220,
+  "original": "        self._rec = recorder",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 214          return repr(self._td_real)\n 215  \n 216  \n 217  class ClassProxy:\n 218      def __init__(self, real, recorder: Recorder, redactor: Redactor, module_path: str):\n 219          self._td_real = real\n 220          self._rec = recorder\n 221          self._red = redactor\n 222          self._module_path = module_path\n 223  \n 224      def __call__(self, *args, **kwargs):\n 225          wrapper = CallableWrapper(\n 226              self._td_real, self._rec, self._red, self._module_path, self._td_real.__name__",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ]
+ },
+ {
+  "id": "m012",
+  "path": "tapedeck/gateway/app/implementations.py",
+  "line": 80,
+  "original": "        inner = body.get(\"event\")",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  74          v = getattr(obj, attr, None)\n  75          if isinstance(v, str) and v:\n  76              return v, True\n  77  \n  78      body = getattr(obj, \"body\", None)\n  79      if isinstance(body, dict):\n  80          inner = body.get(\"event\")\n  81          if isinstance(inner, dict) and isinstance(inner.get(\"type\"), str):\n  82              return inner[\"type\"], True\n  83          if isinstance(body.get(\"type\"), str):\n  84              return body[\"type\"], True\n  85  \n  86      if getattr(obj, \"update_id\", None) is not None:  # Telegram Update",
+  "failing": [
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+  ]
+ },
+ {
+  "id": "m018",
+  "path": "tapedeck/cli.py",
+  "line": 193,
+  "original": "    pu.add_argument(\"-o\", \"--output\", default=None)",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 187      pl.add_argument(\"--client\", required=True, help=\"client tape path, e.g. discord.Client_result\")\n 188      pl.add_argument(\"--handlers\", required=True, help=\"python file defining make_handlers(client)\")\n 189      pl.set_defaults(func=cmd_play)\n 190  \n 191      pu = sub.add_parser(\"pull\", help=\"download a tape from the tape library\")\n 192      pu.add_argument(\"name\", help=\"tape name or full URL\")\n 193      pu.add_argument(\"-o\", \"--output\", default=None)\n 194      pu.set_defaults(func=cmd_pull)\n 195  \n 196      pb = sub.add_parser(\"publish\", help=\"add a tape to a local tape library\")\n 197      pb.add_argument(\"tape\")\n 198      pb.add_argument(\"registry\", help=\"local tape-library checkout dir\")\n 199      pb.add_argument(\"name\")",
+  "failing": [
+   "tests/test_cli.py::test_publish_then_pull_via_cli"
+  ]
+ },
+ {
+  "id": "m021",
+  "path": "tapedeck/gateway/services.py",
+  "line": 61,
+  "original": "        result = pump.pump(tape, source, make_handlers, client_path)",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  55          _validate(tape)\n  56          return tape\n  57  \n  58      def replay_session(self, tape: dict, source: str, make_handlers: Callable, client_path: str):\n  59          \"\"\"Pump recorded inbound events through app handlers, fully offline.\"\"\"\n  60          pump = yield from need(GatewayPump)\n  61          result = pump.pump(tape, source, make_handlers, client_path)\n  62          return result\n  63  \n  64      def publish_tape(self, tape_path: str, registry_dir: str, name: str):\n  65          \"\"\"Copy a validated tape into a local tape-library checkout + update its index.\"\"\"\n  66          file_io = yield from need(FileIO)\n  67          tape = json.loads(file_io.read_file(tape_path))",
+  "failing": [
+   "tests/test_cli.py::test_play_replays_discord_via_handler_file",
+   "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "m000",
+  "path": "tapedeck/gateway/services.py",
+  "line": 67,
+  "original": "        tape = json.loads(file_io.read_file(tape_path))",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  61          result = pump.pump(tape, source, make_handlers, client_path)\n  62          return result\n  63  \n  64      def publish_tape(self, tape_path: str, registry_dir: str, name: str):\n  65          \"\"\"Copy a validated tape into a local tape-library checkout + update its index.\"\"\"\n  66          file_io = yield from need(FileIO)\n  67          tape = json.loads(file_io.read_file(tape_path))\n  68          _validate(tape)\n  69          file_io.write_file(f\"{registry_dir}/tapes/{name}.tape.json\", json.dumps(tape, indent=2))\n  70          index_path = f\"{registry_dir}/tapes/index.json\"\n  71          try:\n  72              index = json.loads(file_io.read_file(index_path))\n  73          except (FileNotFoundError, ValueError):",
+  "failing": [
+   "tests/test_cli.py::test_publish_then_pull_via_cli",
+   "tests/test_registry.py::test_publish_then_pull_roundtrip"
+  ]
+ },
+ {
+  "id": "m024",
+  "path": "tapedeck/gateway/app/implementations.py",
+  "line": 240,
+  "original": "            pumped += 1",
+  "mutated": "            pumped += 2",
+  "operator": "constant",
+  "snippet": " 234                  continue\n 235              payload = entry.get(\"payload\")\n 236              args = () if payload in (None, []) else (from_snapshot(payload),)\n 237              result = handler(*args)\n 238              if inspect.iscoroutine(result):\n 239                  _run_coro(result)\n 240              pumped += 1\n 241          return {\n 242              \"transcript\": player.transcript,\n 243              \"recorded_out\": player.recorded_out(),\n 244              \"events_pumped\": pumped,\n 245          }\n 246  ",
+  "failing": [
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "m005",
+  "path": "tapedeck/engine/tape_player.py",
+  "line": 68,
+  "original": "            return default",
+  "mutated": "            pass",
+  "operator": "statement",
+  "snippet": "  62              return False\n  63  \n  64      def get(self, key, default=None):\n  65          try:\n  66              return from_snapshot(self._lookup(key))\n  67          except KeyError:\n  68              return default\n  69  \n  70      def __repr__(self):\n  71          return f\"TapeValue({self._data.get('__type__', '?')})\"\n  72  \n  73  \n  74  def _replay_snap(value: Any) -> Any:",
+  "failing": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay"
+  ]
+ },
+ {
+  "id": "m004",
+  "path": "tapedeck/gateway/services.py",
+  "line": 139,
+  "original": "    return type(value).__name__",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 133  def _shape(value: Any) -> str:\n 134      if isinstance(value, dict):\n 135          keys = sorted(k for k in value if k != \"__type__\")\n 136          return f\"{value.get('__type__', 'dict')}({', '.join(keys)})\"\n 137      if isinstance(value, list):\n 138          return \"list\"\n 139      return type(value).__name__\n 140  \n 141  \n 142  def diff_transcript(recorded_out: List[dict], transcript: List[dict], client_path: str) -> List[str]:\n 143      \"\"\"Pure comparison: replayed calls must match the recorded ones in order.\"\"\"\n 144      recorded = [e for e in recorded_out if e[\"call\"].startswith(client_path + \".\")]\n 145      problems: List[str] = []",
+  "failing": []
+ },
+ {
+  "id": "m031",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 258,
+  "original": "            return ModuleProxy(value, self._rec, self._red)",
+  "mutated": "            pass",
+  "operator": "statement",
+  "snippet": " 252          value = getattr(self._td_real, name)\n 253          if name.startswith(\"_\"):\n 254              return value\n 255          if inspect.isclass(value):\n 256              return ClassProxy(value, self._rec, self._red, self._td_real.__name__)\n 257          if isinstance(value, types.ModuleType):\n 258              return ModuleProxy(value, self._rec, self._red)\n 259          if callable(value):\n 260              return CallableWrapper(value, self._rec, self._red, self._td_real.__name__, name)\n 261          return value",
+  "failing": []
+ },
+ {
+  "id": "m017",
+  "path": "tapedeck/gateway/app/implementations.py",
+  "line": 258,
+  "original": "            return f.read()",
+  "mutated": "            pass",
+  "operator": "statement",
+  "snippet": " 252              os.makedirs(parent, exist_ok=True)\n 253          with open(path, \"w\", encoding=\"utf-8\") as f:\n 254              f.write(content)\n 255  \n 256      def read_file(self, path: str) -> str:\n 257          with open(path, \"r\", encoding=\"utf-8\") as f:\n 258              return f.read()\n 259  \n 260  \n 261  class HttpFetchImpl(HttpFetch):\n 262      def fetch(self, url: str) -> str:\n 263          import urllib.request\n 264  ",
+  "failing": [
+   "tests/test_cli.py::test_publish_then_pull_via_cli",
+   "tests/test_registry.py::test_publish_then_pull_roundtrip"
+  ]
+ },
+ {
+  "id": "m028",
+  "path": "tapedeck/engine/serialize.py",
+  "line": 85,
+  "original": "        return f\"<unsnapshotable {type(value).__name__}>\"",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  79              except Exception:  # one hostile attribute must not sink the snapshot\n  80                  out[a] = f\"<unsnapshotable {type(v).__name__}>\"\n  81          return out\n  82      try:\n  83          return redactor.scrub(repr(value))\n  84      except Exception:\n  85          return f\"<unsnapshotable {type(value).__name__}>\"\n  86  \n  87  \n  88  def _public_attrs(value: Any) -> Dict[str, Any]:\n  89      try:\n  90          raw = dict(vars(value))\n  91      except TypeError:",
+  "failing": []
+ },
+ {
+  "id": "m027",
+  "path": "tapedeck/cli.py",
+  "line": 165,
+  "original": "    r = sub.add_parser(\"record\", help=\"capture a script's outbound SDK calls to a tape\")",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 159  \n 160  \n 161  def build_parser() -> argparse.ArgumentParser:\n 162      p = argparse.ArgumentParser(prog=\"tapedeck\", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)\n 163      sub = p.add_subparsers(dest=\"command\", required=True)\n 164  \n 165      r = sub.add_parser(\"record\", help=\"capture a script's outbound SDK calls to a tape\")\n 166      r.add_argument(\"modules\", help=\"comma-separated module names, e.g. openai,discord\")\n 167      r.add_argument(\"script\", help=\"python script to run under capture\")\n 168      r.add_argument(\"-o\", \"--output\", default=\"out.tape.json\")\n 169      r.set_defaults(func=cmd_record)\n 170  \n 171      i = sub.add_parser(\"inspect\", help=\"print a summary of a tape\")",
+  "failing": [
+   "tests/test_cli.py::test_diff_reports_drift_and_exit_code",
+   "tests/test_cli.py::test_inspect_lists_sdks_and_events",
+   "tests/test_cli.py::test_play_replays_discord_via_handler_file",
+   "tests/test_cli.py::test_publish_then_pull_via_cli",
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_cli.py::test_verify_fails_on_planted_secret",
+   "tests/test_cli.py::test_verify_passes_on_golden_tape"
+  ]
+ },
+ {
+  "id": "m008",
+  "path": "tapedeck/gateway/services.py",
+  "line": 149,
+  "original": "        elif rec.get(\"args\", []) != rep.get(\"args\", []) or rec.get(\"kwargs\", {}) != rep.get(\"kwargs\", {}):",
+  "mutated": "        elif rec.get(\"args\", []) == rep.get(\"args\", []) or rec.get(\"kwargs\", {}) != rep.get(\"kwargs\", {}):",
+  "operator": "negate",
+  "snippet": " 143      \"\"\"Pure comparison: replayed calls must match the recorded ones in order.\"\"\"\n 144      recorded = [e for e in recorded_out if e[\"call\"].startswith(client_path + \".\")]\n 145      problems: List[str] = []\n 146      for i, (rec, rep) in enumerate(zip(recorded, transcript)):\n 147          if rec[\"call\"] != rep[\"call\"]:\n 148              problems.append(f\"[{i}] call mismatch: recorded {rec['call']!r} vs replayed {rep['call']!r}\")\n 149          elif rec.get(\"args\", []) != rep.get(\"args\", []) or rec.get(\"kwargs\", {}) != rep.get(\"kwargs\", {}):\n 150              problems.append(f\"[{i}] args mismatch on {rec['call']!r}\")\n 151      if len(recorded) != len(transcript):\n 152          problems.append(f\"count mismatch: recorded {len(recorded)} vs replayed {len(transcript)}\")\n 153      return problems\n 154  \n 155  ",
+  "failing": [
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "m023",
+  "path": "tapedeck/engine/tape_player.py",
+  "line": 109,
+  "original": "        object.__setattr__(self, \"_player\", player)",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 103      def _has_prefix(self, path: str) -> bool:\n 104          return any(c == path or c.startswith(path + \".\") for c in self.containers)\n 105  \n 106  \n 107  class TapeObject:\n 108      def __init__(self, player: TapePlayer, path: str, snapshot: Any = None):\n 109          object.__setattr__(self, \"_player\", player)\n 110          object.__setattr__(self, \"_path\", path)\n 111          object.__setattr__(self, \"_snapshot\", snapshot)\n 112  \n 113      def __getattr__(self, name):\n 114          player, path = self._player, self._path\n 115          methods = player.containers.get(path, {})",
+  "failing": [
+   "tests/test_cli.py::test_play_replays_discord_via_handler_file",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+   "tests/test_integrated_replay.py::test_openai_completion_replays",
+   "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "m011",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 133,
+  "original": "                if hook is not None:",
+  "mutated": "                if hook is None:",
+  "operator": "negate",
+  "snippet": " 127              self._warn(e)\n 128          if _should_wrap_result(result):\n 129              # Constructor result (capitalized name): notify the session so it can\n 130              # auto-tap gateway clients (objects with a dispatch method).\n 131              if self._name[:1].isupper():\n 132                  hook = getattr(self._rec, \"on_instance\", None)\n 133                  if hook is not None:\n 134                      try:\n 135                          hook(result, f\"{self._container}.{self._name}\")\n 136                      except Exception as e:  # tapping must never break the app\n 137                          import sys\n 138  \n 139                          print(f\"[tapedeck] WARN: on_instance hook failed: {e!r}\", file=sys.stderr)",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field"
+  ]
+ },
+ {
+  "id": "m035",
+  "path": "tapedeck/engine/netguard.py",
+  "line": 37,
+  "original": "        socket.socket = self._socket",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  31  \n  32          socket.socket = GuardedSocket  # type: ignore[assignment]\n  33          socket.create_connection = _blocked  # type: ignore[assignment]\n  34          return self\n  35  \n  36      def __exit__(self, *exc):\n  37          socket.socket = self._socket\n  38          socket.create_connection = self._create_connection\n  39          return False",
+  "failing": []
+ },
+ {
+  "id": "m019",
+  "path": "tapedeck/gateway/app/app.py",
+  "line": 31,
+  "original": "        self.file_io = FileIOImpl()",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  25      def __init__(self) -> None:\n  26          self.service = GatewayService()\n  27          self.clock = ClockImpl()\n  28          self.module_patching = ModulePatchingImpl()\n  29          self.gateway_tap = GatewayTapImpl()\n  30          self.gateway_pump = GatewayPumpImpl()\n  31          self.file_io = FileIOImpl()\n  32          self.http_fetch = HttpFetchImpl()\n  33  \n  34      def _run(self, effect_func):\n  35          handler = supply(\n  36              self.clock,\n  37              self.module_patching,",
+  "failing": [
+   "tests/test_cli.py::test_play_replays_discord_via_handler_file",
+   "tests/test_cli.py::test_publish_then_pull_via_cli",
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+   "tests/test_registry.py::test_publish_then_pull_roundtrip",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ]
+ },
+ {
+  "id": "m014",
+  "path": "tapedeck/engine/serialize.py",
+  "line": 109,
+  "original": "    return dict(public[:_MAX_ITEMS])",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 103      ]\n 104      # Pydantic-style SDK models declare huge numbers of optional fields \u2014 an\n 105      # aiogram Message has 127, of which ~5 are populated. Order the fields that\n 106      # actually carry data first so truncation never drops the payload: `text`\n 107      # sits at index 31 and was previously cut, capturing a message with no body.\n 108      public.sort(key=lambda kv: kv[1] is None)\n 109      return dict(public[:_MAX_ITEMS])",
+  "failing": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "m015",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 77,
+  "original": "        return item",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  71      def __aiter__(self):\n  72          return self\n  73  \n  74      async def __anext__(self):\n  75          item = await self._real.__anext__()\n  76          self._chunks.append(self._snap(item))\n  77          return item\n  78  \n  79  \n  80  class CallableWrapper:\n  81      def __init__(self, real, recorder: Recorder, redactor: Redactor, container: str, name: str):\n  82          self._td_real = real\n  83          self._rec = recorder",
+  "failing": []
+ },
+ {
+  "id": "m026",
+  "path": "tapedeck/cli.py",
+  "line": 85,
+  "original": "    raw = json.dumps(tape)",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": "  79      try:\n  80          tape = _load(args.tape)\n  81      except (ValueError, FileNotFoundError, json.JSONDecodeError) as e:\n  82          print(f\"FAIL: not a valid tape: {e}\")\n  83          return 1\n  84  \n  85      raw = json.dumps(tape)\n  86      for marker in _SECRET_MARKERS:\n  87          if marker in raw:\n  88              problems.append(f\"possible secret in tape (marker {marker!r})\")\n  89  \n  90      # timeline outbound calls must exist in the path-keyed map (replayable).\n  91      containers = tape.get(\"mocked_modules\", {})",
+  "failing": [
+   "tests/test_cli.py::test_verify_fails_on_planted_secret",
+   "tests/test_cli.py::test_verify_passes_on_golden_tape"
+  ]
+ },
+ {
+  "id": "m002",
+  "path": "tapedeck/gateway/app/implementations.py",
+  "line": 41,
+  "original": "DISPATCH_METHOD_NAMES = (\"dispatch\", \"feed_update\", \"process_update\")",
+  "mutated": "pass",
+  "operator": "statement",
+  "snippet": "  35  \n  36  # Gateway SDKs deliver pushed events through differently-named entry points.\n  37  # Tried in order; the first callable match on an instance becomes the tap point.\n  38  #   dispatch       discord.py, twitchio, slack_bolt\n  39  #   feed_update    aiogram      (async, signature: feed_update(bot, update))\n  40  #   process_update python-telegram-bot (async, signature: process_update(update))\n  41  DISPATCH_METHOD_NAMES = (\"dispatch\", \"feed_update\", \"process_update\")\n  42  \n  43  # Telegram Update objects carry no `.type`; the event kind is whichever optional\n  44  # field is populated. Ordered by how specific/common each is.\n  45  _TELEGRAM_UPDATE_FIELDS = (\n  46      \"message\",\n  47      \"edited_message\",",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ]
+ },
+ {
+  "id": "m001",
+  "path": "tapedeck/gateway/services.py",
+  "line": 122,
+  "original": "        drift.append(f\"new inbound event: {s}:{ev}\")",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 116                  drift.append(f\"return shape changed: {c}.{m}: {oshape} -> {nshape}\")\n 117      oev = {(e[\"source\"], e[\"event\"]) for e in old.get(\"timeline\", []) if e[\"dir\"] == \"in\"}\n 118      nev = {(e[\"source\"], e[\"event\"]) for e in new.get(\"timeline\", []) if e[\"dir\"] == \"in\"}\n 119      for s, ev in sorted(oev - nev):\n 120          drift.append(f\"inbound event no longer seen: {s}:{ev}\")\n 121      for s, ev in sorted(nev - oev):\n 122          drift.append(f\"new inbound event: {s}:{ev}\")\n 123      osch, nsch = old.get(\"nested_schemas\", {}), new.get(\"nested_schemas\", {})\n 124      for t in sorted(osch.keys() & nsch.keys()):\n 125          removed, added = set(osch[t]) - set(nsch[t]), set(nsch[t]) - set(osch[t])\n 126          if removed:\n 127              drift.append(f\"schema {t}: fields removed: {sorted(removed)}\")\n 128          if added:",
+  "failing": [
+   "tests/test_drift.py::test_detects_new_and_missing_inbound_events"
+  ]
+ },
+ {
+  "id": "m006",
+  "path": "tapedeck/gateway/services.py",
+  "line": 87,
+  "original": "        content = fetch.fetch(url)",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  81          fetch = yield from need(HttpFetch)\n  82          url = (\n  83              name_or_url\n  84              if \"://\" in name_or_url\n  85              else f\"{registry_base}/tapes/{name_or_url}.tape.json\"\n  86          )\n  87          content = fetch.fetch(url)\n  88          tape = json.loads(content)\n  89          _validate(tape)\n  90          file_io = yield from need(FileIO)\n  91          file_io.write_file(dest_path, content)\n  92          return tape\n  93  ",
+  "failing": [
+   "tests/test_cli.py::test_publish_then_pull_via_cli",
+   "tests/test_registry.py::test_publish_then_pull_roundtrip"
+  ]
+ },
+ {
+  "id": "m020",
+  "path": "tapedeck/engine/serialize.py",
+  "line": 64,
+  "original": "        return [snapshot(v, redactor, schemas, depth + 1) for v in list(value)[:_MAX_ITEMS]]",
+  "mutated": "        return [snapshot(v, redactor, schemas, depth - 1) for v in list(value)[:_MAX_ITEMS]]",
+  "operator": "arithmetic",
+  "snippet": "  58              key = str(k)\n  59              out[key] = \"[REDACTED]\" if SECRET_KEY_RE.search(key) else snapshot(\n  60                  v, redactor, schemas, depth + 1\n  61              )\n  62          return out\n  63      if isinstance(value, (list, tuple, set)):\n  64          return [snapshot(v, redactor, schemas, depth + 1) for v in list(value)[:_MAX_ITEMS]]\n  65      # Object: snapshot public attrs and record a schema for the type.\n  66      attrs = _public_attrs(value)\n  67      if attrs:\n  68          type_name = type(value).__name__\n  69          schemas.setdefault(\n  70              type_name, {a: type(v).__name__ for a, v in attrs.items()}",
+  "failing": []
+ }
+]

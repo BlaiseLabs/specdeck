@@ -1,0 +1,96 @@
+spent 0 of 420,000
+  tape.py seed0
+    round 0: coached-on 77% | HELD-OUT 75% (6/8) | 16 tests | validity 88%
+    feedback: showed 3 survivors | reply 6560 chars | extracted 6546 chars | changed=True
+    round 1: coached-on 77% | HELD-OUT 75% (6/8) | 17 tests | validity 82%
+    feedback: showed 3 survivors | reply 7808 chars | extracted 7794 chars | changed=True
+    round 2: coached-on 77% | HELD-OUT 75% (6/8) | 17 tests | validity 82%
+  -> final held-out 75%  15,487 tok | running 15,487
+  serialize.py seed0
+    round 0: coached-on 77% | HELD-OUT 88% (7/8) | 8 tests | validity 62%
+    feedback: showed 3 survivors | reply 7378 chars | extracted 7364 chars | changed=True
+    round 1: coached-on 85% | HELD-OUT 88% (7/8) | 11 tests | validity 64%
+    feedback: showed 2 survivors | reply 8551 chars | extracted 8537 chars | changed=True
+    round 2: coached-on 100% | HELD-OUT 88% (7/8) | 13 tests | validity 69%
+  -> final held-out 88%  17,569 tok | running 33,056
+  netguard.py seed0
+    round 0: coached-on 100% | HELD-OUT 100% (4/4) | 5 tests | validity 100%
+    no survivors in the feedback set — nothing to feed back
+  -> final held-out 100%  3,349 tok | running 36,405
+  tape.py seed1
+    round 0: coached-on 77% | HELD-OUT 75% (6/8) | 24 tests | validity 62%
+    feedback: showed 3 survivors | reply 9721 chars | extracted 9707 chars | changed=True
+    round 1: coached-on 77% | HELD-OUT 75% (6/8) | 27 tests | validity 56%
+    feedback: showed 3 survivors | reply 7891 chars | extracted 7877 chars | changed=True
+    round 2: coached-on 77% | HELD-OUT 75% (6/8) | 25 tests | validity 60%
+  -> final held-out 75%  17,102 tok | running 53,507
+  serialize.py seed1
+    round 0: coached-on 62% | HELD-OUT 75% (6/8) | 6 tests | validity 67%
+    feedback: showed 5 survivors | reply 5456 chars | extracted 5442 chars | changed=True
+    round 1: coached-on 85% | HELD-OUT 88% (7/8) | 10 tests | validity 70%
+    feedback: showed 2 survivors | reply 6314 chars | extracted 6300 chars | changed=True
+    round 2: coached-on 85% | HELD-OUT 88% (7/8) | 12 tests | validity 58%
+  -> final held-out 88%  15,136 tok | running 68,643
+  netguard.py seed1
+    round 0: coached-on 83% | HELD-OUT 100% (4/4) | 8 tests | validity 100%
+    feedback: showed 1 survivors | reply 3476 chars | extracted 3462 chars | changed=True
+    round 1: coached-on 100% | HELD-OUT 100% (4/4) | 9 tests | validity 100%
+    no survivors in the feedback set — nothing to feed back
+  -> final held-out 100%  8,180 tok | running 76,823
+  tape.py seed2
+    round 0: coached-on 77% | HELD-OUT 75% (6/8) | 19 tests | validity 68%
+    feedback: showed 3 survivors | reply 6481 chars | extracted 6467 chars | changed=True
+    round 1: coached-on 77% | HELD-OUT 75% (6/8) | 20 tests | validity 65%
+    feedback: showed 3 survivors | reply 6848 chars | extracted 6834 chars | changed=True
+    round 2: coached-on 77% | HELD-OUT 75% (6/8) | 21 tests | validity 62%
+  -> final held-out 75%  14,392 tok | running 91,215
+  serialize.py seed2
+    round 0: coached-on 77% | HELD-OUT 88% (7/8) | 6 tests | validity 67%
+    feedback: showed 3 survivors | reply 7301 chars | extracted 7287 chars | changed=True
+    round 1: coached-on 100% | HELD-OUT 88% (7/8) | 9 tests | validity 78%
+    no survivors in the feedback set — nothing to feed back
+  -> final held-out 88%  9,477 tok | running 100,692
+  netguard.py seed2
+    round 0: coached-on 83% | HELD-OUT 100% (4/4) | 7 tests | validity 100%
+    feedback: showed 1 survivors | reply 3926 chars | extracted 3912 chars | changed=True
+    round 1: coached-on 83% | HELD-OUT 100% (4/4) | 10 tests | validity 90%
+    feedback: showed 1 survivors | reply 4956 chars | extracted 4942 chars | changed=True
+    round 2: coached-on 0% | HELD-OUT 0% (0/4) | 1 tests | validity 0%
+  -> final held-out 0%  11,654 tok | running 112,346
+  tape.py seed3
+    round 0: coached-on 77% | HELD-OUT 75% (6/8) | 12 tests | validity 92%
+    feedback: showed 3 survivors | reply 4818 chars | extracted 4804 chars | changed=True
+    round 1: coached-on 77% | HELD-OUT 75% (6/8) | 13 tests | validity 85%
+    feedback: showed 3 survivors | reply 5961 chars | extracted 5947 chars | changed=True
+    round 2: coached-on 77% | HELD-OUT 75% (6/8) | 14 tests | validity 79%
+  -> final held-out 75%  13,402 tok | running 125,748
+  serialize.py seed3
+    round 0: coached-on 77% | HELD-OUT 88% (7/8) | 7 tests | validity 86%
+    feedback: showed 3 survivors | reply 6968 chars | extracted 6954 chars | changed=True
+    round 1: coached-on 100% | HELD-OUT 88% (7/8) | 10 tests | validity 90%
+    no survivors in the feedback set — nothing to feed back
+  -> final held-out 88%  10,644 tok | running 136,392
+  netguard.py seed3
+    round 0: coached-on 100% | HELD-OUT 100% (4/4) | 5 tests | validity 100%
+    no survivors in the feedback set — nothing to feed back
+  -> final held-out 100%  3,763 tok | running 140,155
+  tape.py seed4
+    round 0: coached-on 77% | HELD-OUT 75% (6/8) | 13 tests | validity 92%
+    feedback: showed 3 survivors | reply 5590 chars | extracted 5576 chars | changed=True
+    round 1: coached-on 77% | HELD-OUT 75% (6/8) | 14 tests | validity 86%
+    feedback: showed 3 survivors | reply 6592 chars | extracted 6578 chars | changed=True
+    round 2: coached-on 77% | HELD-OUT 75% (6/8) | 16 tests | validity 75%
+  -> final held-out 75%  13,181 tok | running 153,336
+  serialize.py seed4
+    round 0: coached-on 62% | HELD-OUT 75% (6/8) | 6 tests | validity 67%
+    feedback: showed 5 survivors | reply 6437 chars | extracted 6423 chars | changed=True
+    round 1: coached-on 77% | HELD-OUT 75% (6/8) | 10 tests | validity 60%
+    feedback: showed 3 survivors | reply 7937 chars | extracted 7923 chars | changed=True
+    round 2: coached-on 85% | HELD-OUT 88% (7/8) | 13 tests | validity 54%
+  -> final held-out 88%  15,231 tok | running 168,567
+  netguard.py seed4
+    round 0: coached-on 83% | HELD-OUT 100% (4/4) | 4 tests | validity 100%
+    feedback: showed 1 survivors | reply 4284 chars | extracted 4270 chars | changed=True
+    round 1: coached-on 100% | HELD-OUT 100% (4/4) | 6 tests | validity 100%
+    no survivors in the feedback set — nothing to feed back
+  -> final held-out 100%  9,366 tok | running 177,933

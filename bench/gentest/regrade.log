@@ -1,0 +1,67 @@
+human suite netguard.py      killed 4
+human suite serialize.py     killed 14
+human suite tape.py          killed 16
+  1/60 direct     tape.py        caught 64% valid 89%
+  2/60 plan       tape.py        caught 73% valid 52%
+  3/60 spec       tape.py        caught 73% valid 77%
+  4/60 direct     serialize.py   caught 57% valid 83%
+  5/60 plan       serialize.py   caught 47% valid 46%
+  6/60 spec       serialize.py   caught 57% valid 69%
+  7/60 direct     netguard.py    caught 69% valid 100%
+  8/60 plan       netguard.py    caught 77% valid 100%
+  9/60 spec       netguard.py    caught 62% valid 100%
+  10/60 direct     tape.py        caught 73% valid 76%
+  11/60 plan       tape.py        caught 73% valid 62%
+  12/60 spec       tape.py        caught 73% valid 57%
+  13/60 direct     serialize.py   caught 57% valid 67%
+  14/60 plan       serialize.py   caught 40% valid 64%
+  15/60 spec       serialize.py   caught 57% valid 81%
+  16/60 direct     netguard.py    caught 69% valid 100%
+  17/60 plan       netguard.py    caught 77% valid 100%
+  18/60 spec       netguard.py    caught 62% valid 100%
+  19/60 direct     tape.py        caught 73% valid 83%
+  20/60 plan       tape.py        caught 73% valid 47%
+  21/60 spec       tape.py        caught 68% valid 63%
+  22/60 direct     serialize.py   caught 57% valid 92%
+  23/60 plan       serialize.py   caught 47% valid 77%
+  24/60 spec       serialize.py   caught 57% valid 82%
+  25/60 direct     netguard.py    caught 69% valid 100%
+  26/60 plan       netguard.py    caught 77% valid 100%
+  27/60 spec       netguard.py    caught 69% valid 100%
+  28/60 direct     tape.py        caught 73% valid 85%
+  29/60 plan       tape.py        caught 86% valid 67%
+  30/60 spec       tape.py        caught 73% valid 67%
+  31/60 direct     serialize.py   caught 57% valid 83%
+  32/60 plan       serialize.py   caught 57% valid 50%
+  33/60 spec       serialize.py   caught 57% valid 64%
+  34/60 direct     netguard.py    caught 69% valid 100%
+  35/60 plan       netguard.py    caught 77% valid 100%
+  36/60 spec       netguard.py    caught 62% valid 89%
+  37/60 direct     tape.py        caught 32% valid 75%
+  38/60 plan       tape.py        caught 73% valid 64%
+  39/60 spec       tape.py        caught 73% valid 80%
+  40/60 direct     serialize.py   caught 57% valid 75%
+  41/60 plan       serialize.py   caught 67% valid 67%
+  42/60 spec       serialize.py   caught 57% valid 79%
+  43/60 direct     netguard.py    caught 69% valid 100%
+  44/60 plan       netguard.py    caught 77% valid 94%
+  45/60 spec       netguard.py    caught 62% valid 100%
+  46/60 spec-open  tape.py        caught 73% valid 51%
+  47/60 spec-open  serialize.py   caught 57% valid 84%
+  48/60 spec-open  netguard.py    caught 77% valid 91%
+  49/60 spec-open  tape.py        caught 73% valid 63%
+  50/60 spec-open  serialize.py   caught 63% valid 92%
+  51/60 spec-open  netguard.py    caught 77% valid 92%
+  52/60 spec-open  tape.py        caught 73% valid 52%
+  53/60 spec-open  serialize.py   caught 67% valid 82%
+  54/60 spec-open  netguard.py    caught 77% valid 87%
+  55/60 spec-open  tape.py        caught 73% valid 64%
+  56/60 spec-open  serialize.py   caught 57% valid 67%
+  57/60 spec-open  netguard.py    caught 77% valid 97%
+  58/60 spec-open  tape.py        caught 73% valid 46%
+  59/60 spec-open  serialize.py   caught 57% valid 90%
+  60/60 spec-open  netguard.py    caught 69% valid 83%
+killable in netguard.py      10 of 13
+killable in serialize.py     21 of 13
+killable in tape.py          21 of 13
+wrote regraded.jsonl and baseline.json

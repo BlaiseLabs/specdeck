@@ -1,0 +1,149 @@
+Fernhill Supply Slack — #pricing-and-ops
+Export range: 2026-05-13 to 2026-05-27
+Exported by: mark.doyle   (format: plain text)
+==================================================================
+
+--- Wednesday, May 13 ---
+
+[09:02] mark.doyle: new printer ordered. same model, as per boss. arrives fri apparently
+    :tada: 2   :pray: 1
+[09:04] dan.whitlock: rip old zebra
+[09:04] dan.whitlock: you will not be missed
+[09:15] jules.k: agency took the "we're keeping the green" news better than expected. they're going to do a "softer fern". whatever that means
+[09:16] priya: as long as it's green
+[09:16] jules.k: it's green
+[09:16] jules.k: ish
+    :eyes: 1
+[11:48] dan.whitlock: those sandwiches yesterday were elite btw where were they from
+[11:52] priya: the place by the bus station. Crumb & Co
+[11:52] dan.whitlock: noted
+[14:30] mark.doyle: put the notes from yesterday in the drive, "meeting_2026-05-12_pricing". its the auto transcript so some of it is nonsense, sorry. the bit where I say "gap sensor" it wrote "gaps and sir"
+    :joy: 3
+
+--- Thursday, May 14 ---
+
+[08:55] sam.r: morning all 👋 Priya added me to this channel, I'm the one doing support emails three days a week. will mostly lurk
+    :wave: 4
+[09:10] mark.doyle: welcome sam!! if anyone emails about labels being handwritten, that's on me
+[10:22] mark.doyle: interviews for the warehouse role: tues 19th 10am, 11:30, 2pm and weds 20th 10am. the forklift one is tues 11:30
+[10:23] priya: 👍 I'll sit in on the tues ones
+[15:40] dan.whitlock: q re bulk. the school (st. aidan's) want exactly 100 of the A4 ruled pads. does 100 get the 15 or does it have to be 101+? I said "over 100" in the meeting and now I'm second guessing myself and I don't want to quote them wrong
+[15:41] dan.whitlock: also they still want the PO number on the invoice, separate problem
+[15:58] mark.doyle: good q. dunno. will ask P tomorrow, she's at the bank this afternoon
+[16:01] jules.k: I would 100% assume 100 counts as a customer fwiw
+[16:01] dan.whitlock: 100% assume. heh
+    :upside_down_face: 1
+
+--- Friday, May 15 ---
+
+[09:31] mark.doyle: @dan.whitlock checked with Priya — 100 itself qualifies. It's "100 or more" on the line, not "over 100". So 100 pads = 15% off that line. 99 doesn't.
+[09:33] priya: yes, sorry, should have been clearer on tues. 100 or more.
+    :white_check_mark: 3
+[09:34] dan.whitlock: perfect, telling st aidan's now. ty both
+[09:35] dan.whitlock: (still per line yeah? not 100 across the order)
+[09:35] mark.doyle: per line yeah
+[13:12] mark.doyle: PRINTER HAS ARRIVED
+[13:12] mark.doyle: it works
+[13:13] mark.doyle: it has printed forty labels and eaten zero
+    :tada: 5   :printer: 2   :fern: 1
+[13:20] jules.k: we should frame the old one
+[13:21] priya: we should sell the old one
+[13:21] dan.whitlock: clearance bin lol
+    :joy: 2
+
+--- Monday, May 18 ---
+
+[08:40] jules.k: hartwell's update: envelopes "dispatched from the mill" which apparently means nothing. new eta 1 june
+[08:41] priya: 🙃
+[08:44] mark.doyle: we've got maybe 9 days of kraft C5 left. I'll flip them to backorder on the site when we hit 50 units
+[08:44] jules.k: ty. NOT pulling them
+[08:45] mark.doyle: not pulling them
+[12:05] dan.whitlock: anyone want anything from crumb & co
+[12:06] sam.r: ooh a brie and cranberry if they have one
+[12:06] mark.doyle: ham and cheese pls
+[12:07] jules.k: I'm good, brought soup
+[12:07] dan.whitlock: soup. in may.
+[12:08] jules.k: it's a cold soup dan
+    :cold_face: 2
+[16:20] jules.k: staging link for the new homepage is up if anyone wants a look, password is in the pinned doc. don't share it outside pls, the agency is twitchy
+[16:34] priya: hero image is lovely. the font on the nav is too thin, can't read it on my phone
+[16:35] jules.k: noted, passing on
+
+--- Tuesday, May 19 ---
+
+[09:00] jules.k: 📣 OK!! LOYALTY!! here it is, finally, Priya has signed off 📣
+[09:00] jules.k: It's called *Fernhill Friends*. Free to join, sign up from the account page. Goes live Monday 25th.
+[09:01] jules.k: Members get an extra 5% off. That's applied AFTER any bulk discount, so it stacks — if a member has a bulk line, it's the 15% off first and then 5% off what's left on that line (so 0.85 × 0.95 of the normal price, NOT 20% off, please don't tell anyone it's 20). Lines that aren't bulk just get the 5%.
+[09:02] jules.k: It does NOT apply to clearance items. Clearance is already as cheap as it's going to get, members pay the same as everyone else on clearance.
+[09:02] jules.k: that's it! newsletter goes out Monday morning, I'll do a banner on the site too
+    :tada: 6   :fern: 4   :heart: 2
+[09:05] dan.whitlock: wait I thought we said 10% for members
+[09:06] jules.k: that was my first draft from like april. priya killed it. it's 5
+[09:06] priya: 5.
+    :lock: 2
+[09:07] dan.whitlock: ok ok. 5. so a member buying 120 cups pays 0.8075 of list on that line?
+[09:08] jules.k: yep. 0.85 × 0.95
+[09:08] dan.whitlock: theo is going to sign up so fast
+[09:30] mark.doyle: Mark interview #1 no-show fyi. #2 (forklift) is here now
+[12:40] mark.doyle: forklift guy is great. his name is Kofi. P liked him too
+[12:41] priya: offering this afternoon
+    :raised_hands: 3
+
+--- Wednesday, May 20 ---
+
+[10:15] mark.doyle: last interview was fine but we're going with Kofi. he said yes!! starts june 1
+    :tada: 5
+[18:50] priya: Odile's sent the tax rate email — everyone check your inbox, it's important for the checkout rebuild. Mark, please make sure it all gets passed on, including the forwarded bit at the bottom
+[18:52] mark.doyle: on it
+[18:53] dan.whitlock: I only got cc'd, do I need to do anything
+[18:53] priya: no, just read it
+
+--- Thursday, May 21 ---
+
+[11:11] dan.whitlock: anyone know where the big stapler went
+[11:30] jules.k: I have it. sorry. returning it
+[14:02] jules.k: agency fixed the nav font. also they've snuck oat back in as a background colour on the footer
+[14:03] priya: footer is fine. not the header.
+[14:03] jules.k: that's what I told them
+[15:45] sam.r: quick one — is the "Fernhill Friends" signup link live yet or monday? someone emailed asking
+[15:46] jules.k: monday! tell them monday 25th
+
+--- Friday, May 22 ---
+
+[16:10] sam.r: fyi ticket 4471 — customer was charged tax on a gift card. Odile confirmed that's wrong, refunded the 4.00. internal note on the ticket has the details. Mark said it's going on the list
+[16:12] mark.doyle: yep it's on the list. will look at the other gift card orders monday
+    :+1: 2
+
+--- Tuesday, May 26 ---
+
+[08:30] jules.k: Fernhill Friends is LIVE as of yesterday 🌿 31 signups already, Theo was #2
+    :fern: 5   :tada: 3
+[08:32] dan.whitlock: told you
+[09:47] mark.doyle: ok weird one while going through the gift card orders. order 10529 — the corporate client (Larkspur Dental) ordered 120 of the £25 gift cards for their staff. checkout gave them the bulk 15% on that line. so 3000 → 2550. is that right?? it's 100+ on one line so technically it did what it was told
+[09:52] priya: No. Gift cards should never be discounted, period. Not bulk, not the member 5%, nothing. It's literally money, we can't sell £25 of credit for £21.25.
+[09:53] priya: we're not chasing Larkspur for the 450, they're a good client and it's our mistake. just make sure the new build never does it again
+[09:53] mark.doyle: 👍 got it
+[09:55] dan.whitlock: 😬 that was my lead, sorry. I didn't even think about it
+[09:56] priya: not your fault, the checkout shouldn't let it happen
+[10:20] jules.k: unrelated but since we're talking money. I still think 75 for free shipping in Q4 👀
+[10:21] priya: September, Jules.
+[10:21] jules.k: 🤐
+    :joy: 3
+[14:15] mark.doyle: hartwell's envelopes actually arrived. a week early. I don't trust it
+[14:16] jules.k: is it the right size
+[14:22] mark.doyle: ...it's C4
+[14:22] mark.doyle: we ordered C5
+    :skull: 4   :facepalm: 2
+[14:25] jules.k: I'll call them
+
+--- Wednesday, May 27 ---
+
+[09:10] mark.doyle: hartwell's sending the C5 "within the week" and we can keep the C4 for free. so that's something
+[09:12] priya: list the C4 on clearance?
+[09:12] mark.doyle: will do, at cost
+[11:58] sam.r: lunch? I'm doing a crumb & co run
+[11:59] dan.whitlock: brie and cranberry is a solid shout btw sam
+[12:00] mark.doyle: ham and cheese again pls
+[16:40] priya: Kofi's contract is signed, Mark can you sort his locker and a hi-vis for monday
+[16:41] mark.doyle: done. also ordered more labels for the new printer since it actually uses them now
+    :printer: 3

@@ -1,0 +1,69 @@
+[
+ {
+  "id": "q0",
+  "path": "tapedeck/engine/serialize.py",
+  "line": 50,
+  "operator": "statement",
+  "original": "        return redactor.scrub(value)",
+  "mutated": "        pass",
+  "failing": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ],
+  "direct": [
+   "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path"
+  ],
+  "blocked": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "q1",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 44,
+  "operator": "statement",
+  "original": "        return False",
+  "mutated": "        pass",
+  "failing": [
+   "tests/test_dictlike_responses.py::test_indexable_iterable_is_not_treated_as_a_stream"
+  ],
+  "direct": [
+   "tests/test_dictlike_responses.py::test_indexable_iterable_is_not_treated_as_a_stream"
+  ],
+  "blocked": []
+ },
+ {
+  "id": "q2",
+  "path": "tapedeck/gateway/services.py",
+  "line": 115,
+  "operator": "negate",
+  "original": "            if oshape != nshape:",
+  "mutated": "            if oshape == nshape:",
+  "failing": [
+   "tests/test_cli.py::test_diff_reports_drift_and_exit_code",
+   "tests/test_drift.py::test_detects_return_shape_change",
+   "tests/test_drift.py::test_identical_tapes_have_no_drift"
+  ],
+  "direct": [
+   "tests/test_cli.py::test_diff_reports_drift_and_exit_code",
+   "tests/test_drift.py::test_identical_tapes_have_no_drift"
+  ],
+  "blocked": [
+   "tests/test_drift.py::test_detects_return_shape_change"
+  ]
+ }
+]

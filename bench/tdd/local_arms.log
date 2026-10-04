@@ -1,0 +1,35 @@
+spent so far 1,589,699 of 99,999,999
+
+=== mono run 20
+    1/1 (serialize.py, recorder.py, tape.py): visible 19/31 | held-out 0/7 | regression 6/7
+    final: visible 19/31 | held-out 0/7 | regression 6/7
+  -> visible 19/31, held-out 0/7, 24,438 tokens | running total 1,682,341
+
+=== split run 20
+    1/2 (serialize.py, recorder.py): visible 6/31 | held-out 0/7 | regression 6/7
+    2/2 (tape.py): visible 18/31 | held-out 0/7 | regression 6/7
+    final: visible 18/31 | held-out 0/7 | regression 6/7
+  -> visible 18/31, held-out 0/7, 46,327 tokens | running total 1,728,668
+
+=== spec run 20
+    1/2 (serialize.py, recorder.py): visible 6/31 | held-out 0/7 | regression 6/7
+    2/2 (tape.py): visible 18/31 | held-out 0/7 | regression 6/7
+    final: visible 18/31 | held-out 0/7 | regression 6/7
+  -> visible 18/31, held-out 0/7, 76,944 tokens | running total 1,805,612
+
+=== mono run 21
+    1/1 (serialize.py, recorder.py, tape.py): visible 19/31 | held-out 0/7 | regression 6/7
+    final: visible 19/31 | held-out 0/7 | regression 6/7
+  -> visible 19/31, held-out 0/7, 24,438 tokens | running total 1,830,050
+
+=== split run 21
+    1/2 (serialize.py, recorder.py): visible 6/31 | held-out 0/7 | regression 6/7
+    2/2 (tape.py): visible 18/31 | held-out 0/7 | regression 6/7
+    final: visible 18/31 | held-out 0/7 | regression 6/7
+  -> visible 18/31, held-out 0/7, 46,327 tokens | running total 1,876,377
+
+=== spec run 21
+    1/2 (serialize.py, recorder.py): visible 6/31 | held-out 0/7 | regression 6/7
+    2/2 (tape.py): visible 18/31 | held-out 0/7 | regression 6/7
+    final: visible 18/31 | held-out 0/7 | regression 6/7
+  -> visible 18/31, held-out 0/7, 76,944 tokens | running total 1,953,321

@@ -1,0 +1,9 @@
+context tokens: spec=8,543, tests=12,773, both=21,316, specmap=11,881, specrule=8,643, testsrule=12,873, shipped=11,962, bound=12,130, hub=12,137, order=11,976
+6 calls planned; spent so far 780,760 of 1,500,000
+  impact/order/0: 13,891 in (0 cached) + 5,171 out (3,752 reasoning) in 78s — spent 799,822
+  impact/order/1: 13,844 in (0 cached) + 2,612 out (2,048 reasoning) in 31s — spent 816,278
+  impact/order/2: 13,849 in (0 cached) + 4,440 out (3,723 reasoning) in 54s — spent 834,567
+  impact/order/3: 13,923 in (0 cached) + 3,492 out (2,560 reasoning) in 41s — spent 851,982
+  triage/order/0: 13,179 in (0 cached) + 2,359 out (1,302 reasoning) in 22s — spent 867,520
+  triage/order/1: 13,156 in (0 cached) + 3,660 out (2,610 reasoning) in 37s — spent 884,336
+done: 50 calls, 884,336 tokens of 1,500,000

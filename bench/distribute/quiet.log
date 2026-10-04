@@ -1,0 +1,85 @@
+717 mutants
+483 killed, 83 quiet
+  tapedeck/engine/serialize.py:50 statement 9 tests in 6 files | pass
+  tapedeck/engine/serialize.py:44 statement 9 tests in 6 files | pass
+  tapedeck/cli.py:207 statement 8 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:23 statement 6 tests in 4 files | pass
+  tapedeck/gateway/app/implementations.py:86 negate 3 tests in 1 files | if getattr(obj, "update_id", None) is None:  # Telegram Upda
+  tapedeck/gateway/services.py:115 negate 3 tests in 2 files | if oshape == nshape:
+  tapedeck/engine/serialize.py:52 statement 3 tests in 3 files | pass
+  tapedeck/gateway/app/implementations.py:202 constant 3 tests in 3 files | _tap_dispatch(session, real, constructor_path.split(".")[1])
+  tapedeck/cli.py:48 constant 2 tests in 1 files | return 1
+  tapedeck/gateway/app/implementations.py:240 statement 2 tests in 2 files | pass
+  tapedeck/cli.py:41 statement 2 tests in 1 files | pass
+  tapedeck/cli.py:48 statement 2 tests in 1 files | pass
+  tapedeck/engine/proxies.py:121 statement 2 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:97 negate 2 tests in 2 files | if e["dir"] != "in" and (source is None or e.get("source") =
+  tapedeck/engine/tape_player.py:97 boolean 2 tests in 2 files | if e["dir"] == "in" and (source is None and e.get("source") 
+  tapedeck/gateway/app/implementations.py:88 negate 2 tests in 1 files | if getattr(obj, field, None) is None:
+  tapedeck/gateway/services.py:112 negate 2 tests in 2 files | if bool(o.get("async")) == bool(n.get("async")):
+  tapedeck/engine/proxies.py:61 statement 2 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:97 constant 2 tests in 2 files | if e["dir"] == "" and (source is None or e.get("source") == 
+  tapedeck/gateway/services.py:118 constant 2 tests in 1 files | nev = {(e["source"], e["event"]) for e in new.get("timeline"
+  tapedeck/gateway/app/implementations.py:89 statement 2 tests in 1 files | pass
+  tapedeck/gateway/services.py:91 statement 2 tests in 2 files | pass
+  tapedeck/gateway/services.py:117 constant 2 tests in 1 files | oev = {(e["source"], e["event"]) for e in old.get("timeline"
+  tapedeck/cli.py:112 constant 1 tests in 1 files | return 2
+  tapedeck/cli.py:125 constant 1 tests in 1 files | return 2
+  tapedeck/cli.py:131 negate 1 tests in 1 files | if "make_handlers" in module:
+  tapedeck/cli.py:146 boolean 1 tests in 1 files | dest = args.output and f"{args.name.rsplit('/', 1)[-1].repla
+  tapedeck/cli.py:151 constant 1 tests in 1 files | return 1
+  tapedeck/cli.py:158 constant 1 tests in 1 files | return 1
+  tapedeck/engine/proxies.py:202 statement 1 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:60 constant 1 tests in 1 files | return False
+  tapedeck/engine/tape_player.py:66 statement 1 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:101 constant 1 tests in 1 files | return [e for e in self.tape["timeline"] if e["dir"] == ""]
+  tapedeck/gateway/app/implementations.py:145 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:149 negate 1 tests in 1 files | elif rec.get("args", []) == rep.get("args", []) or rec.get("
+  tapedeck/gateway/services.py:151 negate 1 tests in 1 files | if len(recorded) == len(transcript):
+  tapedeck/cli.py:87 negate 1 tests in 1 files | if marker not in raw:
+  tapedeck/cli.py:101 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:112 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:119 boolean 1 tests in 1 files | if drift:
+  tapedeck/cli.py:125 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:131 constant 1 tests in 1 files | if "" not in module:
+  tapedeck/cli.py:151 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:158 statement 1 tests in 1 files | pass
+  tapedeck/engine/import_hook.py:77 statement 1 tests in 1 files | pass
+  tapedeck/engine/proxies.py:76 statement 1 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:52 statement 1 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:60 statement 1 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:68 statement 1 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:79 statement 1 tests in 1 files | pass
+  tapedeck/gateway/app/implementations.py:82 statement 1 tests in 1 files | pass
+  tapedeck/gateway/app/implementations.py:118 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:107 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:116 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:120 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:129 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:149 negate 1 tests in 1 files | elif rec.get("args", []) != rep.get("args", []) or rec.get("
+  tapedeck/cli.py:74 constant 1 tests in 1 files | return 1
+  tapedeck/cli.py:88 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:114 constant 1 tests in 1 files | return 1
+  tapedeck/cli.py:121 constant 1 tests in 1 files | return 1
+  tapedeck/cli.py:142 constant 1 tests in 1 files | return 1
+  tapedeck/engine/proxies.py:44 statement 1 tests in 1 files | pass
+  tapedeck/engine/tape_player.py:55 statement 1 tests in 1 files | pass
+  tapedeck/gateway/app/implementations.py:92 constant 1 tests in 1 files | return type(obj).__name__, True
+  tapedeck/gateway/app/implementations.py:162 statement 1 tests in 1 files | pass
+  tapedeck/gateway/app/implementations.py:230 constant 1 tests in 1 files | pumped = 1
+  tapedeck/gateway/services.py:136 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:147 negate 1 tests in 1 files | if rec["call"] == rep["call"]:
+  tapedeck/gateway/services.py:153 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:56 constant 1 tests in 1 files | f"{e.get('source')}:{e['event']}" for e in tape["timeline"] 
+  tapedeck/cli.py:74 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:95 negate 1 tests in 1 files | if method in containers.get(container, {}).get("methods", {}
+  tapedeck/cli.py:114 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:121 statement 1 tests in 1 files | pass
+  tapedeck/cli.py:142 statement 1 tests in 1 files | pass
+  tapedeck/engine/import_hook.py:72 statement 1 tests in 1 files | pass
+  tapedeck/gateway/app/implementations.py:76 constant 1 tests in 1 files | return v, False
+  tapedeck/gateway/app/implementations.py:240 constant 1 tests in 1 files | pumped += 2
+  tapedeck/gateway/services.py:109 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:122 statement 1 tests in 1 files | pass
+  tapedeck/gateway/services.py:135 negate 1 tests in 1 files | keys = sorted(k for k in value if k == "__type__")
+  tapedeck/gateway/services.py:161 constant 1 tests in 1 files | "inbound_events": sum(1 for e in timeline if e["dir"] == "")

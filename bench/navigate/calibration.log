@@ -1,0 +1,4 @@
+spent 0 of 300,000
+  bare  seed0  10/10 right  23 commands   41,228 tok     28s  | spent 41,228
+  docs  seed0  10/10 right  30 commands   46,426 tok     16s  | spent 87,654
+  spec  seed0  10/10 right  23 commands   81,176 tok     26s  | spent 168,830

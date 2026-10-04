@@ -1,0 +1,16 @@
+spent so far 1,953,321 of 99,999,999
+
+=== mono run 40
+    1/1 (serialize.py, recorder.py, tape.py): visible 20/31 | held-out 1/7 | regression 6/7
+    final: visible 20/31 | held-out 1/7 | regression 6/7
+  -> visible 20/31, held-out 1/7, 25,006 tokens | running total 1,978,327
+
+=== mono run 41
+    1/1 (serialize.py, recorder.py, tape.py): visible 20/31 | held-out 1/7 | regression 6/7
+    final: visible 20/31 | held-out 1/7 | regression 6/7
+  -> visible 20/31, held-out 1/7, 25,006 tokens | running total 2,003,333
+
+=== mono run 42
+    1/1 (serialize.py, recorder.py, tape.py): visible 20/31 | held-out 1/7 | regression 6/7
+    final: visible 20/31 | held-out 1/7 | regression 6/7
+  -> visible 20/31, held-out 1/7, 25,006 tokens | running total 2,028,339

@@ -1,0 +1,8 @@
+spent 0 of 500,000
+  specdeck     seed0  10/10  24 commands   75,938 tok  read: SPEC.md,requirements.yaml,AGENTS.md,covers  | spent 75,938
+  plain        seed0   4/10  12 commands   58,867 tok  read: covers  | spent 134,805
+  separate_doc seed0   8/10  17 commands   55,333 tok  read: REQUIREMENTS.md,covers  | spent 190,138
+spent 190,138 of 500,000
+  plain        seed1   6/10  28 commands   76,599 tok  read: covers  | spent 266,737
+  separate_doc seed1   6/10  22 commands   67,574 tok  read: REQUIREMENTS.md,covers  | spent 334,311
+  specdeck     seed1   7/10  11 commands   57,715 tok  read: SPEC.md,AGENTS.md,covers  | spent 392,026

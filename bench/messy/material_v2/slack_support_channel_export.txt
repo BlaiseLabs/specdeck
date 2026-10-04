@@ -1,0 +1,216 @@
+Fernhill Supply Slack — #support
+Export range: 2026-06-08 to 2026-08-14
+Exported by: sam.r   (format: plain text)
+==================================================================
+
+--- Monday, June 8 ---
+
+[09:01] priya: everyone say hi to @ellie.b who's joining Sam on support, Mon/Tue/Fri 🌿
+    :wave: 6
+[09:02] ellie.b: hi all!! excited to be here. sorry in advance for all the questions
+[09:03] mark.doyle: welcome ellie. if anyone complains about a handwritten label from before 15 may, that's mine
+[09:03] dan.whitlock: welcome! the brie and cranberry from crumb & co is the onboarding
+[09:04] sam.r: @ellie.b I'll do a proper walkthrough at 10. for today just read along in the shared inbox, don't send anything yet
+[09:05] ellie.b: 👍
+[10:48] sam.r: ok walkthrough done. ellie has the macros (there are only 6, I'm writing more), the order lookup, Stripe read-only, and the returns form
+[10:49] ellie.b: the order lookup is very satisfying
+[14:12] ellie.b: q — where's the best place to read up on how prices/discounts work? some of the emails are about that and I don't want to guess
+[14:30] sam.r: honestly there isn't one good place yet. there's a pile of slack + emails from may. I'll pull together something this week. for now if it's a pricing q, flag it to me and I'll do it
+[14:31] ellie.b: ok will do
+
+--- Tuesday, June 9 ---
+
+[09:15] ellie.b: found the wiki page on pricing!! "Pricing & Discounts (v1)" — it's really clear, has worked examples and everything. reading it now
+[09:15] ellie.b: should've just searched the wiki yesterday lol
+[11:02] ellie.b: sent a reply to the woman asking about ordering notebooks for her book club, told her if she gets to 50 items she gets 10% off the whole order. she's going to add some pens to get there 🙂
+[11:40] sam.r: @ellie.b oh no — sorry, that wiki page is the old one. it's archived, there's a status line right at the top under the title (I know, it's tiny). none of that page is how things work now.
+[11:41] sam.r: bulk now is 15% off, and it's per line: a single product line needs 100 or more of that item. 50 across the basket doesn't do anything anymore. mixing pens and notebooks doesn't add up toward it.
+[11:42] ellie.b: oh god. ok. I'm so sorry. should I email her back?
+[11:42] sam.r: yes please, today, before she orders. apologise, say we gave her out-of-date info. 30 notebooks + 20 pens = no bulk discount. if she was going to buy 100+ of one thing that line would get 15%
+[11:43] ellie.b: on it
+[11:44] sam.r: and no harm done, she hasn't ordered. the page is a trap, I've moaned to Mark about it
+[11:58] ellie.b: sent. she said "no worries, I'll just get what I need then". phew
+[12:01] mark.doyle: I've left a comment on the page. I'll see about hiding it from search, the wiki software is not my friend
+[12:03] ellie.b: is anything on that page still right? so I know what to unlearn
+[12:05] sam.r: safest to treat the whole thing as wrong. different discount, different threshold, different shipping, different tax, different everything. I'll give you the real stuff piece by piece in here as it comes up, that's how I learned it
+[12:05] ellie.b: 👍 unlearning
+
+--- Friday, June 12 ---
+
+[10:20] ellie.b: someone asking if we do free delivery. the macro says "orders of £50 or more" — is that before or after discount? the customer has £53 in the basket with a bulk line
+[10:24] sam.r: after. the £50 is what's left once discounts have come off. so check what the discount does to her basket. what's the bulk line?
+[10:26] ellie.b: 120 x the 0.40 pencils = 48.00, plus a 5.00 sharpener
+[10:28] sam.r: ok so the pencil line is 120 so it's bulk: 48.00 x 0.85 = 40.80. plus the 5.00 sharpener = 45.80 after discount. that's under 50 so she pays the 5.99
+[10:29] ellie.b: ahh. that's a bit sad for her. ok
+[10:30] sam.r: it's the same for everyone. if she adds a bit more to get to 50 after discount she's fine
+[10:31] ellie.b: and is it "over 50" or "50 or more"? the old wiki said over 40 and I'm paranoid now
+[10:32] sam.r: 50 or more. 50.00 exactly gets free shipping. and forget 40, 40 is from the dead page
+[10:32] ellie.b: 💀 the dead page
+    :skull: 3
+[15:45] ellie.b: someone asked if we ship to ireland. the old page said no?
+[15:50] sam.r: that one's still true lol. UK only for now
+[15:51] ellie.b: a stopped clock
+
+--- Monday, June 15 ---
+
+[09:40] ellie.b: sent a reply to a Fernhill Friends member who asked what their discount is — told her 10% off everything as a member
+[09:52] sam.r: @ellie.b eek, it's 5. the 10% was Jules's first draft that never went live (it's in that wiki page too, at the bottom). members get 5%
+[09:53] ellie.b: I'm SO sorry. that was from the page again. I thought the bottom bit was newer because it says 2026
+[09:54] sam.r: I get why. the bit at the bottom says "DRAFT" though. and the whole page is archived. anyway — 5%, and it's not on clearance items
+[09:55] jules.k: confirming!! 5%. the 10 was me in april being overexcited. sorry ellie, my fault that it's even written down anywhere
+[09:56] ellie.b: emailing her now. she's going to be annoyed
+[10:30] ellie.b: she was a bit annoyed. offered her nothing, just apologised. she said it's fine
+[10:31] sam.r: 👍 that's the right call. we don't make up discounts to fix a wrong quote, just apologise and say what it really is
+[10:33] priya: agree with Sam. thanks Ellie
+[13:15] ellie.b: different q. a member is buying 150 of the C5 envelope packs. so that's bulk 15 and member 5 — 20% off that line?
+[13:17] sam.r: not 20. it's the 15% first, then 5% off what's left. so 0.85 x 0.95 = 0.8075 of the normal price. works out a little less than 20 off
+[13:18] ellie.b: ohh multiply not add. ok. 19.25% then?
+[13:18] sam.r: yep that's what it comes to. but don't say "19.25%" to customers, it confuses them. say "15% bulk discount, then your 5% member discount on top of that"
+[13:19] ellie.b: noted
+[13:20] dan.whitlock: lol I asked the exact same thing in may. jules has a whole post about it in #pricing-and-ops
+[13:21] sam.r: wait are the C5 packs on clearance? the C4 ones are
+[13:22] ellie.b: C5, not clearance. checked the tag
+[13:22] sam.r: then yes, 0.8075. if it was the C4s it'd be neither — clearance gets no bulk and no member discount
+[13:23] ellie.b: even if it's 150 of them?
+[13:23] sam.r: even if it's 1000 of them. clearance price is the price
+
+--- Tuesday, June 16 ---
+
+[11:00] sam.r: going into the ops meeting for the hiring bit, ellie you have the inbox
+[11:01] ellie.b: 🫡
+[14:40] sam.r: back. Priya is fine about the wiki mixups, she mostly blamed the wiki. I'm going to write macros for all the common pricing questions so we stop quoting from memory
+[14:41] ellie.b: yes please
+[14:41] mark.doyle: and I'll hide the page. somehow
+
+--- Friday, June 19 ---
+
+[09:20] ellie.b: someone asking whether we charge vat on delivery. the old page says tax goes on shipping too. is that one dead as well? I haven't replied yet!!
+[09:22] sam.r: thank you for asking first 🙏 yes dead. shipping is never taxed. Odile is very firm on that one, there was an audit about it last year
+[09:22] ellie.b: never as in never never?
+[09:23] sam.r: never never. tax goes on the goods, after any discount. delivery charge has no tax on it
+[09:24] ellie.b: replying now
+[11:10] ellie.b: also someone asking if their order will be cheaper if they wait till july. lol
+[11:12] sam.r: it'll be more expensive actually — the tax rate goes up from 8 to 10 on 1 july. tell them nicely that prices aren't changing but the tax rate is, and it depends on when they place the order
+[11:13] ellie.b: when they place it, or when it arrives?
+[11:13] sam.r: when they place it. arrival doesn't matter. the date on the order
+[11:15] ellie.b: ok told them. they said they'll order today. so that's a sale I guess
+    :moneybag: 2
+
+--- Wednesday, June 24 ---
+
+[08:30] mark.doyle: new checkout goes live today at 2pm. if anything looks weird in orders after 2pm, tell me straight away, don't wait
+[08:31] sam.r: 👍
+[08:31] ellie.b: 👍 nervous
+[14:05] mark.doyle: it's live
+[14:30] mark.doyle: first order through, 2x notebooks, looks right
+[16:40] ellie.b: a regular customer emailed saying her basket total looks different from last time for the same stuff. she's a member and has a 100+ line. old checkout gave her ... something different. is that a bug?
+[16:44] mark.doyle: send me the order number?
+[16:51] mark.doyle: looked. it's right now and it was wrong before. old checkout taxed her whole subtotal before the discounts came off. new one does the discounts first and taxes what's left, so her tax is a bit lower. she's paying slightly less than last time
+[16:52] ellie.b: oh nice, a good surprise for once. I'll tell her
+[16:52] mark.doyle: 👍 also it does the 15 then the 5 in the right order now, which it sort of didn't before
+
+--- Thursday, June 25 ---
+
+[10:02] sam.r: macros v2 are in the shared inbox. 14 now. pricing ones are tagged [PRICE]. please use them instead of typing your own answer on pricing stuff, at least for the first few months
+[10:02] sam.r: there's one marked RETIRED in there, it's the old free delivery one, I left it so people can see why we don't use it. don't send it
+[10:04] ellie.b: 🙌
+
+--- Monday, June 29 ---
+
+[09:15] ellie.b: someone who's ordered 120 gift cards (the £10 ones) for their staff wants to know why they didn't get the bulk discount. it's 100+ on one line so I was going to say sorry, glitch, we'll refund the 15%?
+[09:18] mark.doyle: @ellie.b no!! don't — that's correct. gift cards never get discounted. not bulk, not member 5%, nothing. we got burned on exactly this in may (Larkspur, £450). the checkout is doing the right thing now
+[09:19] ellie.b: oh. ok. glad I said "was going to". what do I tell them
+[09:20] sam.r: there's a macro: [PRICE] Gift cards — no discount. basically: a gift card is money, we can't sell £10 of credit for less than £10. they're also not taxed, which is the upside
+[09:22] ellie.b: sending the macro
+[09:40] ellie.b: they replied "fair enough".
+[09:41] mark.doyle: 👍 thanks for checking first
+
+--- Wednesday, July 1 ---
+
+[08:05] mark.doyle: 10% tax from today. new checkout should handle it on its own. I'll watch the first few orders
+[09:30] mark.doyle: first 10% order through. looks right
+[13:12] ellie.b: someone who ordered last night at like 23:40 got an invoice email this morning saying july 1st and wants to know if she's been charged 10%. I told her yes because the invoice is dated july, the wiki said the invoice date decides the rate
+[13:14] ellie.b: wait. the wiki.
+[13:14] ellie.b: oh no
+[13:16] sam.r: yeah 😅 it's the order date that decides it, not the invoice. if the order was placed on 30 june it's 8%. what does the order say?
+[13:18] ellie.b: placed 2026-06-30 23:41. tax line on it is 8% of the goods. so she was charged 8 and I told her 10
+[13:18] ellie.b: so she was charged correctly and I told her wrong
+[13:19] sam.r: correct. email her back, tell her she was charged 8% and it's correct, the invoice email date is just when it was sent
+[13:19] mark.doyle: the invoice emails batch overnight, so anything late on the 30th will get a july invoice email. I'll mention it to tomasz, maybe we can put the order date on the invoice email more clearly
+[13:25] ellie.b: emailed her. she's happy. I am going to print the dead page and burn it
+[13:26] jules.k: I'll bring marshmallows
+    :fire: 4   :joy: 3
+
+--- Friday, July 3 ---
+
+[10:40] ellie.b: someone ordered on the 29th and it shipped yesterday — she's asking if she owes us the extra 2% now because it's july.
+[10:41] ellie.b: I'm pretty sure the answer is no but CHECKING
+[10:42] sam.r: no, she doesn't owe anything. placed 29 june = 8%. shipping date doesn't matter. well done for checking
+[10:42] ellie.b: 🎉
+
+--- Monday, July 6 ---
+
+[14:20] ellie.b: a customer is asking why the bulk discount shows on her order as a total, not per line? she's got two bulk lines
+[14:28] mark.doyle: the receipt shows one "Discount" line with everything added together — the bulk on both lines plus her member 5% if she's a member. it's still worked out per line underneath, we just don't print it per line. Tomasz says we could, if we want, later
+[14:30] ellie.b: ok thanks. telling her it's the total of the discounts on her qualifying lines
+[16:15] ellie.b: someone wants to know if 99 + 1 free sample counts as 100.
+[16:20] sam.r: there's no such thing as a free sample on the site right now (Dan's sample packs are an idea, not a thing). if her basket has 99 of an item, that line isn't bulk. 100 of it is
+[16:21] ellie.b: she says she'll just buy 100 then lol
+[16:21] dan.whitlock: classic
+
+--- Tuesday, July 14 ---
+
+[11:30] ellie.b: customer in a member account asking why the clearance C4 envelopes don't show her 5%. I said clearance is excluded. correct this time? 😬
+[11:31] sam.r: correct this time ✅
+[11:31] ellie.b: I'm learning!!
+    :tada: 4
+[11:45] ellie.b: same customer: she bought 120 packs of the clearance C4 and wants to know why no bulk. same answer right?
+[11:46] sam.r: same answer. clearance items don't get bulk either.
+[11:47] ellie.b: she says another shop gives 20% on everything over 100. I said sorry, ours is 15 on regular lines
+[11:48] sam.r: 👍 perfect. don't get into competitor stuff, just say what ours is
+
+--- Friday, July 24 ---
+
+[09:10] ellie.b: what do I do if someone asks for a price match
+[09:14] sam.r: we don't price match. polite no. if it's a big account (schools, cafés, businesses ordering a lot) pass it to dan, he'll handle it. but dan can't give extra discounts either really, priya says no to all of them
+[09:15] dan.whitlock: can confirm, priya says no to all of them
+[09:15] dan.whitlock: I have the scars
+[14:20] ellie.b: someone wants to stack two discount codes. we don't have discount codes right?
+[14:24] jules.k: we don't! there's no codes at all at the moment. if someone says they have a code it's either from a different shop or a scam. the only discounts are bulk and the Friends one
+[14:25] ellie.b: perfect thanks
+
+--- Monday, July 27 ---
+
+[10:05] ellie.b: someone asking "do I get my member discount on my gift card order". sent the gift card macro.
+[10:06] sam.r: 👍
+[10:30] ellie.b: also someone saying the old website said "10% off 50+ items" — she has a screenshot from 2025
+[10:34] mark.doyle: yeah that was the old banner, long gone. it's not how it works now. she can have what the site says today
+[10:35] ellie.b: right. what the site says today. telling her
+[10:36] sam.r: there's a macro for "I saw an old offer" too — [GEN] Out-of-date offer
+
+--- Friday, August 7 ---
+
+[09:00] sam.r: ellie's two months in 🎉 and she's now answering pricing qs I'd have had to look up
+    :tada: 6   :fern: 3
+[09:02] ellie.b: 🥹 thank you. still never opening the dead page again
+[09:03] mark.doyle: the dead page no longer shows in search btw. finally figured it out. it's still there if you know the link
+[11:20] ellie.b: tricky one. a customer placed an order on 30 June (8%) and then a second order on 2 July (10%) for the same items and wants to know why the totals are different
+[11:23] sam.r: tax rate changed on 1 july, by order date. 30 june order = 8, 2 july order = 10. nothing else changed. if you want, quote her the two tax lines so she can see the difference is only the tax
+[11:30] ellie.b: done, she said "ah, makes sense"
+[15:45] ellie.b: is there any way to get free shipping on a £48 order
+[15:47] sam.r: spend £2 more 😄 (after discounts). that's the only way
+
+--- Tuesday, August 11 ---
+
+[10:15] ellie.b: someone has a big order from a school and wants a "quote". do I do it?
+[10:17] sam.r: schools go to dan
+[10:17] dan.whitlock: send it over 🙋
+
+--- Friday, August 14 ---
+
+[13:00] ellie.b: someone wants a refund on 30 of the 120 pencils they bought in a bulk order. how does that work with the discount?
+[13:12] sam.r: hmm good question. flagging to @mark.doyle and @priya before you reply
+[13:40] priya: Refund what they paid for those 30, at the price they paid. Don't redo the order. We'll think about it properly if it starts happening a lot.
+[13:41] ellie.b: 👍 thanks
+[13:41] dan.whitlock: (I KNEW someone would ask this eventually)
+[13:42] sam.r: lol dan

@@ -1,0 +1,44 @@
+subject: specdeck (/workspaces/python/specdeck)
+1968 mutable lines in 16 files
+baseline green: 86 passed, 65 warnings in 25.19s
+  1: specdeck/ci.py:162 statement -> 1 fail | killed 1 survived 0 triage 0 | 26s
+  2: specdeck/cli.py:199 statement -> 0 fail | killed 1 survived 1 triage 0 | 53s
+  3: specdeck/server.py:204 constant -> 3 fail | killed 2 survived 1 triage 0 | 98s
+  4: specdeck/tracing.py:20 constant -> 0 fail | killed 2 survived 2 triage 0 | 125s
+  5: specdeck/ci.py:36 statement -> 4 fail | killed 3 survived 2 triage 0 | 154s
+  6: specdeck/trust.py:99 statement -> 3 fail | killed 4 survived 2 triage 0 | 180s
+  7: specdeck/cli.py:273 boolean -> 1 fail | killed 5 survived 2 triage 0 | 206s
+  8: specdeck/history.py:394 constant -> 0 fail | killed 5 survived 3 triage 0 | 231s
+  9: specdeck/validation.py:102 statement -> 7 fail | killed 6 survived 3 triage 0 | 256s
+  10: specdeck/plugin.py:296 statement -> 0 fail | killed 6 survived 4 triage 0 | 281s
+  11: specdeck/cli.py:294 statement -> 1 fail | killed 7 survived 4 triage 0 | 307s
+  12: specdeck/tracing.py:143 boolean -> 0 fail | killed 7 survived 5 triage 0 | 338s
+  13: specdeck/plugin.py:289 statement -> 0 fail | killed 7 survived 6 triage 0 | 363s
+  14: specdeck/tracing.py:56 statement -> 0 fail | killed 7 survived 7 triage 0 | 388s
+  15: specdeck/plugin.py:376 boolean -> 0 fail | killed 7 survived 8 triage 0 | 413s
+  16: specdeck/recorder.py:217 statement -> 9 fail | killed 8 survived 8 triage 0 | 452s
+  17: specdeck/watch.py:20 statement -> 1 fail | killed 9 survived 8 triage 0 | 478s
+  18: specdeck/plugin.py:688 statement -> 2 fail | killed 10 survived 8 triage 0 | 506s
+  19: specdeck/plugin.py:410 statement -> 0 fail | killed 10 survived 8 triage 0 | 536s
+  20: specdeck/history.py:373 constant -> 0 fail | killed 10 survived 8 triage 0 | 563s
+  21: specdeck/tracing.py:139 statement -> 2 fail | killed 11 survived 8 triage 0 | 589s
+  22: specdeck/server.py:315 constant -> 2 fail | killed 12 survived 8 triage 0 | 613s
+  23: specdeck/ci.py:146 arithmetic -> 2 fail | killed 13 survived 8 triage 0 | 641s
+  24: specdeck/editing.py:423 statement -> 7 fail | killed 14 survived 8 triage 0 | 686s
+  25: specdeck/plugin.py:792 constant -> 0 fail | killed 14 survived 8 triage 0 | 711s
+  26: specdeck/ci.py:127 statement -> 2 fail | killed 15 survived 8 triage 0 | 737s
+  27: specdeck/editing.py:427 statement -> 7 fail | killed 16 survived 8 triage 0 | 783s
+  28: specdeck/cli.py:154 negate -> 0 fail | killed 16 survived 8 triage 0 | 809s
+  29: specdeck/cli.py:148 statement -> 1 fail | killed 17 survived 8 triage 0 | 835s
+  30: specdeck/editing.py:161 arithmetic -> 3 fail | killed 18 survived 8 triage 0 | 860s
+  31: specdeck/history.py:538 statement -> 0 fail | killed 18 survived 8 triage 0 | 885s
+  32: specdeck/plugin.py:569 negate -> 13 fail | killed 19 survived 8 triage 0 | 908s
+  33: specdeck/cli.py:338 constant -> 0 fail | killed 19 survived 8 triage 0 | 935s
+  34: specdeck/ci.py:124 negate -> 3 fail | killed 20 survived 8 triage 0 | 962s
+  35: specdeck/recorder.py:307 statement -> 0 fail | killed 20 survived 8 triage 0 | 987s
+  36: specdeck/history.py:262 statement -> 39 fail | killed 21 survived 8 triage 0 | 1006s
+  37: specdeck/plugin.py:242 negate -> 3 fail | killed 22 survived 8 triage 0 | 1031s
+  38: specdeck/cli.py:68 statement -> 1 fail | killed 23 survived 8 triage 0 | 1057s
+  39: specdeck/requirements.py:90 statement -> 0 fail | killed 23 survived 8 triage 0 | 1082s
+  40: specdeck/server.py:198 statement -> 5 fail | killed 24 survived 8 triage 0 | 1163s
+wrote 32 impact questions (24 killed, 8 survived) and 0 triage questions

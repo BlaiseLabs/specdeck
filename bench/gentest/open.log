@@ -1,0 +1,16 @@
+spent 330,390 of 900,000
+  spec-open tape.py        seed0  valid 51%  tests= 84 caught=73% (16/22)  16,699 tok
+  spec-open serialize.py   seed0  valid 84%  tests= 37 caught=57% (17/30)  16,489 tok
+  spec-open netguard.py    seed0  valid 91%  tests= 32 caught=0% (0/0)  13,844 tok
+  spec-open tape.py        seed1  valid 63%  tests= 59 caught=73% (16/22)  21,982 tok
+  spec-open serialize.py   seed1  valid 92%  tests= 74 caught=63% (19/30)  17,902 tok
+  spec-open netguard.py    seed1  valid 92%  tests= 26 caught=77% (10/13)  12,406 tok
+  spec-open tape.py        seed2  valid 52%  tests=103 caught=73% (16/22)  16,857 tok
+  spec-open serialize.py   seed2  valid 82%  tests= 33 caught=67% (20/30)  15,405 tok
+  spec-open netguard.py    seed2  valid 87%  tests= 31 caught=77% (10/13)  15,196 tok
+  spec-open tape.py        seed3  valid 64%  tests= 89 caught=73% (16/22)  18,086 tok
+  spec-open serialize.py   seed3  valid 67%  tests= 49 caught=57% (17/30)  15,493 tok
+  spec-open netguard.py    seed3  valid 97%  tests= 32 caught=77% (10/13)  13,285 tok
+  spec-open tape.py        seed4  valid 46%  tests=112 caught=73% (16/22)  21,074 tok
+  spec-open serialize.py   seed4  valid 90%  tests= 41 caught=57% (17/30)  15,445 tok
+  spec-open netguard.py    seed4  valid 83%  tests= 36 caught=69% (9/13)  15,558 tok

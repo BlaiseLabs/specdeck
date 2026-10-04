@@ -1,0 +1,340 @@
+[
+ {
+  "id": "m002",
+  "path": "tapedeck/gateway/app/implementations.py",
+  "line": 41,
+  "original": "DISPATCH_METHOD_NAMES = (\"dispatch\", \"feed_update\", \"process_update\")",
+  "mutated": "pass",
+  "operator": "statement",
+  "snippet": "  35  \n  36  # Gateway SDKs deliver pushed events through differently-named entry points.\n  37  # Tried in order; the first callable match on an instance becomes the tap point.\n  38  #   dispatch       discord.py, twitchio, slack_bolt\n  39  #   feed_update    aiogram      (async, signature: feed_update(bot, update))\n  40  #   process_update python-telegram-bot (async, signature: process_update(update))\n  41  DISPATCH_METHOD_NAMES = (\"dispatch\", \"feed_update\", \"process_update\")\n  42  \n  43  # Telegram Update objects carry no `.type`; the event kind is whichever optional\n  44  # field is populated. Ordered by how specific/common each is.\n  45  _TELEGRAM_UPDATE_FIELDS = (\n  46      \"message\",\n  47      \"edited_message\",",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ],
+  "direct": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ],
+  "blocked": [
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets"
+  ]
+ },
+ {
+  "id": "m003",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 222,
+  "original": "        self._module_path = module_path",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 216  \n 217  class ClassProxy:\n 218      def __init__(self, real, recorder: Recorder, redactor: Redactor, module_path: str):\n 219          self._td_real = real\n 220          self._rec = recorder\n 221          self._red = redactor\n 222          self._module_path = module_path\n 223  \n 224      def __call__(self, *args, **kwargs):\n 225          wrapper = CallableWrapper(\n 226              self._td_real, self._rec, self._red, self._module_path, self._td_real.__name__\n 227          )\n 228          return wrapper(*args, **kwargs)",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ],
+  "direct": [
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ],
+  "blocked": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets"
+  ]
+ },
+ {
+  "id": "m007",
+  "path": "tapedeck/gateway/app/implementations.py",
+  "line": 230,
+  "original": "        pumped = 0",
+  "mutated": "        pumped = 1",
+  "operator": "constant",
+  "snippet": " 224      \"\"\"Replay: hand the app a tape-backed client, then feed it the recorded events.\"\"\"\n 225  \n 226      def pump(self, tape: dict, source: str, make_handlers: Callable, client_path: str) -> dict:\n 227          player = TapePlayer(tape)\n 228          client = player.object_at(client_path)\n 229          handlers = make_handlers(client)\n 230          pumped = 0\n 231          for entry in player.events(source):\n 232              handler = handlers.get(f\"on_{entry['event']}\")\n 233              if handler is None:\n 234                  continue\n 235              payload = entry.get(\"payload\")\n 236              args = () if payload in (None, []) else (from_snapshot(payload),)",
+  "failing": [
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ],
+  "direct": [
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ],
+  "blocked": [
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift"
+  ]
+ },
+ {
+  "id": "m008",
+  "path": "tapedeck/gateway/services.py",
+  "line": 149,
+  "original": "        elif rec.get(\"args\", []) != rep.get(\"args\", []) or rec.get(\"kwargs\", {}) != rep.get(\"kwargs\", {}):",
+  "mutated": "        elif rec.get(\"args\", []) == rep.get(\"args\", []) or rec.get(\"kwargs\", {}) != rep.get(\"kwargs\", {}):",
+  "operator": "negate",
+  "snippet": " 143      \"\"\"Pure comparison: replayed calls must match the recorded ones in order.\"\"\"\n 144      recorded = [e for e in recorded_out if e[\"call\"].startswith(client_path + \".\")]\n 145      problems: List[str] = []\n 146      for i, (rec, rep) in enumerate(zip(recorded, transcript)):\n 147          if rec[\"call\"] != rep[\"call\"]:\n 148              problems.append(f\"[{i}] call mismatch: recorded {rec['call']!r} vs replayed {rep['call']!r}\")\n 149          elif rec.get(\"args\", []) != rep.get(\"args\", []) or rec.get(\"kwargs\", {}) != rep.get(\"kwargs\", {}):\n 150              problems.append(f\"[{i}] args mismatch on {rec['call']!r}\")\n 151      if len(recorded) != len(transcript):\n 152          problems.append(f\"count mismatch: recorded {len(recorded)} vs replayed {len(transcript)}\")\n 153      return problems\n 154  \n 155  ",
+  "failing": [
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ],
+  "direct": [
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ],
+  "blocked": [
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift"
+  ]
+ },
+ {
+  "id": "m009",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 220,
+  "original": "        self._rec = recorder",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": " 214          return repr(self._td_real)\n 215  \n 216  \n 217  class ClassProxy:\n 218      def __init__(self, real, recorder: Recorder, redactor: Redactor, module_path: str):\n 219          self._td_real = real\n 220          self._rec = recorder\n 221          self._red = redactor\n 222          self._module_path = module_path\n 223  \n 224      def __call__(self, *args, **kwargs):\n 225          wrapper = CallableWrapper(\n 226              self._td_real, self._rec, self._red, self._module_path, self._td_real.__name__",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ],
+  "direct": [
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ],
+  "blocked": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets"
+  ]
+ },
+ {
+  "id": "m011",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 133,
+  "original": "                if hook is not None:",
+  "mutated": "                if hook is None:",
+  "operator": "negate",
+  "snippet": " 127              self._warn(e)\n 128          if _should_wrap_result(result):\n 129              # Constructor result (capitalized name): notify the session so it can\n 130              # auto-tap gateway clients (objects with a dispatch method).\n 131              if self._name[:1].isupper():\n 132                  hook = getattr(self._rec, \"on_instance\", None)\n 133                  if hook is not None:\n 134                      try:\n 135                          hook(result, f\"{self._container}.{self._name}\")\n 136                      except Exception as e:  # tapping must never break the app\n 137                          import sys\n 138  \n 139                          print(f\"[tapedeck] WARN: on_instance hook failed: {e!r}\", file=sys.stderr)",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field"
+  ],
+  "direct": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg"
+  ],
+  "blocked": [
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field"
+  ]
+ },
+ {
+  "id": "m013",
+  "path": "tapedeck/gateway/services.py",
+  "line": 105,
+  "original": "        omm, nmm = om[c][\"methods\"], nm[c][\"methods\"]",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  99      om, nm = old.get(\"mocked_modules\", {}), new.get(\"mocked_modules\", {})\n 100      for c in sorted(om.keys() - nm.keys()):\n 101          drift.append(f\"container removed: {c}\")\n 102      for c in sorted(nm.keys() - om.keys()):\n 103          drift.append(f\"container added: {c}\")\n 104      for c in sorted(om.keys() & nm.keys()):\n 105          omm, nmm = om[c][\"methods\"], nm[c][\"methods\"]\n 106          for m in sorted(omm.keys() - nmm.keys()):\n 107              drift.append(f\"method removed: {c}.{m}\")\n 108          for m in sorted(nmm.keys() - omm.keys()):\n 109              drift.append(f\"method added: {c}.{m}\")\n 110          for m in sorted(omm.keys() & nmm.keys()):\n 111              o, n = omm[m], nmm[m]",
+  "failing": [
+   "tests/test_cli.py::test_diff_reports_drift_and_exit_code",
+   "tests/test_drift.py::test_detects_new_and_missing_inbound_events",
+   "tests/test_drift.py::test_detects_removed_method",
+   "tests/test_drift.py::test_detects_return_shape_change",
+   "tests/test_drift.py::test_detects_schema_field_changes",
+   "tests/test_drift.py::test_identical_tapes_have_no_drift"
+  ],
+  "direct": [
+   "tests/test_cli.py::test_diff_reports_drift_and_exit_code",
+   "tests/test_drift.py::test_identical_tapes_have_no_drift"
+  ],
+  "blocked": [
+   "tests/test_drift.py::test_detects_new_and_missing_inbound_events",
+   "tests/test_drift.py::test_detects_removed_method",
+   "tests/test_drift.py::test_detects_return_shape_change",
+   "tests/test_drift.py::test_detects_schema_field_changes"
+  ]
+ },
+ {
+  "id": "m014",
+  "path": "tapedeck/engine/serialize.py",
+  "line": 109,
+  "original": "    return dict(public[:_MAX_ITEMS])",
+  "mutated": "    pass",
+  "operator": "statement",
+  "snippet": " 103      ]\n 104      # Pydantic-style SDK models declare huge numbers of optional fields \u2014 an\n 105      # aiogram Message has 127, of which ~5 are populated. Order the fields that\n 106      # actually carry data first so truncation never drops the payload: `text`\n 107      # sits at index 31 and was previously cut, capturing a message with no body.\n 108      public.sort(key=lambda kv: kv[1] is None)\n 109      return dict(public[:_MAX_ITEMS])",
+  "failing": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ],
+  "direct": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path"
+  ],
+  "blocked": [
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "id": "m016",
+  "path": "tapedeck/engine/proxies.py",
+  "line": 131,
+  "original": "            if self._name[:1].isupper():",
+  "mutated": "            if self._name[:2].isupper():",
+  "operator": "constant",
+  "snippet": " 125              self._rec.record_call(self._container, self._name, cfg)\n 126          except Exception as e:  # recording must never break the app\n 127              self._warn(e)\n 128          if _should_wrap_result(result):\n 129              # Constructor result (capitalized name): notify the session so it can\n 130              # auto-tap gateway clients (objects with a dispatch method).\n 131              if self._name[:1].isupper():\n 132                  hook = getattr(self._rec, \"on_instance\", None)\n 133                  if hook is not None:\n 134                      try:\n 135                          hook(result, f\"{self._container}.{self._name}\")\n 136                      except Exception as e:  # tapping must never break the app\n 137                          import sys",
+  "failing": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field"
+  ],
+  "direct": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg"
+  ],
+  "blocked": [
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field"
+  ]
+ },
+ {
+  "id": "m019",
+  "path": "tapedeck/gateway/app/app.py",
+  "line": 31,
+  "original": "        self.file_io = FileIOImpl()",
+  "mutated": "        pass",
+  "operator": "statement",
+  "snippet": "  25      def __init__(self) -> None:\n  26          self.service = GatewayService()\n  27          self.clock = ClockImpl()\n  28          self.module_patching = ModulePatchingImpl()\n  29          self.gateway_tap = GatewayTapImpl()\n  30          self.gateway_pump = GatewayPumpImpl()\n  31          self.file_io = FileIOImpl()\n  32          self.http_fetch = HttpFetchImpl()\n  33  \n  34      def _run(self, effect_func):\n  35          handler = supply(\n  36              self.clock,\n  37              self.module_patching,",
+  "failing": [
+   "tests/test_cli.py::test_play_replays_discord_via_handler_file",
+   "tests/test_cli.py::test_publish_then_pull_via_cli",
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+   "tests/test_registry.py::test_publish_then_pull_roundtrip",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ],
+  "direct": [
+   "tests/test_cli.py::test_play_replays_discord_via_handler_file",
+   "tests/test_cli.py::test_publish_then_pull_via_cli",
+   "tests/test_cli.py::test_record_captures_toy_script",
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+   "tests/test_registry.py::test_publish_then_pull_roundtrip",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_stream_roundtrip.py::test_sync_stream_captures_chunks",
+   "tests/test_telegram_shape_tap.py::test_aiogram_shape_event_is_second_arg",
+   "tests/test_toy_roundtrip.py::test_timeline_orders_inbound_before_resulting_outbound"
+  ],
+  "blocked": [
+   "tests/test_cli.py::test_record_captures_inbound_events_zero_code_change",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+   "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_telegram_shape_tap.py::test_callback_query_update_labels_distinctly",
+   "tests/test_telegram_shape_tap.py::test_ptb_shape_label_from_populated_field",
+   "tests/test_toy_roundtrip.py::test_chained_async_call_recorded_under_access_path",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift",
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording",
+   "tests/test_toy_roundtrip.py::test_tape_contains_no_secrets"
+  ]
+ }
+]

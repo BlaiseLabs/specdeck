@@ -1,0 +1,4 @@
+plain seed0 green=True fixed=3/3 rounds=1 jobs=4 per_bug={'m007': 1, 'm013': 1, 'm016': 2} no_bug=0 located=4 instr=8,001 work=23,797 | spent 31,798
+spec  seed0 green=True fixed=3/3 rounds=2 jobs=4 per_bug={'m007': 1, 'm013': 2, 'm016': 1} no_bug=0 located=4 instr=37,400 work=21,035 | spent 90,233
+hub plain seed0 green=True fixed=3/3 rounds=1 jobs=3 per_bug={'m003': 1, 'm000': 1, 'm026': 1} no_bug=0 located=3 instr=11,904 work=15,277 | spent 117,414
+hub spec  seed0 green=True fixed=3/3 rounds=1 jobs=3 per_bug={'m003': 1, 'm000': 1, 'm026': 1} no_bug=0 located=3 instr=17,333 work=15,913 | spent 150,660

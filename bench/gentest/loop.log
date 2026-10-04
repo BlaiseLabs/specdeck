@@ -1,0 +1,7 @@
+spent 0 of 450,000
+  tape.py seed0
+    round 0: held-out 75% (6/8) | 21 tests | validity 81%
+    round 1: held-out 75% (6/8) | 21 tests | validity 81%
+    round 2: held-out 75% (6/8) | 21 tests | validity 81%
+  -> final held-out 75%  16,989 tok | running 16,989
+  serialize.py seed0

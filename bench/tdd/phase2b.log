@@ -1,0 +1,33 @@
+spent so far 1,008,980 of 2,000,000
+
+=== fine run 0
+    1/11 (netguard.py): visible 0/31 | held-out 0/7 | regression 0/7
+    2/11 (recorder.py): visible 0/31 | held-out 0/7 | regression 0/7
+    3/11 (serialize.py): visible 1/31 | held-out 0/7 | regression 0/7
+    4/11 (tape_player.py): visible 1/31 | held-out 0/7 | regression 0/7
+    5/11 (proxies.py): visible 2/31 | held-out 0/7 | regression 1/7
+    6/11 (tape.py): visible 8/31 | held-out 0/7 | regression 1/7
+    7/11 (services.py): visible 13/31 | held-out 0/7 | regression 6/7
+    8/11 (cli.py): visible 19/31 | held-out 0/7 | regression 6/7
+    9/11 (import_hook.py): visible 19/31 | held-out 0/7 | regression 6/7
+    10/11 (implementations.py): visible 19/31 | held-out 0/7 | regression 6/7
+    11/11 (app.py): visible 21/31 | held-out 2/7 | regression 6/7
+    final: visible 21/31 | held-out 2/7 | regression 6/7
+  -> visible 21/31, held-out 2/7, 293,024 tokens | running total 1,302,004
+
+=== fine run 1
+    1/11 (netguard.py): visible 0/31 | held-out 0/7 | regression 0/7
+    2/11 (recorder.py): visible 0/31 | held-out 0/7 | regression 0/7
+    3/11 (serialize.py): visible 1/31 | held-out 0/7 | regression 0/7
+    4/11 (tape_player.py): visible 1/31 | held-out 0/7 | regression 0/7
+    5/11 (proxies.py): visible 2/31 | held-out 0/7 | regression 1/7
+    6/11 (tape.py): visible 6/31 | held-out 0/7 | regression 1/7
+    7/11 (services.py): visible 11/31 | held-out 0/7 | regression 6/7
+    8/11 (cli.py): visible 16/31 | held-out 0/7 | regression 6/7
+    9/11 (import_hook.py): visible 16/31 | held-out 0/7 | regression 6/7
+    10/11 (implementations.py): visible 16/31 | held-out 0/7 | regression 6/7
+    11/11 (app.py): visible 19/31 | held-out 5/7 | regression 6/7
+    final: visible 19/31 | held-out 5/7 | regression 6/7
+  -> visible 19/31, held-out 5/7, 287,695 tokens | running total 1,589,699
+
+=== fine run 2

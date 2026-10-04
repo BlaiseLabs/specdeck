@@ -1,0 +1,16 @@
+spent 576,111 of 1,200,000
+  spec-nocap tape.py        seed0  valid 85%  tests= 26 caught=68% (15/22)   9,291 tok
+  spec-nocap serialize.py   seed0  valid 69%  tests= 26 caught=57% (17/30)   8,633 tok
+  spec-nocap netguard.py    seed0  valid 100%  tests= 13 caught=69% (9/13)   7,121 tok
+  spec-nocap tape.py        seed1  valid 92%  tests= 24 caught=73% (16/22)   8,492 tok
+  spec-nocap serialize.py   seed1  valid 94%  tests= 46 caught=57% (17/30)   8,324 tok
+  spec-nocap netguard.py    seed1  valid 100%  tests= 16 caught=69% (9/13)   5,880 tok
+  spec-nocap tape.py        seed2  valid 77%  tests= 13 caught=64% (14/22)   7,387 tok
+  spec-nocap serialize.py   seed2  valid 63%  tests= 35 caught=57% (17/30)   8,921 tok
+  spec-nocap netguard.py    seed2  valid 100%  tests= 11 caught=69% (9/13)   5,215 tok
+  spec-nocap tape.py        seed3  valid 70%  tests= 33 caught=73% (16/22)   8,740 tok
+  spec-nocap serialize.py   seed3  valid 80%  tests= 15 caught=57% (17/30)   9,215 tok
+  spec-nocap netguard.py    seed3  valid 100%  tests= 10 caught=69% (9/13)   5,816 tok
+  spec-nocap tape.py        seed4  valid 70%  tests= 33 caught=68% (15/22)   8,900 tok
+  spec-nocap serialize.py   seed4  valid 82%  tests= 27 caught=60% (18/30)   8,570 tok
+  spec-nocap netguard.py    seed4  valid 100%  tests=  9 caught=62% (8/13)   6,596 tok

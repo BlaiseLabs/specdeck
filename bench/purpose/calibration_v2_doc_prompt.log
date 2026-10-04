@@ -1,0 +1,4 @@
+spent 0 of 120,000
+  separate_doc_prompt seed0   8/10  11 commands   54,320 tok  read: covers  | spent 54,320
+spent 54,320 of 120,000
+  separate_doc_prompt seed1   0/10   0 commands   42,008 tok  read: -  ABORTED  | spent 96,328

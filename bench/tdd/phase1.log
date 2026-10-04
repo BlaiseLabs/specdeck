@@ -1,0 +1,39 @@
+spent so far 0 of 900,000
+
+=== mono run 0
+    stage 1/1 (netguard.py, recorder.py, serialize.py, tape_player.py, abilities.py, proxies.py, tape.py, implementations.py, services.py, cli.py, import_hook.py, app.py): visible 16/31 | held-out 0/7 | regression 6/7
+    final: visible 16/31 | held-out 0/7 | regression 6/7
+  -> visible 16/31, held-out 0/7, 45,796 tokens | running total 45,796
+
+=== split run 0
+    stage 1/3 (netguard.py, recorder.py, serialize.py, tape_player.py): visible 1/31 | held-out 0/7 | regression 0/7
+    stage 2/3 (proxies.py, tape.py, implementations.py, services.py): visible 13/31 | held-out 0/7 | regression 6/7
+    stage 3/3 (cli.py, import_hook.py, app.py): visible 22/31 | held-out 5/7 | regression 6/7
+    final: visible 22/31 | held-out 5/7 | regression 6/7
+  -> visible 22/31, held-out 5/7, 141,095 tokens | running total 186,891
+
+=== spec run 0
+    stage 1/3 (netguard.py, recorder.py, serialize.py, tape_player.py): visible 1/31 | held-out 0/7 | regression 0/7
+    stage 2/3 (proxies.py, tape.py, implementations.py, services.py): visible 13/31 | held-out 0/7 | regression 6/7
+    stage 3/3 (cli.py, import_hook.py, app.py): visible 17/31 | held-out 0/7 | regression 6/7
+    final: visible 17/31 | held-out 0/7 | regression 6/7
+  -> visible 17/31, held-out 0/7, 193,679 tokens | running total 380,570
+
+=== mono run 1
+    stage 1/1 (netguard.py, recorder.py, serialize.py, tape_player.py, abilities.py, proxies.py, tape.py, implementations.py, services.py, cli.py, import_hook.py, app.py): visible 21/31 | held-out 1/7 | regression 6/7
+    final: visible 21/31 | held-out 1/7 | regression 6/7
+  -> visible 21/31, held-out 1/7, 47,370 tokens | running total 427,940
+
+=== split run 1
+    stage 1/3 (netguard.py, recorder.py, serialize.py, tape_player.py): visible 1/31 | held-out 0/7 | regression 0/7
+    stage 2/3 (proxies.py, tape.py, implementations.py, services.py): visible 13/31 | held-out 0/7 | regression 6/7
+    stage 3/3 (cli.py, import_hook.py, app.py): visible 17/31 | held-out 0/7 | regression 6/7
+    final: visible 17/31 | held-out 0/7 | regression 6/7
+  -> visible 17/31, held-out 0/7, 139,802 tokens | running total 567,742
+
+=== spec run 1
+    stage 1/3 (netguard.py, recorder.py, serialize.py, tape_player.py): visible 1/31 | held-out 0/7 | regression 0/7
+    stage 2/3 (proxies.py, tape.py, implementations.py, services.py): visible 13/31 | held-out 0/7 | regression 6/7
+    stage 3/3 (cli.py, import_hook.py, app.py): visible 17/31 | held-out 0/7 | regression 6/7
+    final: visible 17/31 | held-out 0/7 | regression 6/7
+  -> visible 17/31, held-out 0/7, 191,133 tokens | running total 758,875

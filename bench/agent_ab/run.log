@@ -1,0 +1,44 @@
+context tokens: spec=8,431, tests=12,773, both=21,204
+18 calls planned; spent so far 14,340 of 500,000
+  impact/tests/0: 14,688 in (0 cached) + 3,926 out (2,560 reasoning) in 72s — spent 32,954
+  impact/both/0: 23,119 in (0 cached) + 4,922 out (3,544 reasoning) in 96s — spent 60,995
+  impact/spec/1: 10,299 in (0 cached) + 2,622 out (2,023 reasoning) in 56s — spent 73,916
+  impact/tests/1: 14,641 in (0 cached) + 2,094 out (1,536 reasoning) in 44s — spent 90,651
+  impact/both/1: 23,072 in (0 cached) + 2,317 out (1,754 reasoning) in 49s — spent 116,040
+  impact/spec/2: 10,304 in (0 cached) + 4,462 out (3,766 reasoning) in 101s — spent 130,806
+  impact/tests/2: 14,646 in (0 cached) + 4,478 out (3,814 reasoning) in 103s — spent 149,930
+  impact/both/2: 23,077 in (0 cached) + 3,830 out (3,189 reasoning) in 87s — spent 176,837
+  impact/spec/3: 10,378 in (0 cached) + 3,591 out (2,889 reasoning) in 87s — spent 190,806
+  impact/tests/3: 14,720 in (0 cached) + 3,581 out (2,562 reasoning) in 73s — spent 209,107
+  impact/both/3: 23,151 in (0 cached) + 3,870 out (2,844 reasoning) in 83s — spent 236,128
+  triage/spec/0: 9,634 in (0 cached) + 2,217 out (1,160 reasoning) in 40s — spent 247,979
+  triage/tests/0: 13,976 in (0 cached) + 1,557 out (512 reasoning) in 21s — spent 263,512
+  triage/both/0: 22,407 in (0 cached) + 2,312 out (1,255 reasoning) in 38s — spent 288,231
+  triage/spec/1: 9,611 in (0 cached) + 2,508 out (1,477 reasoning) in 46s — spent 300,350
+  triage/tests/1: 13,953 in (0 cached) + 3,269 out (2,225 reasoning) in 59s — spent 317,572
+  triage/both/1: 22,384 in (0 cached) + 3,241 out (2,198 reasoning) in 56s — spent 343,197
+done: 18 calls, 343,197 tokens of 500,000
+exit 0
+context tokens: spec=8,431, tests=12,773, both=21,204, specmap=11,881
+4 calls planned; spent so far 343,197 of 500,000
+  impact/specmap/0: 13,796 in (0 cached) + 5,141 out (3,754 reasoning) in 105s — spent 362,134
+  impact/specmap/1: 13,749 in (0 cached) + 2,032 out (1,474 reasoning) in 39s — spent 377,915
+  impact/specmap/2: 13,754 in (0 cached) + 3,386 out (2,714 reasoning) in 69s — spent 395,055
+  impact/specmap/3: 13,828 in (0 cached) + 4,116 out (3,072 reasoning) in 80s — spent 412,999
+done: 22 calls, 412,999 tokens of 500,000
+context tokens: spec=8,431, tests=12,773, both=21,204, specmap=11,881, specrule=8,531, testsrule=12,873
+4 calls planned; spent so far 412,999 of 1,000,000
+  triage/specrule/0: 9,734 in (0 cached) + 2,341 out (1,284 reasoning) in 40s — spent 425,074
+  triage/testsrule/0: 14,076 in (0 cached) + 2,737 out (1,674 reasoning) in 46s — spent 441,887
+  triage/specrule/1: 9,711 in (0 cached) + 2,895 out (1,859 reasoning) in 48s — spent 454,493
+  triage/testsrule/1: 14,053 in (0 cached) + 3,557 out (2,515 reasoning) in 68s — spent 472,103
+done: 26 calls, 472,103 tokens of 1,000,000
+context tokens: spec=8,431, tests=12,773, both=21,204, specmap=11,881, specrule=8,531, testsrule=12,873, shipped=11,962
+6 calls planned; spent so far 472,103 of 1,000,000
+  impact/shipped/0: 13,877 in (0 cached) + 4,871 out (3,533 reasoning) in 93s — spent 490,851
+  impact/shipped/1: 13,830 in (0 cached) + 1,977 out (1,419 reasoning) in 34s — spent 506,658
+  impact/shipped/2: 13,835 in (0 cached) + 4,014 out (3,301 reasoning) in 76s — spent 524,507
+  impact/shipped/3: 13,909 in (0 cached) + 3,759 out (2,724 reasoning) in 67s — spent 542,175
+  triage/shipped/0: 13,165 in (0 cached) + 2,158 out (1,101 reasoning) in 27s — spent 557,498
+  triage/shipped/1: 13,142 in (0 cached) + 3,069 out (2,032 reasoning) in 44s — spent 573,709
+done: 32 calls, 573,709 tokens of 1,000,000
