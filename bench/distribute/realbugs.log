@@ -1,0 +1,38 @@
+73 candidate fix commits
+35 usable real bugs
+  FluencyGen           15016d2e 1 failing, 15 changed lines | Sharper theme adherence: lean judge view + fewer topics per 
+  FluencyGen           efd2f273 1 failing, 10 changed lines | Fix off-topic generation: don't bury the theme under the gra
+  FluencyGen           b0ee9be8 1 failing, 279 changed lines | Real end-to-end journey test + fix the silent blank Fill sta
+  FluencyGen           99e4a54b 1 failing, 50 changed lines | Size generated context to turn count; add topics roadmap
+  FluencyGen           dbfb556b 1 failing, 15 changed lines | Fix generator token double-count across judge-loop rounds
+  SubtitleMixerKB      5b3ecfdd 1 failing, 104 changed lines | feat: free conversation v3 — score the learner's output + cl
+  SubtitleMixerKB      edcf1ac9 6 failing, 57 changed lines | Unlock short literals at count 1; guard word cache against l
+  SubtitleMixerKB      643cda5b 7 failing, 128 changed lines | Add per-show overlay for proper nouns (name) in WordCategory
+  SubtitleMixerKB      56455ea4 2 failing, 23 changed lines | Reject malformed slot units to keep the cache clean across s
+  SubtitleMixerKB      6d8623d5 1 failing, 4 changed lines | Fix TypeError crash in renderer when slot unit has jp_filler
+  NihongoArcade        91014ddc 3 failing, 157 changed lines | Furigana in the reading drill, stamp on the crate, grammar p
+  NihongoArcade        e392fb44 2 failing, 51 changed lines | Sample from a different line; make the grammar drill reachab
+  NihongoArcade        9d89b2e9 1 failing, 235 changed lines | Fix banned words returning, and the same line over and over
+  NihongoArcade        371d47ef 3 failing, 165 changed lines | Ban list, and never let the ordered crate stand alone
+  NihongoArcade        7d376860 1 failing, 602 changed lines | Complete the grammar-point parsers: 686 of 755 points matche
+  SubtitleMixerStudio  edcf1ac9 6 failing, 57 changed lines | Unlock short literals at count 1; guard word cache against l
+  SubtitleMixerStudio  643cda5b 7 failing, 128 changed lines | Add per-show overlay for proper nouns (name) in WordCategory
+  SubtitleMixerStudio  56455ea4 2 failing, 23 changed lines | Reject malformed slot units to keep the cache clean across s
+  SubtitleMixerStudio  6d8623d5 1 failing, 4 changed lines | Fix TypeError crash in renderer when slot unit has jp_filler
+  KaishaQuest          3b8d3c1e 2 failing, 69 changed lines | Planner fixes from day 6: quotas capped at 2/3 of what is of
+  KaishaQuest          555e0457 2 failing, 106 changed lines | Listen-first mode, 聞く (ask) topics, yesterday-continuity gat
+  KaishaQuest          cd2abfb4 5 failing, 53 changed lines | Phone-call missions (outside cast, uchi/soto keigo), phone p
+  SubtitleMixer        edcf1ac9 6 failing, 57 changed lines | Unlock short literals at count 1; guard word cache against l
+  SubtitleMixer        643cda5b 7 failing, 128 changed lines | Add per-show overlay for proper nouns (name) in WordCategory
+  SubtitleMixer        56455ea4 2 failing, 23 changed lines | Reject malformed slot units to keep the cache clean across s
+  SubtitleMixer        6d8623d5 1 failing, 4 changed lines | Fix TypeError crash in renderer when slot unit has jp_filler
+  SubtitleAcademy      edcf1ac9 6 failing, 57 changed lines | Unlock short literals at count 1; guard word cache against l
+  SubtitleAcademy      643cda5b 7 failing, 128 changed lines | Add per-show overlay for proper nouns (name) in WordCategory
+  SubtitleAcademy      56455ea4 2 failing, 23 changed lines | Reject malformed slot units to keep the cache clean across s
+  SubtitleAcademy      6d8623d5 1 failing, 4 changed lines | Fix TypeError crash in renderer when slot unit has jp_filler
+  tapedeck             4d955f32 2 failing, 57 changed lines | De-risk Slack capture: generalize dispatch shape + fix calla
+  specdeck             ac5cd140 12 failing, 902 changed lines | Stand alone: own validator, CI gates, maintenance commands; 
+  specdeck             f761a91d 10 failing, 1785 changed lines | Live viewer: run history, live status, dependency analysis, 
+  dx_opus_mock_lib     b0a5e261 2 failing, 22 changed lines | M6: Reddit (praw) capture/consume + iterable fix + redaction
+  proofdeck            b53fb271 3 failing, 174 changed lines | Distribute profile: flag changed functions no test calls dir
+Counter({'tests fail at the fix': 16, 'no failure': 11, 'loud': 10, "CalledProcessError(128, ['git', '-C', '/workspaces/python/tapedeck', 'diff', '9f629a02c1b33b18f96a322ce391f9a3fc8bd857^', '9f629a02c1b33b18f96a322ce391f9a3fc8bd857', '--', 'tapedeck/__init__.py', 'tap": 1})

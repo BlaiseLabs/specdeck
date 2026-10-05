@@ -1,0 +1,1290 @@
+[
+ {
+  "repo": "FluencyGen",
+  "commit": "15016d2e4448df438fe7e39324eb03496092f168",
+  "keep": true,
+  "src": [
+   "fluencygen/dialogue.py"
+  ],
+  "tests": [
+   "tests/test_dialogue.py"
+  ],
+  "failing": [
+   "tests/test_dialogue.py::test_generate_context_sizes_topics_to_turns"
+  ],
+  "why": "ok",
+  "subject": "Sharper theme adherence: lean judge view + fewer topics per short lesson",
+  "fix_lines": 15
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "d3a7ea57204616f9dc1ad69b9e14de51a8df3cba",
+  "keep": false,
+  "src": [
+   "e2e/theme_trial.py",
+   "fluencygen/dialogue.py",
+   "fluencygen/lesson.py"
+  ],
+  "tests": [
+   "tests/test_lesson.py",
+   "tests/test_web.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Keep themed dialogue on-theme: anchor line generation + sharpen the judge",
+  "fix_lines": 116
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "efd2f2738334feb93b68f567bb19fad9e9e49669",
+  "keep": true,
+  "src": [
+   "fluencygen/dialogue.py",
+   "fluencygen/lesson.py"
+  ],
+  "tests": [
+   "tests/test_lesson.py"
+  ],
+  "failing": [
+   "tests/test_lesson.py::test_theme_drives_scene_and_grammar_is_a_separate_style"
+  ],
+  "why": "ok",
+  "subject": "Fix off-topic generation: don't bury the theme under the grammar directive",
+  "fix_lines": 10
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "b0ee9be862267a112e7e3dab82f95e1f4378ea7c",
+  "keep": true,
+  "src": [
+   "e2e/journey_check.py",
+   "e2e/voice_core_check.py",
+   "fluencygen/lesson.py",
+   "fluencygen/web/app.py"
+  ],
+  "tests": [
+   "tests/test_web.py"
+  ],
+  "failing": [
+   "tests/test_web.py::test_service_endpoints_end_to_end"
+  ],
+  "why": "ok",
+  "subject": "Real end-to-end journey test + fix the silent blank Fill stage",
+  "fix_lines": 279
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "c8ba64e44b2d069e6065fb4b992896a97d27a36e",
+  "keep": false,
+  "src": [
+   "e2e/quick_mount.py",
+   "fluencygen/translate.py",
+   "fluencygen/web/app.py"
+  ],
+  "tests": [
+   "tests/test_translate.py"
+  ],
+  "failing": [
+   "tests/test_translate.py"
+  ],
+  "why": "loud: !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!",
+  "subject": "Add on-demand line translation (fixes 'show translation' on live lessons)",
+  "fix_lines": 60
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "440a0a864d94f3e4b0a1e9e54de462f56bab89fd",
+  "keep": false,
+  "src": [
+   "e2e/browser_check.py",
+   "e2e/serve_e2e.py",
+   "fluencygen/feedback.py",
+   "fluencygen/grammar.py",
+   "fluencygen/web/app.py"
+  ],
+  "tests": [
+   "tests/test_feedback.py",
+   "tests/test_grammar.py",
+   "tests/test_web.py"
+  ],
+  "failing": [
+   "tests/test_feedback.py"
+  ],
+  "why": "loud: !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!",
+  "subject": "Learner features: corrective retry, shadow scoring, theming, grammar-on-demand",
+  "fix_lines": 211
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "d67e71b1f87577fdeea96592f92e898619e96274",
+  "keep": false,
+  "src": [
+   "fluencygen/course.py",
+   "fluencygen/gloss.py",
+   "fluencygen/lesson.py",
+   "fluencygen/realize.py"
+  ],
+  "tests": [
+   "tests/test_course.py",
+   "tests/test_lesson.py"
+  ],
+  "failing": [
+   "tests/test_course.py",
+   "tests/test_lesson.py"
+  ],
+  "why": "loud: !!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!",
+  "subject": "Integration phases 3-5: course loader, glossing, lesson assembly",
+  "fix_lines": 431
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "99e4a54b28b889683884f639e1262d4d755d7ebc",
+  "keep": true,
+  "src": [
+   "fluencygen/cli.py",
+   "fluencygen/dialogue.py"
+  ],
+  "tests": [
+   "tests/test_dialogue.py"
+  ],
+  "failing": [
+   "tests/test_dialogue.py::test_generate_context_sizes_topics_to_turns"
+  ],
+  "why": "ok",
+  "subject": "Size generated context to turn count; add topics roadmap",
+  "fix_lines": 50
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "3ddfe64a2cd8804870bda09434c2ae4894a4fb73",
+  "keep": false,
+  "src": [
+   "fluencygen/cli.py",
+   "fluencygen/dialogue.py",
+   "fluencygen/realize.py"
+  ],
+  "tests": [
+   "tests/test_dialogue.py"
+  ],
+  "failing": [
+   "tests/test_dialogue.py"
+  ],
+  "why": "loud: !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!",
+  "subject": "Add experimental random-sample template mode (--sample)",
+  "fix_lines": 127
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "dbfb556b1a20b1fd3d44ea420fbd0e173e3701fb",
+  "keep": true,
+  "src": [
+   "fluencygen/cli.py",
+   "fluencygen/dialogue.py"
+  ],
+  "tests": [
+   "tests/test_dialogue.py"
+  ],
+  "failing": [
+   "tests/test_dialogue.py::test_grow_batched_token_accounting_no_double_count"
+  ],
+  "why": "ok",
+  "subject": "Fix generator token double-count across judge-loop rounds",
+  "fix_lines": 15
+ },
+ {
+  "repo": "FluencyGen",
+  "commit": "deac5aad888f9033bff185fef188fe6a38d225cf",
+  "keep": false,
+  "src": [
+   "fluencygen/cli.py",
+   "fluencygen/dialogue.py"
+  ],
+  "tests": [
+   "tests/test_dialogue.py"
+  ],
+  "failing": [
+   "tests/test_dialogue.py"
+  ],
+  "why": "loud: !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!",
+  "subject": "Add batch dialogue mode; default to gpt-5-mini + batch=6",
+  "fix_lines": 152
+ },
+ {
+  "repo": "SubtitleMixerKB",
+  "commit": "5b3ecfdd46cbbd61aa720c3ca33990877afe7c8b",
+  "keep": true,
+  "src": [
+   "e2e/converse_e2e.py",
+   "src/fluencygen/conversation.py",
+   "src/fluencygen/web/app.py"
+  ],
+  "tests": [
+   "tests/test_conversation.py"
+  ],
+  "failing": [
+   "tests/test_conversation.py::test_v3_scores_learner_production_and_clamps_to_real_known_set"
+  ],
+  "why": "ok",
+  "subject": "feat: free conversation v3 \u2014 score the learner's output + clamp to their real level",
+  "fix_lines": 104
+ },
+ {
+  "repo": "SubtitleMixerKB",
+  "commit": "7692181b7c9b235e1ff1b5afb9bf9ec15b01296c",
+  "keep": false,
+  "src": [
+   "src/fluencygen/dimensions.py",
+   "src/subtitle_mixer/cli.py"
+  ],
+  "tests": [
+   "tests/test_labeling.py"
+  ],
+  "failing": [
+   "tests/test_labeling.py"
+  ],
+  "why": "loud: 2 warnings, 1 error in 0.15s",
+  "subject": "labeling: cross-dimension bleed-repair pass (repair_bleed + `mixer label repair`)",
+  "fix_lines": 179
+ },
+ {
+  "repo": "SubtitleMixerKB",
+  "commit": "edcf1ac9692f248e9a6cd4a20a03fda09a3cbe5f",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py",
+   "src/subtitle_mixer/cache/word_category.py"
+  ],
+  "tests": [
+   "tests/test_job_runner.py",
+   "tests/test_unit_cache.py",
+   "tests/test_word_category_cache.py"
+  ],
+  "failing": [
+   "tests/test_unit_cache.py::test_short_literal_tiles_at_count_one",
+   "tests/test_unit_cache.py::test_short_literal_boundary_at_max_chars",
+   "tests/test_unit_cache.py::test_short_literal_threshold_capped_by_min_recurrences",
+   "tests/test_word_category_cache.py::test_record_rejects_multiword_fragment",
+   "tests/test_word_category_cache.py::test_record_rejects_overlong_fragment",
+   "tests/test_word_category_cache.py::test_record_rejects_empty_filler"
+  ],
+  "why": "ok",
+  "subject": "Unlock short literals at count 1; guard word cache against lyric fragments",
+  "fix_lines": 57
+ },
+ {
+  "repo": "SubtitleMixerKB",
+  "commit": "643cda5bdcda34979fad4932b29a9fc9682a4bc8",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/word_category.py",
+   "src/subtitle_mixer/cli.py",
+   "src/subtitle_mixer/job.py",
+   "src/subtitle_mixer/models.py"
+  ],
+  "tests": [
+   "tests/test_word_category_cache.py"
+  ],
+  "failing": [
+   "tests/test_word_category_cache.py::test_count_increments",
+   "tests/test_word_category_cache.py::test_name_routes_to_overlay_not_shared",
+   "tests/test_word_category_cache.py::test_common_category_routes_to_shared_even_with_overlay",
+   "tests/test_word_category_cache.py::test_name_not_visible_to_a_different_show",
+   "tests/test_word_category_cache.py::test_shared_vocabulary_visible_to_all_shows",
+   "tests/test_word_category_cache.py::test_overlay_wins_on_key_conflict",
+   "tests/test_word_category_cache.py::test_no_overlay_preserves_single_store_behavior"
+  ],
+  "why": "ok",
+  "subject": "Add per-show overlay for proper nouns (name) in WordCategoryCache",
+  "fix_lines": 128
+ },
+ {
+  "repo": "SubtitleMixerKB",
+  "commit": "56455ea455b7f852554a9fcaf68541dc0027d6d5",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py"
+  ],
+  "tests": [
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [
+   "tests/test_unit_cache.py::test_record_ignores_slot_unit_missing_placeholder",
+   "tests/test_unit_cache.py::test_tile_skips_poisoned_malformed_slot_from_disk"
+  ],
+  "why": "ok",
+  "subject": "Reject malformed slot units to keep the cache clean across shows",
+  "fix_lines": 23
+ },
+ {
+  "repo": "SubtitleMixerKB",
+  "commit": "6d8623d53ef7a9f692b26614e46b18d0b3ad8edf",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/renderer.py"
+  ],
+  "tests": [
+   "tests/test_renderer.py"
+  ],
+  "failing": [
+   "tests/test_renderer.py::test_render_slot_unit_with_null_filler_does_not_crash"
+  ],
+  "why": "ok",
+  "subject": "Fix TypeError crash in renderer when slot unit has jp_filler=None",
+  "fix_lines": 4
+ },
+ {
+  "repo": "SubtitleMixerKB",
+  "commit": "700ddb45ea581e9dfddeda8437f9b742f405087a",
+  "keep": false,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py"
+  ],
+  "tests": [
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Fix infinite-loop crash in UnitCache.tile() caused by zero-width patterns",
+  "fix_lines": 29
+ },
+ {
+  "repo": "SubtitleMixerKB",
+  "commit": "72d930795c6d32754d87e4f5900944e6526bc520",
+  "keep": false,
+  "src": [
+   "src/subtitle_mixer/cache/__init__.py",
+   "src/subtitle_mixer/cache/exact.py",
+   "src/subtitle_mixer/cache/patterns.py",
+   "src/subtitle_mixer/cache/unit_cache.py",
+   "src/subtitle_mixer/cli.py",
+   "src/subtitle_mixer/job.py",
+   "src/subtitle_mixer/models.py",
+   "src/subtitle_mixer/renderer.py"
+  ],
+  "tests": [
+   "tests/conftest.py",
+   "tests/test_exact_cache.py",
+   "tests/test_job_runner.py",
+   "tests/test_renderer.py",
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Implement composable per-unit template system (Phases 1\u20137)",
+  "fix_lines": 729
+ },
+ {
+  "repo": "NihongoArcade",
+  "commit": "91014ddc273247a575f554041f2198ad55259d79",
+  "keep": true,
+  "src": [
+   "server/engine.py"
+  ],
+  "tests": [
+   "tests/test_timing.py"
+  ],
+  "failing": [
+   "tests/test_timing.py::test_reading_prompts_carry_furigana_and_hide_the_meaning",
+   "tests/test_timing.py::test_the_reading_room_is_never_empty_once_it_has_stock",
+   "tests/test_timing.py::test_grammar_lots_get_every_fix_the_word_lots_got"
+  ],
+  "why": "ok",
+  "subject": "Furigana in the reading drill, stamp on the crate, grammar parity",
+  "fix_lines": 157
+ },
+ {
+  "repo": "NihongoArcade",
+  "commit": "e392fb4433a47b36a5f025d43548eff704c0cb52",
+  "keep": true,
+  "src": [
+   "server/engine.py"
+  ],
+  "tests": [
+   "tests/test_timing.py"
+  ],
+  "failing": [
+   "tests/test_timing.py::test_the_sample_clip_is_not_the_line_about_to_be_hunted",
+   "tests/test_timing.py::test_the_grammar_drill_is_reachable"
+  ],
+  "why": "ok",
+  "subject": "Sample from a different line; make the grammar drill reachable",
+  "fix_lines": 51
+ },
+ {
+  "repo": "NihongoArcade",
+  "commit": "9d89b2e9d518a98d52f1a47919f70e3e060fee20",
+  "keep": true,
+  "src": [
+   "game/build_db.py",
+   "server/app.py",
+   "server/engine.py"
+  ],
+  "tests": [
+   "tests/test_timing.py"
+  ],
+  "failing": [
+   "tests/test_timing.py::test_lots_vary_the_line_while_the_word_repeats"
+  ],
+  "why": "ok",
+  "subject": "Fix banned words returning, and the same line over and over",
+  "fix_lines": 235
+ },
+ {
+  "repo": "NihongoArcade",
+  "commit": "371d47ef37414cf82676d5a820a5576c6cbce1e0",
+  "keep": true,
+  "src": [
+   "game/build_db.py",
+   "server/app.py",
+   "server/engine.py"
+  ],
+  "tests": [
+   "tests/test_timing.py"
+  ],
+  "failing": [
+   "tests/test_timing.py::test_decoys_clear_the_whole_window",
+   "tests/test_timing.py::test_banning_retires_a_word_everywhere_and_is_reversible",
+   "tests/test_timing.py::test_the_ordered_crate_is_never_alone_first_or_last"
+  ],
+  "why": "ok",
+  "subject": "Ban list, and never let the ordered crate stand alone",
+  "fix_lines": 165
+ },
+ {
+  "repo": "NihongoArcade",
+  "commit": "f5d27c75a023a432ba29aef44921782898d63582",
+  "keep": false,
+  "why": "tests fail at the fix: timeout"
+ },
+ {
+  "repo": "NihongoArcade",
+  "commit": "130c10f49782a74fa4794b287e0f1091a06896a7",
+  "keep": false,
+  "why": "tests fail at the fix: timeout"
+ },
+ {
+  "repo": "NihongoArcade",
+  "commit": "7d376860020b27b5fe392929668656db704b3c41",
+  "keep": true,
+  "src": [
+   "extraction/build_point_labels.py",
+   "grammar/generate.py",
+   "grammar/holdout.py",
+   "grammar/matcher.py",
+   "grammar/patterns.py",
+   "grammar/registry.py"
+  ],
+  "tests": [
+   "tests/test_grammar_matchers.py"
+  ],
+  "failing": [
+   "tests/test_grammar_matchers.py::test_registry_labels_the_corpus"
+  ],
+  "why": "ok",
+  "subject": "Complete the grammar-point parsers: 686 of 755 points matched",
+  "fix_lines": 602
+ },
+ {
+  "repo": "NihongoArcade",
+  "commit": "76687ff46c3fdf17f6c802d773b94b510764f278",
+  "keep": false,
+  "src": [
+   "grammar/align.py",
+   "grammar/evaluate.py",
+   "grammar/matcher.py",
+   "grammar/patterns.py"
+  ],
+  "tests": [
+   "tests/test_grammar_matchers.py"
+  ],
+  "failing": [
+   "tests/test_grammar_matchers.py"
+  ],
+  "why": "loud: 1 error in 0.16s",
+  "subject": "Grammar catalog + declarative matchers, scored against external gold",
+  "fix_lines": 310
+ },
+ {
+  "repo": "SubtitleMixerStudio",
+  "commit": "a453f6952a41872c38eaa750eb2c26e18df63882",
+  "keep": false,
+  "why": "tests fail at the fix: no tests ran in 0.92s"
+ },
+ {
+  "repo": "SubtitleMixerStudio",
+  "commit": "edcf1ac9692f248e9a6cd4a20a03fda09a3cbe5f",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py",
+   "src/subtitle_mixer/cache/word_category.py"
+  ],
+  "tests": [
+   "tests/test_job_runner.py",
+   "tests/test_unit_cache.py",
+   "tests/test_word_category_cache.py"
+  ],
+  "failing": [
+   "tests/test_unit_cache.py::test_short_literal_tiles_at_count_one",
+   "tests/test_unit_cache.py::test_short_literal_boundary_at_max_chars",
+   "tests/test_unit_cache.py::test_short_literal_threshold_capped_by_min_recurrences",
+   "tests/test_word_category_cache.py::test_record_rejects_multiword_fragment",
+   "tests/test_word_category_cache.py::test_record_rejects_overlong_fragment",
+   "tests/test_word_category_cache.py::test_record_rejects_empty_filler"
+  ],
+  "why": "ok",
+  "subject": "Unlock short literals at count 1; guard word cache against lyric fragments",
+  "fix_lines": 57
+ },
+ {
+  "repo": "SubtitleMixerStudio",
+  "commit": "643cda5bdcda34979fad4932b29a9fc9682a4bc8",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/word_category.py",
+   "src/subtitle_mixer/cli.py",
+   "src/subtitle_mixer/job.py",
+   "src/subtitle_mixer/models.py"
+  ],
+  "tests": [
+   "tests/test_word_category_cache.py"
+  ],
+  "failing": [
+   "tests/test_word_category_cache.py::test_count_increments",
+   "tests/test_word_category_cache.py::test_name_routes_to_overlay_not_shared",
+   "tests/test_word_category_cache.py::test_common_category_routes_to_shared_even_with_overlay",
+   "tests/test_word_category_cache.py::test_name_not_visible_to_a_different_show",
+   "tests/test_word_category_cache.py::test_shared_vocabulary_visible_to_all_shows",
+   "tests/test_word_category_cache.py::test_overlay_wins_on_key_conflict",
+   "tests/test_word_category_cache.py::test_no_overlay_preserves_single_store_behavior"
+  ],
+  "why": "ok",
+  "subject": "Add per-show overlay for proper nouns (name) in WordCategoryCache",
+  "fix_lines": 128
+ },
+ {
+  "repo": "SubtitleMixerStudio",
+  "commit": "56455ea455b7f852554a9fcaf68541dc0027d6d5",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py"
+  ],
+  "tests": [
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [
+   "tests/test_unit_cache.py::test_record_ignores_slot_unit_missing_placeholder",
+   "tests/test_unit_cache.py::test_tile_skips_poisoned_malformed_slot_from_disk"
+  ],
+  "why": "ok",
+  "subject": "Reject malformed slot units to keep the cache clean across shows",
+  "fix_lines": 23
+ },
+ {
+  "repo": "SubtitleMixerStudio",
+  "commit": "6d8623d53ef7a9f692b26614e46b18d0b3ad8edf",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/renderer.py"
+  ],
+  "tests": [
+   "tests/test_renderer.py"
+  ],
+  "failing": [
+   "tests/test_renderer.py::test_render_slot_unit_with_null_filler_does_not_crash"
+  ],
+  "why": "ok",
+  "subject": "Fix TypeError crash in renderer when slot unit has jp_filler=None",
+  "fix_lines": 4
+ },
+ {
+  "repo": "SubtitleMixerStudio",
+  "commit": "700ddb45ea581e9dfddeda8437f9b742f405087a",
+  "keep": false,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py"
+  ],
+  "tests": [
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Fix infinite-loop crash in UnitCache.tile() caused by zero-width patterns",
+  "fix_lines": 29
+ },
+ {
+  "repo": "SubtitleMixerStudio",
+  "commit": "72d930795c6d32754d87e4f5900944e6526bc520",
+  "keep": false,
+  "src": [
+   "src/subtitle_mixer/cache/__init__.py",
+   "src/subtitle_mixer/cache/exact.py",
+   "src/subtitle_mixer/cache/patterns.py",
+   "src/subtitle_mixer/cache/unit_cache.py",
+   "src/subtitle_mixer/cli.py",
+   "src/subtitle_mixer/job.py",
+   "src/subtitle_mixer/models.py",
+   "src/subtitle_mixer/renderer.py"
+  ],
+  "tests": [
+   "tests/conftest.py",
+   "tests/test_exact_cache.py",
+   "tests/test_job_runner.py",
+   "tests/test_renderer.py",
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Implement composable per-unit template system (Phases 1\u20137)",
+  "fix_lines": 729
+ },
+ {
+  "repo": "KaishaQuest",
+  "commit": "4d942bf437b9c317b1e2ad20d1ef5e7d59ffe529",
+  "keep": false,
+  "src": [
+   "game/server.py",
+   "srs/session.py",
+   "srs/store.py"
+  ],
+  "tests": [
+   "tests/test_srs.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "smaller rounds while recall is failing, and fewer of the words that beat you",
+  "fix_lines": 44
+ },
+ {
+  "repo": "KaishaQuest",
+  "commit": "9a7b2a6977726880c51a6a4e321e73a9ddae19cc",
+  "keep": false,
+  "why": "tests fail at the fix: 9 passed, 17 errors in 10.11s"
+ },
+ {
+  "repo": "KaishaQuest",
+  "commit": "fca0fd7126262109b1d8ea7433d9eeee05661aee",
+  "keep": false,
+  "why": "tests fail at the fix: 7 passed, 17 errors in 10.50s"
+ },
+ {
+  "repo": "KaishaQuest",
+  "commit": "e3ad79483464c8634bc971bafbda8e4e74b44ae3",
+  "keep": false,
+  "why": "tests fail at the fix: 5 passed, 17 errors in 10.25s"
+ },
+ {
+  "repo": "KaishaQuest",
+  "commit": "3b8d3c1eb9b8cdb5f92fe3c8644e59a2cb9d61f0",
+  "keep": true,
+  "src": [
+   "gen/daypack.py",
+   "tools/vocab_curve.py"
+  ],
+  "tests": [
+   "tests/test_daypack.py"
+  ],
+  "failing": [
+   "tests/test_daypack.py::test_planner_plans_against_written_days",
+   "tests/test_daypack.py::test_planner_skips_noise_and_words_the_writer_keeps_refusing"
+  ],
+  "why": "ok",
+  "subject": "Planner fixes from day 6: quotas capped at 2/3 of what is offered; skip speaker-label noise (\u7537/\u5973/\u4eba) and words offered twice but never used; regenerated day 6 (26 new words)",
+  "fix_lines": 69
+ },
+ {
+  "repo": "KaishaQuest",
+  "commit": "555e0457029beda16ebf644becf1dec027439dd5",
+  "keep": true,
+  "src": [
+   "game/server.py",
+   "gen/daypack.py",
+   "gen/enrich_day.py",
+   "gen/run_day.py",
+   "gen/voice_synth.py",
+   "tools/immersion.py"
+  ],
+  "tests": [
+   "tests/test_daypack.py"
+  ],
+  "failing": [
+   "tests/test_daypack.py::test_enrich_adds_lines_and_readables",
+   "tests/test_daypack.py::test_enrich_continues_yesterdays_business"
+  ],
+  "why": "ok",
+  "subject": "Listen-first mode, \u805e\u304f (ask) topics, yesterday-continuity gate, callbacks metric, fix \ud83d\udd0a button binding; day 13-14",
+  "fix_lines": 106
+ },
+ {
+  "repo": "KaishaQuest",
+  "commit": "cd2abfb4e7b3bd867fcafc59fb79f7ca76f2d844",
+  "keep": true,
+  "src": [
+   "game/server.py",
+   "gen/atlas.py",
+   "gen/daypack.py",
+   "gen/floor1.py"
+  ],
+  "tests": [
+   "tests/test_daypack.py"
+  ],
+  "failing": [
+   "tests/test_daypack.py::test_valid_day_compiles",
+   "tests/test_daypack.py::test_rule_breaking_world_fact_rejected_then_repaired",
+   "tests/test_daypack.py::test_enrich_adds_lines_and_readables",
+   "tests/test_daypack.py::test_via_notice_mission",
+   "tests/test_daypack.py::test_call_must_use_outside_person_and_phone"
+  ],
+  "why": "ok",
+  "subject": "Phone-call missions (outside cast, uchi/soto keigo), phone props, multi-mission brief fix, history counterpart names",
+  "fix_lines": 53
+ },
+ {
+  "repo": "SubtitleMixer",
+  "commit": "edcf1ac9692f248e9a6cd4a20a03fda09a3cbe5f",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py",
+   "src/subtitle_mixer/cache/word_category.py"
+  ],
+  "tests": [
+   "tests/test_job_runner.py",
+   "tests/test_unit_cache.py",
+   "tests/test_word_category_cache.py"
+  ],
+  "failing": [
+   "tests/test_unit_cache.py::test_short_literal_tiles_at_count_one",
+   "tests/test_unit_cache.py::test_short_literal_boundary_at_max_chars",
+   "tests/test_unit_cache.py::test_short_literal_threshold_capped_by_min_recurrences",
+   "tests/test_word_category_cache.py::test_record_rejects_multiword_fragment",
+   "tests/test_word_category_cache.py::test_record_rejects_overlong_fragment",
+   "tests/test_word_category_cache.py::test_record_rejects_empty_filler"
+  ],
+  "why": "ok",
+  "subject": "Unlock short literals at count 1; guard word cache against lyric fragments",
+  "fix_lines": 57
+ },
+ {
+  "repo": "SubtitleMixer",
+  "commit": "643cda5bdcda34979fad4932b29a9fc9682a4bc8",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/word_category.py",
+   "src/subtitle_mixer/cli.py",
+   "src/subtitle_mixer/job.py",
+   "src/subtitle_mixer/models.py"
+  ],
+  "tests": [
+   "tests/test_word_category_cache.py"
+  ],
+  "failing": [
+   "tests/test_word_category_cache.py::test_count_increments",
+   "tests/test_word_category_cache.py::test_name_routes_to_overlay_not_shared",
+   "tests/test_word_category_cache.py::test_common_category_routes_to_shared_even_with_overlay",
+   "tests/test_word_category_cache.py::test_name_not_visible_to_a_different_show",
+   "tests/test_word_category_cache.py::test_shared_vocabulary_visible_to_all_shows",
+   "tests/test_word_category_cache.py::test_overlay_wins_on_key_conflict",
+   "tests/test_word_category_cache.py::test_no_overlay_preserves_single_store_behavior"
+  ],
+  "why": "ok",
+  "subject": "Add per-show overlay for proper nouns (name) in WordCategoryCache",
+  "fix_lines": 128
+ },
+ {
+  "repo": "SubtitleMixer",
+  "commit": "56455ea455b7f852554a9fcaf68541dc0027d6d5",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py"
+  ],
+  "tests": [
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [
+   "tests/test_unit_cache.py::test_record_ignores_slot_unit_missing_placeholder",
+   "tests/test_unit_cache.py::test_tile_skips_poisoned_malformed_slot_from_disk"
+  ],
+  "why": "ok",
+  "subject": "Reject malformed slot units to keep the cache clean across shows",
+  "fix_lines": 23
+ },
+ {
+  "repo": "SubtitleMixer",
+  "commit": "6d8623d53ef7a9f692b26614e46b18d0b3ad8edf",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/renderer.py"
+  ],
+  "tests": [
+   "tests/test_renderer.py"
+  ],
+  "failing": [
+   "tests/test_renderer.py::test_render_slot_unit_with_null_filler_does_not_crash"
+  ],
+  "why": "ok",
+  "subject": "Fix TypeError crash in renderer when slot unit has jp_filler=None",
+  "fix_lines": 4
+ },
+ {
+  "repo": "SubtitleMixer",
+  "commit": "700ddb45ea581e9dfddeda8437f9b742f405087a",
+  "keep": false,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py"
+  ],
+  "tests": [
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Fix infinite-loop crash in UnitCache.tile() caused by zero-width patterns",
+  "fix_lines": 29
+ },
+ {
+  "repo": "SubtitleMixer",
+  "commit": "72d930795c6d32754d87e4f5900944e6526bc520",
+  "keep": false,
+  "src": [
+   "src/subtitle_mixer/cache/__init__.py",
+   "src/subtitle_mixer/cache/exact.py",
+   "src/subtitle_mixer/cache/patterns.py",
+   "src/subtitle_mixer/cache/unit_cache.py",
+   "src/subtitle_mixer/cli.py",
+   "src/subtitle_mixer/job.py",
+   "src/subtitle_mixer/models.py",
+   "src/subtitle_mixer/renderer.py"
+  ],
+  "tests": [
+   "tests/conftest.py",
+   "tests/test_exact_cache.py",
+   "tests/test_job_runner.py",
+   "tests/test_renderer.py",
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Implement composable per-unit template system (Phases 1\u20137)",
+  "fix_lines": 729
+ },
+ {
+  "repo": "SubtitleAcademy",
+  "commit": "edcf1ac9692f248e9a6cd4a20a03fda09a3cbe5f",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py",
+   "src/subtitle_mixer/cache/word_category.py"
+  ],
+  "tests": [
+   "tests/test_job_runner.py",
+   "tests/test_unit_cache.py",
+   "tests/test_word_category_cache.py"
+  ],
+  "failing": [
+   "tests/test_unit_cache.py::test_short_literal_tiles_at_count_one",
+   "tests/test_unit_cache.py::test_short_literal_boundary_at_max_chars",
+   "tests/test_unit_cache.py::test_short_literal_threshold_capped_by_min_recurrences",
+   "tests/test_word_category_cache.py::test_record_rejects_multiword_fragment",
+   "tests/test_word_category_cache.py::test_record_rejects_overlong_fragment",
+   "tests/test_word_category_cache.py::test_record_rejects_empty_filler"
+  ],
+  "why": "ok",
+  "subject": "Unlock short literals at count 1; guard word cache against lyric fragments",
+  "fix_lines": 57
+ },
+ {
+  "repo": "SubtitleAcademy",
+  "commit": "643cda5bdcda34979fad4932b29a9fc9682a4bc8",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/word_category.py",
+   "src/subtitle_mixer/cli.py",
+   "src/subtitle_mixer/job.py",
+   "src/subtitle_mixer/models.py"
+  ],
+  "tests": [
+   "tests/test_word_category_cache.py"
+  ],
+  "failing": [
+   "tests/test_word_category_cache.py::test_count_increments",
+   "tests/test_word_category_cache.py::test_name_routes_to_overlay_not_shared",
+   "tests/test_word_category_cache.py::test_common_category_routes_to_shared_even_with_overlay",
+   "tests/test_word_category_cache.py::test_name_not_visible_to_a_different_show",
+   "tests/test_word_category_cache.py::test_shared_vocabulary_visible_to_all_shows",
+   "tests/test_word_category_cache.py::test_overlay_wins_on_key_conflict",
+   "tests/test_word_category_cache.py::test_no_overlay_preserves_single_store_behavior"
+  ],
+  "why": "ok",
+  "subject": "Add per-show overlay for proper nouns (name) in WordCategoryCache",
+  "fix_lines": 128
+ },
+ {
+  "repo": "SubtitleAcademy",
+  "commit": "56455ea455b7f852554a9fcaf68541dc0027d6d5",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py"
+  ],
+  "tests": [
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [
+   "tests/test_unit_cache.py::test_record_ignores_slot_unit_missing_placeholder",
+   "tests/test_unit_cache.py::test_tile_skips_poisoned_malformed_slot_from_disk"
+  ],
+  "why": "ok",
+  "subject": "Reject malformed slot units to keep the cache clean across shows",
+  "fix_lines": 23
+ },
+ {
+  "repo": "SubtitleAcademy",
+  "commit": "6d8623d53ef7a9f692b26614e46b18d0b3ad8edf",
+  "keep": true,
+  "src": [
+   "src/subtitle_mixer/renderer.py"
+  ],
+  "tests": [
+   "tests/test_renderer.py"
+  ],
+  "failing": [
+   "tests/test_renderer.py::test_render_slot_unit_with_null_filler_does_not_crash"
+  ],
+  "why": "ok",
+  "subject": "Fix TypeError crash in renderer when slot unit has jp_filler=None",
+  "fix_lines": 4
+ },
+ {
+  "repo": "SubtitleAcademy",
+  "commit": "700ddb45ea581e9dfddeda8437f9b742f405087a",
+  "keep": false,
+  "src": [
+   "src/subtitle_mixer/cache/unit_cache.py"
+  ],
+  "tests": [
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Fix infinite-loop crash in UnitCache.tile() caused by zero-width patterns",
+  "fix_lines": 29
+ },
+ {
+  "repo": "SubtitleAcademy",
+  "commit": "72d930795c6d32754d87e4f5900944e6526bc520",
+  "keep": false,
+  "src": [
+   "src/subtitle_mixer/cache/__init__.py",
+   "src/subtitle_mixer/cache/exact.py",
+   "src/subtitle_mixer/cache/patterns.py",
+   "src/subtitle_mixer/cache/unit_cache.py",
+   "src/subtitle_mixer/cli.py",
+   "src/subtitle_mixer/job.py",
+   "src/subtitle_mixer/models.py",
+   "src/subtitle_mixer/renderer.py"
+  ],
+  "tests": [
+   "tests/conftest.py",
+   "tests/test_exact_cache.py",
+   "tests/test_job_runner.py",
+   "tests/test_renderer.py",
+   "tests/test_unit_cache.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "Implement composable per-unit template system (Phases 1\u20137)",
+  "fix_lines": 729
+ },
+ {
+  "repo": "NihongoLab_v1",
+  "commit": "c713d44ad5987e2d334a43d7b881d776d8f683e6",
+  "keep": false,
+  "why": "tests fail at the fix: 1 error in 0.15s"
+ },
+ {
+  "repo": "NihongoLab_v1",
+  "commit": "dd84a06734f060d13c66f7807afb1079b7df3e9d",
+  "keep": false,
+  "why": "tests fail at the fix: 1 error in 0.22s"
+ },
+ {
+  "repo": "NihongoLab_v1",
+  "commit": "6c53b1c000074ac6460058ff0a0c34024d311b1c",
+  "keep": false,
+  "why": "tests fail at the fix: 1 error in 0.14s"
+ },
+ {
+  "repo": "NihongoLab_v1",
+  "commit": "a86ead7d34a11f026e25ae30160bab3d3fdadc1a",
+  "keep": false,
+  "why": "tests fail at the fix: 1 error in 0.13s"
+ },
+ {
+  "repo": "NihongoLab_v1",
+  "commit": "a426d85f1f1b5b929f490b98a927b1a94bf8d5e6",
+  "keep": false,
+  "why": "tests fail at the fix: 1 error in 1.16s"
+ },
+ {
+  "repo": "tapedeck",
+  "commit": "a3a517234df41126a3733513ef7adf76c25fbf7a",
+  "keep": false,
+  "why": "tests fail at the fix: 1 error in 0.20s"
+ },
+ {
+  "repo": "tapedeck",
+  "commit": "5610b9cfc105df796fc225e8316601a04cc6b890",
+  "keep": false,
+  "why": "tests fail at the fix: 1 error in 0.20s"
+ },
+ {
+  "repo": "tapedeck",
+  "commit": "4d955f32034db726769c6e419c245a078b3a8347",
+  "keep": true,
+  "src": [
+   "tapedeck/engine/proxies.py",
+   "tapedeck/gateway/app/implementations.py"
+  ],
+  "tests": [
+   "tests/_fakes/fakebolt/__init__.py",
+   "tests/test_slack_shape_tap.py"
+  ],
+  "failing": [
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+  ],
+  "why": "ok",
+  "subject": "De-risk Slack capture: generalize dispatch shape + fix callable-result proxying",
+  "fix_lines": 57
+ },
+ {
+  "repo": "tapedeck",
+  "commit": "9f629a02c1b33b18f96a322ce391f9a3fc8bd857",
+  "keep": false,
+  "why": "CalledProcessError(128, ['git', '-C', '/workspaces/python/tapedeck', 'diff', '9f629a02c1b33b18f96a322ce391f9a3fc8bd857^', '9f629a02c1b33b18f96a322ce391f9a3fc8bd857', '--', 'tapedeck/__init__.py', 'tap"
+ },
+ {
+  "repo": "specdeck",
+  "commit": "575de9de6945540cefef0a78b19d6e5df3a48254",
+  "keep": false,
+  "why": "tests fail at the fix: timeout"
+ },
+ {
+  "repo": "specdeck",
+  "commit": "62d1302477c758a985e33f4c81bb72948c4c4709",
+  "keep": false,
+  "why": "tests fail at the fix: 5 warnings, 1 error in 0.15s"
+ },
+ {
+  "repo": "specdeck",
+  "commit": "ac5cd140a94b07204844891069e98d469874fc17",
+  "keep": true,
+  "src": [
+   "specdeck/cli.py",
+   "specdeck/history.py",
+   "specdeck/plugin.py",
+   "specdeck/validation.py",
+   "specdeck/watch.py"
+  ],
+  "tests": [
+   "tests/test_gates.py",
+   "tests/test_generation.py",
+   "tests/test_maintenance.py",
+   "tests/test_validation.py"
+  ],
+  "failing": [
+   "tests/test_gates.py::test_fail_on_unmet_fails_the_run",
+   "tests/test_gates.py::test_fail_on_unmet_passes_when_covered",
+   "tests/test_gates.py::test_fail_on_unknown_covers",
+   "tests/test_gates.py::test_gate_can_be_set_in_config",
+   "tests/test_gates.py::test_fail_on_invalid_spec",
+   "tests/test_gates.py::test_requirements_report_is_written_without_a_terminal_reporter",
+   "tests/test_maintenance.py::test_partial_run_can_merge_instead_of_skipping",
+   "tests/test_maintenance.py::test_merge_without_an_existing_spec_explains_itself",
+   "tests/test_maintenance.py::test_partial_run_still_refuses_by_default",
+   "tests/test_maintenance.py::test_prune_keeps_the_newest_runs",
+   "tests/test_maintenance.py::test_forget_removes_a_project",
+   "tests/test_maintenance.py::test_compare_two_runs"
+  ],
+  "why": "ok",
+  "subject": "Stand alone: own validator, CI gates, maintenance commands; fix two bugs",
+  "fix_lines": 902
+ },
+ {
+  "repo": "specdeck",
+  "commit": "f761a91d24199e740f3a83f5bbbff23c99e04022",
+  "keep": true,
+  "src": [
+   "specdeck/__main__.py",
+   "specdeck/cli.py",
+   "specdeck/editing.py",
+   "specdeck/history.py",
+   "specdeck/plugin.py",
+   "specdeck/recorder.py",
+   "specdeck/server.py"
+  ],
+  "tests": [
+   "tests/conftest.py",
+   "tests/test_analysis.py",
+   "tests/test_editing.py",
+   "tests/test_generation.py",
+   "tests/test_history.py",
+   "tests/test_live_flag.py",
+   "tests/test_server.py",
+   "tests/test_ui_journey.py"
+  ],
+  "failing": [
+   "tests/test_generation.py::test_blocking_cascades_through_a_chain",
+   "tests/test_history.py::test_a_run_is_recorded_with_status_steps_and_source",
+   "tests/test_history.py::test_running_one_test_updates_it_without_forgetting_the_others",
+   "tests/test_history.py::test_a_deleted_test_leaves_the_board_after_the_next_full_run",
+   "tests/test_history.py::test_each_run_reports_what_started_and_stopped_passing",
+   "tests/test_live_flag.py::test_live_flag_starts_a_viewer_and_prints_the_projects_page",
+   "tests/test_live_flag.py::test_a_second_project_joins_the_running_viewer",
+   "tests/test_server.py::test_every_recorded_project_gets_a_page",
+   "tests/test_server.py::test_editing_through_the_viewer_rewrites_the_test_file",
+   "tests/test_server.py::test_a_run_started_from_the_viewer_streams_back_live"
+  ],
+  "why": "ok",
+  "subject": "Live viewer: run history, live status, dependency analysis, runs and light edits from the browser",
+  "fix_lines": 1785
+ },
+ {
+  "repo": "dx_opus_mock_lib",
+  "commit": "5b35fb9c5cad785da863158f499840392ffe4e11",
+  "keep": false,
+  "src": [
+   "dxmock/manager/faker_gen.py",
+   "dxmock/manager/fixtures.py",
+   "dxmock/manager/mock_manager.py",
+   "dxmock/manager/overrides.py"
+  ],
+  "tests": [
+   "tests/fixtures/test_fixtures_overrides.py"
+  ],
+  "failing": [
+   "tests/fixtures/test_fixtures_overrides.py"
+  ],
+  "why": "loud: 1 error in 1.00s",
+  "subject": "M7: schema fixtures, overrides (LIFO), faker",
+  "fix_lines": 189
+ },
+ {
+  "repo": "dx_opus_mock_lib",
+  "commit": "b0a5e261568a370dd3e2f6ce3904b7c5679e9ef5",
+  "keep": true,
+  "src": [
+   "dxmock/engine/serialize.py",
+   "dxmock/manager/builder.py"
+  ],
+  "tests": [
+   "tests/_live/capture_reddit.py",
+   "tests/consume_service/test_discord_consume.py",
+   "tests/consume_service/test_reddit_consume.py"
+  ],
+  "failing": [
+   "tests/consume_service/test_reddit_consume.py::TestConsumeReddit::test_listing_mock_is_directly_iterable",
+   "tests/consume_service/test_reddit_consume.py::TestConsumeReddit::test_new_listing_is_iterable_and_replays"
+  ],
+  "why": "ok",
+  "subject": "M6: Reddit (praw) capture/consume + iterable fix + redaction hardening",
+  "fix_lines": 22
+ },
+ {
+  "repo": "dx_opus_mock_lib",
+  "commit": "fc6bcd0996f06e2788d093e2f1e2102385a1a41d",
+  "keep": false,
+  "src": [
+   "bot_dx.py",
+   "dxmock/cli/_runner.py",
+   "dxmock/cli/capture.py",
+   "dxmock/cli/precedence.py",
+   "dxmock/cli/run.py",
+   "dxmock/manager/builder.py"
+  ],
+  "tests": [
+   "tests/_fakes/use_acme.py",
+   "tests/foundations/test_script_based.py",
+   "tests/roundtrip/test_roundtrip_cli.py"
+  ],
+  "failing": [
+   "tests/foundations/test_script_based.py::TestZeroOverheadWhenDisabled::test_dxmock_not_imported_when_capture_disabled",
+   "tests/roundtrip/test_roundtrip_cli.py::TestRoundTripAcme::test_capture_then_offline_replay",
+   "tests/foundations/test_script_based.py::TestScriptBasedStructure::test_dxmock_import_is_guarded",
+   "tests/foundations/test_script_based.py::TestScriptBasedStructure::test_export_and_uninstall_in_finally",
+   "tests/foundations/test_script_based.py::TestScriptBasedStructure::test_mock_setup_code_present",
+   "tests/foundations/test_script_based.py::TestScriptBasedStructure::test_structure_order_env_logging_mock_imports"
+  ],
+  "why": "loud: 2 failed, 1 passed, 4 errors in 0.86s",
+  "subject": "M4: CLIs (mock-capture/mock-run) + round-trip + bot_dx",
+  "fix_lines": 382
+ },
+ {
+  "repo": "dx_opus_mock_lib",
+  "commit": "2f9022bbbe2b30bbf69365cfc29637e6c67eaf20",
+  "keep": false,
+  "src": [
+   "dxmock/engine/import_hook.py"
+  ],
+  "tests": [
+   "tests/_fakes/acme_two/__init__.py",
+   "tests/_live/capture_openai.py",
+   "tests/capture_service/test_openai_capture.py"
+  ],
+  "failing": [],
+  "why": "no failure",
+  "subject": "M2: OpenAI capture vertical slice + import-hook fix",
+  "fix_lines": 33
+ },
+ {
+  "repo": "proofdeck",
+  "commit": "b53fb2717c7ce78bc61fc91f00bb6a5f9199754c",
+  "keep": true,
+  "src": [
+   "proofdeck/_forkrun.py",
+   "proofdeck/_pytrace.py",
+   "proofdeck/_reach.py",
+   "proofdeck/analyze.py",
+   "proofdeck/cli.py",
+   "proofdeck/model.py",
+   "proofdeck/report.py",
+   "proofdeck/runner.py"
+  ],
+  "tests": [
+   "tests/test_reach.py",
+   "tests/test_report.py"
+  ],
+  "failing": [
+   "tests/test_reach.py::test_each_changed_function_gets_the_calls_between_it_and_the_nearest_test",
+   "tests/test_reach.py::test_the_distribute_profile_lists_only_functions_no_test_calls_directly",
+   "tests/test_report.py::test_no_percentage_or_score_is_ever_reported"
+  ],
+  "why": "ok",
+  "subject": "Distribute profile: flag changed functions no test calls directly",
+  "fix_lines": 174
+ },
+ {
+  "repo": "proofdeck",
+  "commit": "ab5a0bf12f8d23c6b3255247a261f862d5411b20",
+  "keep": false,
+  "src": [
+   "proofdeck/analyze.py",
+   "proofdeck/ledger.py",
+   "proofdeck/model.py",
+   "proofdeck/provenance.py",
+   "proofdeck/report.py"
+  ],
+  "tests": [
+   "tests/test_requirements.py"
+  ],
+  "failing": [
+   "tests/test_requirements.py"
+  ],
+  "why": "loud: 3 warnings, 1 error in 0.16s",
+  "subject": "Requirements as the independent answer: approved entries confirm or contradict tests",
+  "fix_lines": 310
+ },
+ {
+  "repo": "dx-spec-viewer",
+  "commit": "ebd73284cda531f3695629a9f188cacc8d0cf468",
+  "keep": false,
+  "why": "tests fail at the fix: 6 failed in 3.37s"
+ }
+]
