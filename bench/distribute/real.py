@@ -383,9 +383,12 @@ def main() -> None:
     ap.add_argument("--cap", type=int, required=True)
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--commits", default="", help="comma-separated commit prefixes to run")
     a = ap.parse_args()
     cases = json.loads((HERE / "data" / "realbugs_cases.json").read_text())
     cases = cases[:a.limit] if a.limit else cases
+    if a.commits:
+        cases = [c for c in cases if any(c["commit"].startswith(x) for x in a.commits.split(","))]
     done = {(json.loads(l)["arm"], json.loads(l)["commit"]) for l in LOG.read_text().splitlines()} if LOG.exists() else set()
     jobs = [(arm, c) for c in cases for arm in a.arms.split(",") if (arm, c["commit"]) not in done]
     print(f"{len(cases)} cases, {len(jobs)} trials, spent {spent():,} of {a.cap:,}", flush=True)

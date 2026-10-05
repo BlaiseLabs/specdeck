@@ -243,3 +243,31 @@ restored exactly. Round 2 was cut by the per-trial cap (65k). The second trial d
 
 Together with tapedeck (rigged W 2/2 green, no leak): direct tests make the weak model find the
 bug; fixing stays the weak step on proofdeck, which the strong fixer (arm S) handled.
+
+# Round 6: real bugs (2026-10-05, realbugs.py + real.py)
+
+11 real bugs mined from the workspace's fix commits (fix rolled back, the commit's own tests
+fail; fork duplicates and fixes over 60 lines dropped). One bug per trial; only the commit's
+tests run. R = the recipe (terra expectation, gpt-4o-mini judges one traced function per call,
+terra triages and fixes up to two). T = terra alone with a shell, an edit tool and a test runner.
+
+| | green | tokens on the bugs it solved |
+|---|---|---|
+| R (recipe) | 2 of 11 | 6.8k, 10.8k |
+| T (terra alone) | 2 of 7 run; 5 of those were cut off at the 45k cap; the one fair rerun at 70k (tapedeck) still failed | 48.0k, 20.5k |
+
+Both solved the same two bugs (a 4-line and a 15-line fix); there R used 3-7x fewer tokens,
+most of them gpt-4o-mini's.
+
+Why R failed on the other nine (diagnosed against the functions each real fix changed):
+real fixes touch several places at once (typically 3: often a module-level constant, import
+or new helper plus one or two functions). R checks and edits one function at a time, at most
+two per round, and never module-level code. In 3 bugs the places the fix needed were not in the
+trace at all; in most others a right function was flagged and fixed, but the fix needed other
+places too.
+
+Harness lesson: T's cap counted cached, re-sent context (about 90% of its tokens) at full
+weight, which cut it off unfairly; the trials stopped to fix it lost some in-flight spend.
+Spend: 607k logged (551k in real.jsonl + 55k archived in real_capped.jsonl) plus in-flight
+trials lost when the run was stopped (not logged; the usage API had not reported yet).
+Experiment 3 (flag-driven direct tests) not run.

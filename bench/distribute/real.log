@@ -1,0 +1,13 @@
+11 cases, 22 trials, spent 0 of 500,000
+R FluencyGen         15016d2e green=True tok=6,816 (terra 3,984, mini 2,832) 14s | .....................                              | spent 6,816
+T SubtitleAcademy    56455ea4 green=False tok=49,683 (terra 49,683, mini 0) 24s |  | spent 56,499
+T FluencyGen         15016d2e green=True tok=48,027 (terra 48,027, mini 0) 27s | .....................                              | spent 104,526
+T tapedeck           4d955f32 green=False tok=55,301 (terra 55,301, mini 0) 29s | 1 failed, 1 passed in 0.12s | spent 159,827
+R SubtitleAcademy    6d8623d5 green=True tok=10,777 (terra 5,143, mini 5,634) 25s | 7 passed in 0.06s | spent 170,604
+T SubtitleAcademy    6d8623d5 green=True tok=20,485 (terra 20,485, mini 0) 16s | 7 passed in 0.06s | spent 191,089
+R FluencyGen         99e4a54b green=False tok=2,916 (terra 2,243, mini 673) 14s | FAILED tests/test_dialogue.py::test_generate_conte | spent 194,005
+R tapedeck           4d955f32 green=False tok=23,273 (terra 8,982, mini 14,291) 52s | 1 error in 0.23s | spent 217,278
+T FluencyGen         99e4a54b green=False tok=49,725 (terra 49,725, mini 0) 27s | !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during c | spent 267,003
+T dx_opus_mock_lib   b0a5e261 green=False tok=50,897 (terra 50,897, mini 0) 21s | 2 failed, 2 passed, 2 warnings in 0.65s | spent 317,900
+R FluencyGen         dbfb556b green=False tok=5,853 (terra 2,545, mini 3,308) 16s | FAILED tests/test_dialogue.py::test_grow_batched_t | spent 323,753
+T KaishaQuest        cd2abfb4 green=False tok=53,117 (terra 53,117, mini 0) 20s | 5 failed, 2 passed in 2.23s | spent 376,870
