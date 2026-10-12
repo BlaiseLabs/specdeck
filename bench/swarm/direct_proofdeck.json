@@ -1,0 +1,188 @@
+{
+ "/workspaces/python/proofdeck/proofdeck/arid.py:47:is_arid": [
+  "tests/test_arid.py::test_noise_lines_are_arid[import logging]",
+  "tests/test_arid.py::test_noise_lines_are_arid[log.info]",
+  "tests/test_arid.py::test_noise_lines_are_arid[print(]",
+  "tests/test_arid.py::test_noise_lines_are_arid[time.sleep]",
+  "tests/test_arid.py::test_noise_lines_are_arid[\"\"\"Sum item]",
+  "tests/test_arid.py::test_noise_lines_are_arid[if __name__ == \"__main__\"]",
+  "tests/test_arid.py::test_noise_lines_are_arid[value: int]",
+  "tests/test_arid.py::test_logic_lines_are_not_arid",
+  "tests/test_arid.py::test_logic_lines_are_not_arid",
+  "tests/test_arid.py::test_default_argument_values_are_arid"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/detectors.py:96:recomputed_expectations": [
+  "tests/test_detectors.py::test_expected_value_recomputed_with_the_codes_formula",
+  "tests/test_detectors.py::test_expected_value_from_calling_the_code_itself",
+  "tests/test_detectors.py::test_independent_literal_is_not_flagged_as_recomputed"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/detectors.py:161:special_cased_inputs": [
+  "tests/test_detectors.py::test_code_branching_on_the_exact_test_input",
+  "tests/test_detectors.py::test_genuine_threshold_is_not_special_casing"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/detectors.py:199:vacuous_assertions": [
+  "tests/test_detectors.py::test_assertions_that_cannot_fail_for_a_wrong_result",
+  "tests/test_detectors.py::test_value_assertion_is_not_vacuous"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/diff.py:55:changed_lines": [
+  "tests/test_diff.py::test_reports_added_and_modified_source_lines",
+  "tests/test_diff.py::test_test_files_are_not_mutation_targets",
+  "tests/test_diff.py::test_untouched_code_is_ignored"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/analyze.py:34:analyze": [
+  "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[vacuous]",
+  "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[vacuous]",
+  "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[mockonly]",
+  "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[mockonly]",
+  "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[tautological]",
+  "tests/test_fork_mode.py::test_fork_mode_gives_the_same_answers_as_one_process_per_mutant[tautological]",
+  "tests/test_fork_mode.py::test_per_test_coverage_from_ci_replaces_the_traced_run[pytest-cov]",
+  "tests/test_fork_mode.py::test_per_test_coverage_from_ci_replaces_the_traced_run[pytest-cov]",
+  "tests/test_fork_mode.py::test_per_test_coverage_from_ci_replaces_the_traced_run[test_function]",
+  "tests/test_fork_mode.py::test_per_test_coverage_from_ci_replaces_the_traced_run[test_function]",
+  "tests/test_fork_mode.py::test_a_coverage_file_without_per_test_contexts_falls_back_to_tracing",
+  "tests/test_fork_mode.py::test_a_mutant_that_makes_the_tests_hang_is_stopped_and_counts_as_noticed",
+  "tests/test_fork_mode.py::test_without_fork_it_runs_one_process_per_mutant",
+  "tests/test_line_status.py::test_line_is_checked_when_its_mutant_is_killed",
+  "tests/test_line_status.py::test_line_is_ran_only_when_its_mutant_survives",
+  "tests/test_line_status.py::test_line_is_never_ran_when_no_test_executes_it",
+  "tests/test_line_status.py::test_line_is_mock_only_when_checked_only_through_mocks",
+  "tests/test_line_status.py::test_docstrings_on_changed_lines_get_no_status",
+  "tests/test_line_status.py::test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode",
+  "tests/test_line_status.py::test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode",
+  "tests/test_reach.py::test_each_changed_function_gets_the_calls_between_it_and_the_nearest_test",
+  "tests/test_reach.py::test_each_changed_function_gets_the_calls_between_it_and_the_nearest_test",
+  "tests/test_reach.py::test_the_distribute_profile_lists_only_functions_no_test_calls_directly",
+  "tests/test_reach.py::test_the_distribute_profile_lists_only_functions_no_test_calls_directly",
+  "tests/test_report.py::test_markdown_lists_each_finding_at_its_line_with_the_mutant",
+  "tests/test_report.py::test_no_percentage_or_score_is_ever_reported",
+  "tests/test_report.py::test_guidance_never_tells_the_author_to_assert_current_output",
+  "tests/test_report.py::test_gate_fails_when_a_mutant_survives",
+  "tests/test_report.py::test_unconfirmed_expectations_do_not_fail_the_gate",
+  "tests/test_report.py::test_json_says_which_tests_ran_and_noticed_each_line_and_what_they_fake",
+  "tests/test_report.py::test_json_says_which_tests_ran_and_noticed_each_line_and_what_they_fake",
+  "tests/test_requirements.py::test_a_linked_test_that_disagrees_with_an_approved_example_fails",
+  "tests/test_requirements.py::test_a_requirement_added_on_the_branch_is_a_draft",
+  "tests/test_requirements.py::test_changing_an_approved_requirement_on_the_branch_fails",
+  "tests/test_tampering.py::test_branch_config_cannot_exclude_its_own_code"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/mutate.py:64:mutants_for_line": [
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers",
+  "tests/test_mutants.py::test_comparison_boundary_is_tried_first",
+  "tests/test_mutants.py::test_arithmetic_boolean_and_constants_are_mutated",
+  "tests/test_mutants.py::test_arithmetic_boolean_and_constants_are_mutated",
+  "tests/test_mutants.py::test_arid_lines_produce_no_mutants"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/schemata.py:73:build": [
+  "tests/test_fork_mode.py::test_switched_code_behaves_like_the_mutant_and_keeps_line_numbers"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/model.py:65:findings_of": [
+  "tests/test_fork_mode.py::test_a_coverage_file_without_per_test_contexts_falls_back_to_tracing",
+  "tests/test_fork_mode.py::test_without_fork_it_runs_one_process_per_mutant",
+  "tests/test_line_status.py::test_line_is_checked_when_its_mutant_is_killed",
+  "tests/test_line_status.py::test_line_is_ran_only_when_its_mutant_survives",
+  "tests/test_line_status.py::test_line_is_mock_only_when_checked_only_through_mocks",
+  "tests/test_line_status.py::test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode",
+  "tests/test_report.py::test_guidance_never_tells_the_author_to_assert_current_output",
+  "tests/test_report.py::test_unconfirmed_expectations_do_not_fail_the_gate",
+  "tests/test_requirements.py::test_a_requirement_added_on_the_branch_is_a_draft",
+  "tests/test_requirements.py::test_a_requirement_added_on_the_branch_is_a_draft",
+  "tests/test_requirements.py::test_a_requirement_added_on_the_branch_is_a_draft",
+  "tests/test_requirements.py::test_changing_an_approved_requirement_on_the_branch_fails",
+  "tests/test_requirements.py::test_changing_an_approved_requirement_on_the_branch_fails",
+  "tests/test_tampering.py::test_branch_config_cannot_exclude_its_own_code",
+  "tests/test_tampering.py::test_branch_config_cannot_exclude_its_own_code"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/model.py:68:status": [
+  "tests/test_fork_mode.py::test_a_mutant_that_makes_the_tests_hang_is_stopped_and_counts_as_noticed",
+  "tests/test_line_status.py::test_line_is_checked_when_its_mutant_is_killed",
+  "tests/test_line_status.py::test_line_is_ran_only_when_its_mutant_survives",
+  "tests/test_line_status.py::test_line_is_never_ran_when_no_test_executes_it",
+  "tests/test_line_status.py::test_line_is_mock_only_when_checked_only_through_mocks",
+  "tests/test_line_status.py::test_docstrings_on_changed_lines_get_no_status",
+  "tests/test_line_status.py::test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode",
+  "tests/test_line_status.py::test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode",
+  "tests/test_line_status.py::test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/_forkrun.py:192:_order": [
+  "tests/test_fork_mode.py::test_tests_that_fake_nothing_run_first_fastest_first"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/report.py:144:render_json": [
+  "tests/test_line_status.py::test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode",
+  "tests/test_reach.py::test_the_distribute_profile_lists_only_functions_no_test_calls_directly",
+  "tests/test_report.py::test_no_percentage_or_score_is_ever_reported",
+  "tests/test_report.py::test_json_says_which_tests_ran_and_noticed_each_line_and_what_they_fake",
+  "tests/test_report.py::test_json_says_which_tests_ran_and_noticed_each_line_and_what_they_fake"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/mocks.py:65:faked": [
+  "tests/test_line_status.py::test_redirecting_stdin_or_argv_does_not_make_a_test_mock_only",
+  "tests/test_line_status.py::test_redirecting_stdin_or_argv_does_not_make_a_test_mock_only",
+  "tests/test_line_status.py::test_redirecting_stdin_or_argv_does_not_make_a_test_mock_only"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/mutate.py:162:select": [
+  "tests/test_mutants.py::test_selection_takes_one_per_line_and_caps_each_file"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/provenance.py:66:unconfirmed_expectations": [
+  "tests/test_provenance.py::test_expectation_born_with_the_code_is_unconfirmed",
+  "tests/test_provenance.py::test_correct_new_expectations_are_also_unconfirmed",
+  "tests/test_provenance.py::test_expectation_that_existed_on_main_is_confirmed",
+  "tests/test_provenance.py::test_expectation_loaded_from_a_preexisting_data_file_is_confirmed",
+  "tests/test_provenance.py::test_a_confirmation_comment_written_on_the_branch_does_not_count",
+  "tests/test_requirements.py::test_an_expected_value_that_agrees_with_an_approved_example_is_confirmed",
+  "tests/test_requirements.py::test_a_test_that_doesnt_claim_the_requirement_is_not_judged_by_it"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/report.py:70:render_markdown": [
+  "tests/test_reach.py::test_the_distribute_profile_lists_only_functions_no_test_calls_directly",
+  "tests/test_reach.py::test_the_distribute_profile_lists_only_functions_no_test_calls_directly",
+  "tests/test_reach.py::test_the_distribute_profile_lists_only_functions_no_test_calls_directly",
+  "tests/test_report.py::test_markdown_lists_each_finding_at_its_line_with_the_mutant",
+  "tests/test_report.py::test_no_percentage_or_score_is_ever_reported"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/report.py:165:exit_code": [
+  "tests/test_report.py::test_gate_fails_when_a_mutant_survives",
+  "tests/test_report.py::test_gate_fails_when_a_mutant_survives",
+  "tests/test_report.py::test_unconfirmed_expectations_do_not_fail_the_gate",
+  "tests/test_requirements.py::test_a_linked_test_that_disagrees_with_an_approved_example_fails",
+  "tests/test_requirements.py::test_a_requirement_added_on_the_branch_is_a_draft",
+  "tests/test_requirements.py::test_changing_an_approved_requirement_on_the_branch_fails"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/provenance.py:71:against_requirements": [
+  "tests/test_requirements.py::test_a_linked_test_that_disagrees_with_an_approved_example_fails",
+  "tests/test_requirements.py::test_an_expected_value_that_agrees_with_an_approved_example_is_confirmed",
+  "tests/test_requirements.py::test_a_test_that_doesnt_claim_the_requirement_is_not_judged_by_it"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/ledger.py:108:load": [
+  "tests/test_requirements.py::test_deleting_an_approved_requirement_is_reported",
+  "tests/test_requirements.py::test_the_requirements_file_location_comes_from_the_base_branch"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/ledger.py:120:entry_findings": [
+  "tests/test_requirements.py::test_deleting_an_approved_requirement_is_reported"
+ ],
+ "/workspaces/python/proofdeck/proofdeck/tampering.py:94:scan": [
+  "tests/test_tampering.py::test_added_skip_marker_is_a_weakened_test",
+  "tests/test_tampering.py::test_removed_assertion_on_main_is_a_weakened_test",
+  "tests/test_tampering.py::test_new_pragma_no_mutate_is_checker_tampering",
+  "tests/test_tampering.py::test_editing_proofdeck_config_is_checker_tampering",
+  "tests/test_tampering.py::test_ordinary_branch_has_no_tampering_findings"
+ ]
+}

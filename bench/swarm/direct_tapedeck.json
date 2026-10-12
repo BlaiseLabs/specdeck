@@ -1,0 +1,174 @@
+{
+ "/workspaces/python/tapedeck/tapedeck/engine/proxies.py:31:_is_stream": [
+  "tests/test_dictlike_responses.py::test_indexable_iterable_is_not_treated_as_a_stream",
+  "tests/test_dictlike_responses.py::test_indexable_iterable_is_not_treated_as_a_stream"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/app/app.py:25:__init__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+  "tests/test_registry.py::test_publish_then_pull_roundtrip",
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+  "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/app/app.py:45:capture_session": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/proxies.py:251:__getattr__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/proxies.py:224:__call__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/proxies.py:177:__getattr__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/proxies.py:88:__call__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/proxies.py:201:__getitem__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/app/app.py:51:export_tape": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/app/app.py:54:uninstall": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:83:__init__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+  "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:90:object_at": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_async_stream_captures_and_replays",
+  "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/netguard.py:16:__enter__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:113:__getattr__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+  "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:169:__call__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+  "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/netguard.py:36:__exit__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:54:__getitem__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:57:__contains__": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:64:get": [
+  "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/services.py:95:diff_tapes": [
+  "tests/test_drift.py::test_identical_tapes_have_no_drift",
+  "tests/test_drift.py::test_detects_removed_method",
+  "tests/test_drift.py::test_detects_return_shape_change",
+  "tests/test_drift.py::test_detects_new_and_missing_inbound_events",
+  "tests/test_drift.py::test_detects_schema_field_changes"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:32:__getattr__": [
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_integrated_replay.py::test_openai_completion_replays",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/app/app.py:60:replay_session": [
+  "tests/test_integrated_replay.py::test_discord_gateway_message_replays_offline",
+  "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/app/app.py:67:publish_tape": [
+  "tests/test_registry.py::test_publish_then_pull_roundtrip"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/app/app.py:70:pull_tape": [
+  "tests/test_registry.py::test_publish_then_pull_roundtrip"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/proxies.py:190:__call__": [
+  "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/serialize.py:26:__init__": [
+  "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/serialize.py:47:snapshot": [
+  "tests/test_rich_client_capture.py::test_populated_fields_survive_truncation"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/proxies.py:23:unwrap": [
+  "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+  "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/engine/tape_player.py:164:_gen": [
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+  "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline"
+ ],
+ "/workspaces/python/tapedeck/tapedeck/gateway/services.py:142:diff_transcript": [
+  "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+ ]
+}

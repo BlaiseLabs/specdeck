@@ -1,0 +1,12 @@
+{
+ "tapedeck:tapedeck/engine/tape_player.py:get:64": "Return the value associated with `key`, converted from its stored snapshot representation. If `key` is not present, return `default`.",
+ "tapedeck:tapedeck/engine/proxies.py:__call__:88": "Invokes the wrapped callable with unwrapped positional and keyword arguments. Returns the finalized result, preserving asynchronous behavior when the wrapped callable returns a coroutine.",
+ "tapedeck:tapedeck/engine/tape_player.py:__getattr__:113": "Resolves an attribute name within the recorded tape at the current path. Returns a callable, nested tape object, or snapshot value for the name, or raises `ResolutionError` if no recorded value exists.",
+ "tapedeck:tapedeck/engine/proxies.py:__getattr__:251": "Delegates attribute access to the wrapped object, returning private attributes unchanged.  \nWraps public classes, modules, and callables in proxy objects while returning other values directly.",
+ "proofdeck:proofdeck/ledger.py:load:108": "Loads and returns a Ledger for the repository, using the common revision with the specified base branch and the repository\u2019s configuration files. If YAML support is unavailable, returns the Ledger with a note explaining that the requirements file was not read.",
+ "proofdeck:proofdeck/detectors.py:vacuous_assertions:199": "Returns findings for assertions in the given test source that appear vacuous, such as always-true checks or assertions that only verify type or non-None status. The optional path is included in each finding, and invalid source returns an empty list.",
+ "specdeck:specdeck/history.py:runs:265": "Returns up to `limit` most recent runs for the given project, enriched with ordinal, parsed arguments, change summaries, and completed-result counts for active runs.",
+ "specdeck:specdeck/ci.py:exit_code:158": "Return an exit status for a results model, optionally treating failing checks, unmet requirements, or untrusted items as errors. Returns 1 when an enabled failure condition is present, otherwise 0.",
+ "specdeck:specdeck/ci.py:build:48": "Builds a feature report from a specification, optionally incorporating requirements and proof-deck data. Returns summary counts, frontier and blocked scenarios, the supplied requirements, trust information, and proof-deck change-status counts.",
+ "specdeck:specdeck/cli.py:main:133": "Parses and dispatches the `specdeck` command-line interface using the provided argument list. Returns the exit status code produced by the selected subcommand."
+}

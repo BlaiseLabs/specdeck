@@ -1,0 +1,286 @@
+[
+ {
+  "repo": "tapedeck",
+  "file": "tapedeck/engine/tape_player.py",
+  "name": "get",
+  "line": 64,
+  "body_lines": 4,
+  "doc": false,
+  "tests": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay"
+  ]
+ },
+ {
+  "repo": "tapedeck",
+  "file": "tapedeck/engine/proxies.py",
+  "name": "__call__",
+  "line": 88,
+  "body_lines": 4,
+  "doc": false,
+  "tests": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+  ]
+ },
+ {
+  "repo": "tapedeck",
+  "file": "tapedeck/engine/tape_player.py",
+  "name": "__getattr__",
+  "line": 113,
+  "body_lines": 13,
+  "doc": false,
+  "tests": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_integrated_replay.py::test_openai_completion_replays",
+   "tests/test_integrated_replay.py::test_twitch_send_message_resolves_from_tape",
+   "tests/test_stream_roundtrip.py::test_sync_stream_replays_offline",
+   "tests/test_toy_roundtrip.py::test_replay_flags_uncaptured_calls_as_drift"
+  ]
+ },
+ {
+  "repo": "tapedeck",
+  "file": "tapedeck/gateway/services.py",
+  "name": "diff_transcript",
+  "line": 142,
+  "body_lines": 10,
+  "doc": true,
+  "tests": [
+   "tests/test_toy_roundtrip.py::test_replay_offline_matches_recording"
+  ]
+ },
+ {
+  "repo": "tapedeck",
+  "file": "tapedeck/engine/proxies.py",
+  "name": "_is_stream",
+  "line": 31,
+  "body_lines": 5,
+  "doc": true,
+  "tests": [
+   "tests/test_dictlike_responses.py::test_indexable_iterable_is_not_treated_as_a_stream"
+  ]
+ },
+ {
+  "repo": "tapedeck",
+  "file": "tapedeck/engine/proxies.py",
+  "name": "__getattr__",
+  "line": 251,
+  "body_lines": 10,
+  "doc": false,
+  "tests": [
+   "tests/test_dictlike_responses.py::test_dictlike_response_roundtrips_through_capture_and_replay",
+   "tests/test_rich_client_capture.py::test_callable_client_keeps_attribute_proxying",
+   "tests/test_slack_shape_tap.py::test_parameterized_decorator_stays_callable",
+   "tests/test_slack_shape_tap.py::test_single_object_dispatch_captures_readable_event_and_chained_reply"
+  ]
+ },
+ {
+  "repo": "tapedeck",
+  "file": "tapedeck/gateway/services.py",
+  "name": "diff_tapes",
+  "line": 95,
+  "body_lines": 33,
+  "doc": true,
+  "tests": [
+   "tests/test_drift.py::test_detects_new_and_missing_inbound_events",
+   "tests/test_drift.py::test_detects_removed_method",
+   "tests/test_drift.py::test_detects_return_shape_change",
+   "tests/test_drift.py::test_detects_schema_field_changes",
+   "tests/test_drift.py::test_identical_tapes_have_no_drift"
+  ]
+ },
+ {
+  "repo": "proofdeck",
+  "file": "proofdeck/report.py",
+  "name": "render_json",
+  "line": 144,
+  "body_lines": 15,
+  "doc": true,
+  "tests": [
+   "tests/test_line_status.py::test_a_changed_import_time_line_is_not_reported_as_survived_by_fork_mode",
+   "tests/test_reach.py::test_the_distribute_profile_lists_only_functions_no_test_calls_directly",
+   "tests/test_report.py::test_json_says_which_tests_ran_and_noticed_each_line_and_what_they_fake",
+   "tests/test_report.py::test_no_percentage_or_score_is_ever_reported"
+  ]
+ },
+ {
+  "repo": "proofdeck",
+  "file": "proofdeck/ledger.py",
+  "name": "load",
+  "line": 108,
+  "body_lines": 9,
+  "doc": false,
+  "tests": [
+   "tests/test_requirements.py::test_deleting_an_approved_requirement_is_reported",
+   "tests/test_requirements.py::test_the_requirements_file_location_comes_from_the_base_branch"
+  ]
+ },
+ {
+  "repo": "proofdeck",
+  "file": "proofdeck/arid.py",
+  "name": "is_arid",
+  "line": 47,
+  "body_lines": 31,
+  "doc": true,
+  "tests": [
+   "tests/test_arid.py::test_default_argument_values_are_arid",
+   "tests/test_arid.py::test_logic_lines_are_not_arid",
+   "tests/test_arid.py::test_noise_lines_are_arid[\"\"\"Sum item]",
+   "tests/test_arid.py::test_noise_lines_are_arid[if __name__ == \"__main__\"]",
+   "tests/test_arid.py::test_noise_lines_are_arid[import logging]",
+   "tests/test_arid.py::test_noise_lines_are_arid[log.info]",
+   "tests/test_arid.py::test_noise_lines_are_arid[print(]",
+   "tests/test_arid.py::test_noise_lines_are_arid[time.sleep]",
+   "tests/test_arid.py::test_noise_lines_are_arid[value: int]"
+  ]
+ },
+ {
+  "repo": "proofdeck",
+  "file": "proofdeck/detectors.py",
+  "name": "vacuous_assertions",
+  "line": 199,
+  "body_lines": 20,
+  "doc": false,
+  "tests": [
+   "tests/test_detectors.py::test_assertions_that_cannot_fail_for_a_wrong_result",
+   "tests/test_detectors.py::test_value_assertion_is_not_vacuous"
+  ]
+ },
+ {
+  "repo": "proofdeck",
+  "file": "proofdeck/report.py",
+  "name": "exit_code",
+  "line": 165,
+  "body_lines": 7,
+  "doc": true,
+  "tests": [
+   "tests/test_report.py::test_gate_fails_when_a_mutant_survives",
+   "tests/test_report.py::test_unconfirmed_expectations_do_not_fail_the_gate",
+   "tests/test_requirements.py::test_a_linked_test_that_disagrees_with_an_approved_example_fails",
+   "tests/test_requirements.py::test_a_requirement_added_on_the_branch_is_a_draft",
+   "tests/test_requirements.py::test_changing_an_approved_requirement_on_the_branch_fails"
+  ]
+ },
+ {
+  "repo": "proofdeck",
+  "file": "proofdeck/mocks.py",
+  "name": "faked",
+  "line": 65,
+  "body_lines": 21,
+  "doc": true,
+  "tests": [
+   "tests/test_line_status.py::test_redirecting_stdin_or_argv_does_not_make_a_test_mock_only"
+  ]
+ },
+ {
+  "repo": "proofdeck",
+  "file": "proofdeck/mutate.py",
+  "name": "select",
+  "line": 162,
+  "body_lines": 10,
+  "doc": true,
+  "tests": [
+   "tests/test_mutants.py::test_selection_takes_one_per_line_and_caps_each_file"
+  ]
+ },
+ {
+  "repo": "specdeck",
+  "file": "specdeck/history.py",
+  "name": "runs",
+  "line": 265,
+  "body_lines": 15,
+  "doc": false,
+  "tests": [
+   "tests/test_history.py::test_a_run_whose_process_died_is_marked_abandoned",
+   "tests/test_history.py::test_each_run_reports_what_started_and_stopped_passing",
+   "tests/test_history.py::test_running_one_test_updates_it_without_forgetting_the_others",
+   "tests/test_maintenance.py::test_prune_keeps_the_newest_runs",
+   "tests/test_requirements.py::test_the_viewer_shows_requirements_as_they_were_in_each_run"
+  ]
+ },
+ {
+  "repo": "specdeck",
+  "file": "specdeck/ci.py",
+  "name": "exit_code",
+  "line": 158,
+  "body_lines": 9,
+  "doc": false,
+  "tests": [
+   "tests/test_ci.py::test_the_report_exits_zero_unless_a_gate_is_asked_for"
+  ]
+ },
+ {
+  "repo": "specdeck",
+  "file": "specdeck/tracing.py",
+  "name": "stop",
+  "line": 54,
+  "body_lines": 15,
+  "doc": true,
+  "tests": [
+   "tests/test_context.py::test_a_recorder_that_cannot_start_stays_inert"
+  ]
+ },
+ {
+  "repo": "specdeck",
+  "file": "specdeck/watch.py",
+  "name": "watch",
+  "line": 64,
+  "body_lines": 34,
+  "doc": true,
+  "tests": [
+   "tests/test_maintenance.py::test_watch_runs_the_suite_immediately"
+  ]
+ },
+ {
+  "repo": "specdeck",
+  "file": "specdeck/validation.py",
+  "name": "validate_requirements_file",
+  "line": 295,
+  "body_lines": 12,
+  "doc": true,
+  "tests": [
+   "tests/test_validation.py::test_a_requirements_file_that_does_not_parse_is_an_error",
+   "tests/test_validation.py::test_missing_requirements_file_is_an_error",
+   "tests/test_validation.py::test_requirements_file_problems_surface_as_diagnostics"
+  ]
+ },
+ {
+  "repo": "specdeck",
+  "file": "specdeck/ci.py",
+  "name": "build",
+  "line": 48,
+  "body_lines": 21,
+  "doc": false,
+  "tests": [
+   "tests/test_ci.py::test_statuses_come_from_the_spec_tags_and_blocks_cascade",
+   "tests/test_ci.py::test_the_report_exits_zero_unless_a_gate_is_asked_for",
+   "tests/test_ci.py::test_the_report_is_one_markdown_document_with_fix_first_and_requirements"
+  ]
+ },
+ {
+  "repo": "specdeck",
+  "file": "specdeck/cli.py",
+  "name": "main",
+  "line": 133,
+  "body_lines": 13,
+  "doc": false,
+  "tests": [
+   "tests/test_ci.py::test_the_commands_read_the_files_a_run_leaves_behind",
+   "tests/test_context.py::test_the_command_builds_the_document_from_what_a_run_left_behind",
+   "tests/test_context.py::test_the_document_says_what_each_requirement_is_for_and_which_tests_serve_it"
+  ]
+ },
+ {
+  "repo": "specdeck",
+  "file": "specdeck/watch.py",
+  "name": "snapshot",
+  "line": 42,
+  "body_lines": 12,
+  "doc": true,
+  "tests": [
+   "tests/test_maintenance.py::test_watch_ignores_generated_directories",
+   "tests/test_maintenance.py::test_watch_snapshot_notices_edits"
+  ]
+ }
+]
