@@ -1,0 +1,206 @@
+{
+ "domain_py": "from dataclasses import dataclass\nfrom enum import Enum\nfrom datetime import date, datetime\n\nMIN_EASE = 1.3\n\n\nclass CardState(Enum):\n    NEW = \"new\"\n    LEARNING = \"learning\"\n    REVIEW = \"review\"\n    SUSPENDED = \"suspended\"\n\n\nclass Grade(Enum):\n    AGAIN = \"again\"\n    HARD = \"hard\"\n    GOOD = \"good\"\n    EASY = \"easy\"\n\n\n@dataclass(frozen=True)\nclass ReviewEvent:\n    card_id: str\n    reviewed_at: datetime\n    grade: Grade\n    seconds: int\n    state_before: CardState\n\n\n@dataclass(frozen=True)\nclass Card:\n    id: str\n    note_id: str\n    state: CardState\n    ease: float\n    interval_days: int\n    due_date: date\n    lapses: int\n    learning_step: int = 0\n    relearning_interval_days: int = 0\n    buried_until: date | None = None\n    history: tuple[ReviewEvent, ...] = ()\n\n\n@dataclass(frozen=True)\nclass SchedulerSettings:\n    learning_steps_days: tuple[int, ...] = (1, 3)\n    graduating_interval_days: int = 4\n    easy_interval_days: int = 7\n    lapse_multiplier: float = 0.5\n    minimum_interval_days: int = 1\n    leech_threshold: int = 8\n    daily_new_limit: int = 20\n    daily_review_limit: int = 200\n\n\n@dataclass(frozen=True)\nclass StudyQueue:\n    learning_cards: tuple[Card, ...]\n    review_cards: tuple[Card, ...]\n    new_cards: tuple[Card, ...]\n\n\n@dataclass(frozen=True)\nclass DailySummary:\n    study_date: date\n    grade_counts: tuple[tuple[Grade, int], ...]\n    retention_rate: float\n    total_seconds: int\n    reviewed_cards: int\n\n\nclass DomainError(Exception):\n    pass\n\n\nclass CardNotFound(DomainError):\n    pass\n",
+ "abilities_py": "from stateless import Ability\nfrom app.domain import Card\n\n\nclass CardRepository(Ability):\n    def get_card(self, card_id: str) -> Card | None:\n        raise NotImplementedError\n\n    def list_cards(self) -> tuple[Card, ...]:\n        raise NotImplementedError\n\n    def save_card(self, card: Card) -> None:\n        raise NotImplementedError\n",
+ "fakes_py": "from app.domain import Card\nfrom app.abilities import CardRepository\n\n\nclass InMemoryCardRepository(CardRepository):\n    def __init__(self, cards: tuple[Card, ...] = ()):\n        self.cards = {card.id: card for card in cards}\n        self.saved_cards: list[Card] = []\n\n    def get_card(self, card_id: str) -> Card | None:\n        return self.cards.get(card_id)\n\n    def list_cards(self) -> tuple[Card, ...]:\n        return tuple(self.cards.values())\n\n    def save_card(self, card: Card) -> None:\n        self.cards[card.id] = card\n        self.saved_cards.append(card)\n",
+ "functions": [
+  {
+   "name": "clamp_ease",
+   "kind": "pure",
+   "signature": "clamp_ease(ease: float) -> float",
+   "contract": "clamp_ease(ease) returns an ease factor no lower than MIN_EASE.",
+   "spec": "Input is one float. Output is one float. Rules: 1. Return max(MIN_EASE, ease), where MIN_EASE is the domain constant 1.3. 2. Do not round the result. Examples: 2.5 -> 2.5; 1.0 -> 1.3; 1.3 -> 1.3.",
+   "calls": []
+  },
+  {
+   "name": "overdue_priority",
+   "kind": "pure",
+   "signature": "overdue_priority(card: Card, today: date) -> float",
+   "contract": "overdue_priority(card, today) returns the card's normalized overdue amount.",
+   "spec": "Input is a Card and a calendar date. Output is a float. Rules: 1. Compute overdue_days as (today - card.due_date).days. 2. Return overdue_days divided by max(card.interval_days, 1). 3. The result may be negative for a future card. Examples: a card due 2026-01-08 with interval 4 on 2026-01-10 -> 0.5; due today with interval 10 -> 0.0; due tomorrow with interval 2 -> -0.5.",
+   "calls": []
+  },
+  {
+   "name": "is_buried",
+   "kind": "pure",
+   "signature": "is_buried(card: Card, today: date) -> bool",
+   "contract": "is_buried(card, today) returns whether the card is unavailable because of a current burial.",
+   "spec": "Input is a Card and date. Output is bool. Rules: 1. Return False when buried_until is None. 2. Otherwise return True exactly when buried_until >= today; burial is inclusive of its date. Examples: buried_until None on 2026-02-01 -> False; buried_until 2026-02-01 on that date -> True; buried_until 2026-01-31 on 2026-02-01 -> False.",
+   "calls": []
+  },
+  {
+   "name": "is_due_review",
+   "kind": "pure",
+   "signature": "is_due_review(card: Card, today: date) -> bool",
+   "contract": "is_due_review(card, today) returns whether an ordinary review card is due and available.",
+   "spec": "Input is a Card and date. Output is bool. Rules: 1. Return False unless card.state is CardState.REVIEW. 2. Return False if is_buried(card, today) is True. 3. Otherwise return card.due_date <= today. Examples: available REVIEW due today -> True; REVIEW due tomorrow -> False; LEARNING due yesterday -> False.",
+   "calls": [
+    "is_buried"
+   ]
+  },
+  {
+   "name": "is_due_learning",
+   "kind": "pure",
+   "signature": "is_due_learning(card: Card, today: date) -> bool",
+   "contract": "is_due_learning(card, today) returns whether a learning card is due and available.",
+   "spec": "Input is a Card and date. Output is bool. Rules: 1. Return False unless state is CardState.LEARNING. 2. Return False if is_buried(card, today). 3. Otherwise return due_date <= today. Examples: available LEARNING due yesterday -> True; buried LEARNING due yesterday -> False; REVIEW due yesterday -> False.",
+   "calls": [
+    "is_buried"
+   ]
+  },
+  {
+   "name": "is_due_new",
+   "kind": "pure",
+   "signature": "is_due_new(card: Card, today: date) -> bool",
+   "contract": "is_due_new(card, today) returns whether a new card is due and available.",
+   "spec": "Input is a Card and date. Output is bool. Rules: 1. Return False unless state is CardState.NEW. 2. Return False if is_buried(card, today). 3. Otherwise return due_date <= today. Examples: NEW due today and unburied -> True; NEW due tomorrow -> False; SUSPENDED due yesterday -> False.",
+   "calls": [
+    "is_buried"
+   ]
+  },
+  {
+   "name": "select_study_queue",
+   "kind": "pure",
+   "signature": "select_study_queue(cards: tuple[Card, ...], today: date, settings: SchedulerSettings) -> StudyQueue",
+   "contract": "select_study_queue(cards, today, settings) returns due learning, capped review, and capped new cards in deterministic order.",
+   "spec": "Inputs are an immutable tuple of Cards, a date, and settings. Output is StudyQueue. Rules: 1. learning_cards contains every card for which is_due_learning is True, sorted by (due_date ascending, id ascending); learning cards do not consume either daily limit. 2. review_cards contains cards for which is_due_review is True, sorted by overdue_priority descending, then due_date ascending, then id ascending, and truncated to max(settings.daily_review_limit, 0). 3. new_cards contains cards for which is_due_new is True, sorted by (due_date ascending, id ascending), and truncated to max(settings.daily_new_limit, 0). 4. Never mutate cards. Examples: limit 1 and review priorities 2.0 and 0.5 -> only the 2.0 card; two new cards due the same day ids b,a -> (a,b); negative new limit -> no new cards.",
+   "calls": [
+    "is_due_learning",
+    "is_due_review",
+    "is_due_new",
+    "overdue_priority"
+   ]
+  },
+  {
+   "name": "learning_delay_days",
+   "kind": "pure",
+   "signature": "learning_delay_days(settings: SchedulerSettings, step_index: int, hard: bool) -> int",
+   "contract": "learning_delay_days(settings, step_index, hard) returns a positive whole-day delay for a learning step.",
+   "spec": "Inputs are settings, an integer step index, and a bool. Output is int >= 1. Rules: 1. Form effective steps from settings.learning_steps_days after replacing each value below 1 with 1; if the tuple is empty, use (1,). 2. Clamp step_index into the valid effective-step index range. 3. Let delay be that selected step. 4. If hard is False return delay; if hard is True return max(1, ceil(delay * 1.5)). Examples: steps (1,3), index 1, False -> 3; steps (1,3), index 0, True -> 2; empty steps, index 9, True -> 2.",
+   "calls": []
+  },
+  {
+   "name": "schedule_new_or_learning",
+   "kind": "pure",
+   "signature": "schedule_new_or_learning(card: Card, grade: Grade, today: date, settings: SchedulerSettings) -> Card",
+   "contract": "schedule_new_or_learning(card, grade, today, settings) returns the next scheduled version of a NEW or LEARNING card.",
+   "spec": "Inputs require card.state to be NEW or LEARNING; output is a replacement Card with no history changes. Rules: 1. Use effective learning-step count and delays exactly as learning_delay_days specifies. 2. For Grade.EASY, set state REVIEW, interval_days=max(settings.easy_interval_days,1), due_date=today+that interval, learning_step=0, relearning_interval_days=0; keep ease and lapses. 3. For AGAIN, set state LEARNING, learning_step=0, due_date=today+learning_delay_days(settings,0,False), and retain interval_days and relearning_interval_days. 4. For HARD, NEW behaves like AGAIN; LEARNING remains at its current clamped step and is due today+learning_delay_days(settings,current_step,True). 5. For GOOD from NEW, schedule LEARNING step 0 due after its normal delay. For GOOD from LEARNING, advance one step; if another step exists, remain LEARNING due after that step's normal delay. Otherwise graduate to REVIEW with interval max(settings.minimum_interval_days, card.relearning_interval_days if positive else settings.graduating_interval_days), due today+interval, step 0, relearning interval 0. 6. Preserve buried_until, id, note_id, ease, lapses, and history. Examples: NEW GOOD with steps (1,3) on Jan 1 -> LEARNING step 0 due Jan 2; LEARNING step 1 GOOD with (1,3), graduating 4 -> REVIEW interval 4 due four days later; LEARNING AGAIN with steps (1,3) -> step 0 due tomorrow.",
+   "calls": [
+    "learning_delay_days"
+   ]
+  },
+  {
+   "name": "schedule_review",
+   "kind": "pure",
+   "signature": "schedule_review(card: Card, grade: Grade, today: date, settings: SchedulerSettings) -> Card",
+   "contract": "schedule_review(card, grade, today, settings) returns the next scheduled version of a REVIEW card before leech suspension.",
+   "spec": "Inputs require card.state REVIEW. Output is a replacement Card with no history changes. Rules: 1. Let old=max(card.interval_days,1). 2. AGAIN: set state LEARNING, lapses+1, ease=clamp_ease(ease-0.20), relearning_interval_days=old, learning_step=0, and due_date=today+learning_delay_days(settings,0,False); keep interval_days as old. 3. HARD: remain REVIEW; ease=clamp_ease(ease-0.15); interval=max(settings.minimum_interval_days, old+1, ceil(old*1.2)); due today+interval. 4. GOOD: remain REVIEW; keep ease; interval=max(settings.minimum_interval_days, round(old*ease)) (ease unchanged); due today+interval. Python round semantics are required. 5. EASY: remain REVIEW; ease=clamp_ease(ease+0.15); interval=max(settings.minimum_interval_days, round(old*new_ease*1.3)) using the updated ease; due today+interval. 6. Preserve id, note_id, buried_until, learning_step, and history unless a listed rule changes it. Examples: interval 10/ease 2.5 GOOD -> interval 25; interval 10/ease 2.5 HARD -> ease 2.35 and interval 12; interval 6 AGAIN -> LEARNING, lapses increased, relearning interval 6.",
+   "calls": [
+    "clamp_ease",
+    "learning_delay_days"
+   ]
+  },
+  {
+   "name": "is_leech",
+   "kind": "pure",
+   "signature": "is_leech(card: Card, settings: SchedulerSettings) -> bool",
+   "contract": "is_leech(card, settings) returns whether the card has reached an enabled lapse threshold.",
+   "spec": "Input is Card and settings; output is bool. Rules: 1. A threshold less than or equal to zero disables leech detection and returns False. 2. Otherwise return card.lapses >= settings.leech_threshold. Examples: 8 lapses with threshold 8 -> True; 7 with threshold 8 -> False; 100 with threshold 0 -> False.",
+   "calls": []
+  },
+  {
+   "name": "suspend_leech",
+   "kind": "pure",
+   "signature": "suspend_leech(card: Card, settings: SchedulerSettings) -> Card",
+   "contract": "suspend_leech(card, settings) returns card suspended exactly when it is a detected leech.",
+   "spec": "Input is Card and settings; output is Card. Rules: 1. If is_leech is False, return the original card value. 2. If true, return dataclasses.replace(card, state=CardState.SUSPENDED). 3. Do not alter due date, interval, ease, lapse count, burial, or history. Examples: a 8-lapse REVIEW at threshold 8 -> identical fields except SUSPENDED state; a 7-lapse card at threshold 8 -> unchanged.",
+   "calls": [
+    "is_leech"
+   ]
+  },
+  {
+   "name": "grade_card",
+   "kind": "pure",
+   "signature": "grade_card(card: Card, grade: Grade, reviewed_at: dt, seconds: int, settings: SchedulerSettings) -> Card",
+   "contract": "grade_card(card, grade, reviewed_at, seconds, settings) returns the graded card with one review event, or an unchanged suspended card.",
+   "spec": "Inputs are a Card, Grade, datetime, integer seconds, and settings. Output is Card. Rules: 1. If state is SUSPENDED, return card exactly unchanged and append no event. 2. Otherwise, use reviewed_at.date() as today. NEW and LEARNING cards are scheduled by schedule_new_or_learning; REVIEW cards by schedule_review. 3. Pass the scheduled result through suspend_leech. 4. Append exactly one ReviewEvent to history after scheduling. Its card_id is the original id, reviewed_at and grade are inputs, seconds=max(seconds,0), and state_before is the original state. 5. All existing history entries remain in order. Examples: suspended card graded GOOD -> unchanged; REVIEW AGAIN at lapse threshold appends AGAIN event and ends SUSPENDED; NEW EASY appends EASY event and becomes REVIEW.",
+   "calls": [
+    "schedule_new_or_learning",
+    "schedule_review",
+    "suspend_leech"
+   ]
+  },
+  {
+   "name": "bury_siblings",
+   "kind": "pure",
+   "signature": "bury_siblings(cards: tuple[Card, ...], reviewed_card_id: str, today: date) -> tuple[Card, ...]",
+   "contract": "bury_siblings(cards, reviewed_card_id, today) returns the cards with eligible note siblings buried through today.",
+   "spec": "Inputs are all cards, the id of the card just reviewed, and today. Output preserves the input tuple order. Rules: 1. Find the first card whose id equals reviewed_card_id; if absent, return the original tuple value. 2. For every other card with the same note_id, unless its state is SUSPENDED, set buried_until to today when it is None or earlier than today; otherwise retain its later buried_until. 3. Do not change the reviewed card, cards on other notes, or suspended siblings. 4. Use dataclasses.replace rather than mutation. Examples: reviewed c1 on note n and sibling c2 unburied -> c2 buried_until today; sibling already buried tomorrow stays tomorrow; unknown reviewed id -> unchanged tuple.",
+   "calls": []
+  },
+  {
+   "name": "summarise_day",
+   "kind": "pure",
+   "signature": "summarise_day(cards: tuple[Card, ...], study_date: date) -> DailySummary",
+   "contract": "summarise_day(cards, study_date) returns grade counts, retention, time, and event count for that calendar day.",
+   "spec": "Inputs are cards and a date. Output is DailySummary. Rules: 1. Collect every history event whose reviewed_at.date() equals study_date. 2. grade_counts is a tuple in exactly this order: AGAIN, HARD, GOOD, EASY, including zero counts. 3. reviewed_cards is the number of collected events. 4. total_seconds is the sum of max(event.seconds,0). 5. retention_rate is 0.0 if no events; otherwise (GOOD count + EASY count) / reviewed_cards as float. Examples: GOOD 30s and AGAIN 10s -> counts (AGAIN 1,HARD 0,GOOD 1,EASY 0), retention 0.5, seconds 40; no events -> all zero and 0.0.",
+   "calls": []
+  },
+  {
+   "name": "current_streak",
+   "kind": "pure",
+   "signature": "current_streak(cards: tuple[Card, ...], today: date) -> int",
+   "contract": "current_streak(cards, today) returns the consecutive calendar-day study streak ending today.",
+   "spec": "Inputs are cards and today; output is nonnegative int. Rules: 1. Build a set of dates from every event's reviewed_at.date(); multiple events on one day count once. 2. Starting at today, count consecutive dates present in the set while moving backward one day at a time. 3. If today has no event, return 0 even if yesterday has one. Examples: events on today and yesterday only -> 2; events today and two days ago but not yesterday -> 1; no event today -> 0.",
+   "calls": []
+  },
+  {
+   "name": "grade_review",
+   "kind": "service",
+   "signature": "grade_review(card_id: str, grade: Grade, reviewed_at: dt, seconds: int, settings: SchedulerSettings) -> Generator[object, object, Card]",
+   "contract": "grade_review(...) loads, grades, saves the card and its buried siblings, and returns the graded card.",
+   "spec": "Service inputs are card id, grade, datetime, seconds, and settings. Output is the resulting graded Card, or throws CardNotFound. Rules: 1. Obtain CardRepository with yield from need(CardRepository), then call get_card(card_id). 2. If it returns None, fail with return (yield from throw(CardNotFound(card_id))). 3. Compute graded=grade_card(card, grade, reviewed_at, seconds, settings), then save graded. 4. Get all cards from the repository, call bury_siblings(all_cards, card_id, reviewed_at.date()), and save every returned card whose id is not card_id and whose value differs from the corresponding original card. 5. Return graded. Examples: unknown id -> CardNotFound; grading one of two same-note cards saves graded card and buries the other; grading a suspended card saves its unchanged value but still buries its non-suspended siblings.",
+   "calls": [
+    "grade_card",
+    "bury_siblings"
+   ]
+  },
+  {
+   "name": "build_today_queue",
+   "kind": "service",
+   "signature": "build_today_queue(today: date, settings: SchedulerSettings) -> Generator[object, object, StudyQueue]",
+   "contract": "build_today_queue(today, settings) loads all cards and returns their selected StudyQueue.",
+   "spec": "Service inputs are date and settings. Output is StudyQueue. Rules: 1. Obtain CardRepository using yield from need(CardRepository). 2. Call list_cards exactly once. 3. Return select_study_queue(the returned tuple, today, settings). 4. Do not save or otherwise modify repository data. Examples: repository with one due review -> queue review_cards contains it; repository with only future cards -> all queue sections empty.",
+   "calls": [
+    "select_study_queue"
+   ]
+  },
+  {
+   "name": "daily_summary",
+   "kind": "service",
+   "signature": "daily_summary(study_date: date) -> Generator[object, object, DailySummary]",
+   "contract": "daily_summary(study_date) loads all cards and returns that day's DailySummary.",
+   "spec": "Service input is date; output is DailySummary. Rules: 1. Obtain CardRepository using yield from need(CardRepository). 2. Call list_cards exactly once. 3. Return summarise_day(cards, study_date). 4. Do not save cards. Examples: one GOOD event on the requested date -> summary has GOOD count 1; event only on another date -> zero-event summary.",
+   "calls": [
+    "summarise_day"
+   ]
+  },
+  {
+   "name": "study_streak",
+   "kind": "service",
+   "signature": "study_streak(today: date) -> Generator[object, object, int]",
+   "contract": "study_streak(today) loads all cards and returns the current streak ending today.",
+   "spec": "Service input is date; output is int. Rules: 1. Obtain CardRepository using yield from need(CardRepository). 2. Call list_cards exactly once. 3. Return current_streak(cards, today). 4. Do not save cards. Examples: events today and yesterday -> 2; no event today -> 0.",
+   "calls": [
+    "current_streak"
+   ]
+  }
+ ],
+ "acceptance": [
+  "Create a NEW card due today with learning steps (1, 3). Grade it GOOD on Monday: it becomes LEARNING step 0 due Tuesday and receives one GOOD history event. Grade it GOOD Tuesday: it advances to step 1 due Friday. Grade it GOOD Friday: it graduates to REVIEW using the configured graduating interval.",
+  "Grade a REVIEW card with interval 10 and ease 2.5 as HARD, GOOD, and EASY in separate runs. Verify the resulting intervals are respectively 12, 25, and 32, with ease changes only for HARD and EASY. Grade AGAIN and verify it enters LEARNING, records a lapse, and retains 10 as its relearning interval.",
+  "Set leech_threshold to 2 on a review card with one lapse. Grade AGAIN twice across scheduled reviews. The second lapse result must be SUSPENDED, retain its scheduling data, and have both AGAIN events in history. A suspended card graded later must remain byte-for-byte unchanged.",
+  "Store three cards: two active siblings on one note and one unrelated card. Grade one sibling through grade_review. Verify the reviewed card is saved with history, the other active sibling is buried through that date, and the unrelated card is unchanged. Verify the buried sibling is excluded from that day's queue but returns on the next day.",
+  "Build a queue containing overdue REVIEW cards with different intervals, a due LEARNING card, and more due NEW cards than the configured new limit. Verify learning cards are in learning_cards, review cards are ordered by normalized overdue amount and capped by review limit, and new cards are due-date/id ordered and capped independently.",
+  "Give cards review events on today, yesterday, and three days ago, with GOOD, EASY, HARD, and AGAIN grades. Verify daily_summary reports canonical grade counts, successful retention as (GOOD+EASY)/all events, and total nonnegative seconds. Verify study_streak is 2 because the day before yesterday is absent; if today's event is removed it becomes 0."
+ ]
+}
