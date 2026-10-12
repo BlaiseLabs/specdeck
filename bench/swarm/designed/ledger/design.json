@@ -1,0 +1,194 @@
+{
+ "domain_py": "from dataclasses import dataclass\nfrom decimal import Decimal\nfrom enum import Enum\nfrom datetime import date\nfrom typing import Union\n\nZERO_CENTS = 0\nMAX_SETTLEMENT_MEMBERS = 12\n\nclass SplitKind(Enum):\n    EQUAL = \"equal\"\n    AMOUNTS = \"amounts\"\n    PERCENTAGES = \"percentages\"\n    SHARES = \"shares\"\n\n@dataclass(frozen=True)\nclass Member:\n    member_id: str\n    name: str\n\n@dataclass(frozen=True)\nclass ExchangeRate:\n    currency: str\n    base_per_unit: Decimal\n\n@dataclass(frozen=True)\nclass SplitEntry:\n    member_id: str\n    value: Decimal\n\n@dataclass(frozen=True)\nclass Expense:\n    expense_id: str\n    payer_id: str\n    amount: Decimal\n    currency: str\n    split_kind: SplitKind\n    entries: tuple[SplitEntry, ...]\n    description: str\n    occurred_on: date\n\n@dataclass(frozen=True)\nclass Payment:\n    payment_id: str\n    from_member_id: str\n    to_member_id: str\n    amount_cents: int\n    note: str\n    occurred_on: date\n\n@dataclass(frozen=True)\nclass ExpenseAction:\n    expense: Expense\n\n@dataclass(frozen=True)\nclass PaymentAction:\n    payment: Payment\n\nAction = Union[ExpenseAction, PaymentAction]\n\n@dataclass(frozen=True)\nclass Trip:\n    trip_id: str\n    name: str\n    base_currency: str\n    members: tuple[Member, ...]\n    rates: tuple[ExchangeRate, ...]\n    actions: tuple[Action, ...]\n    closed: bool\n\n@dataclass(frozen=True)\nclass Allocation:\n    member_id: str\n    cents: int\n\n@dataclass(frozen=True)\nclass Transfer:\n    from_member_id: str\n    to_member_id: str\n    cents: int\n\n@dataclass(frozen=True)\nclass StatementLine:\n    action_id: str\n    kind: str\n    description: str\n    paid_cents: int\n    owed_cents: int\n    sent_cents: int\n    received_cents: int\n\n@dataclass(frozen=True)\nclass Statement:\n    member_id: str\n    paid_cents: int\n    owed_cents: int\n    sent_cents: int\n    received_cents: int\n    balance_cents: int\n    lines: tuple[StatementLine, ...]\n\nclass DomainError(Exception):\n    pass\n\nclass ValidationError(DomainError):\n    pass\n\nclass ClosedTripError(DomainError):\n    pass\n\nclass EmptyHistoryError(DomainError):\n    pass\n\nclass TripNotFoundError(DomainError):\n    pass\n",
+ "abilities_py": "from stateless import Ability\nfrom app.domain import Trip, TripNotFoundError\n\nclass TripRepository(Ability):\n    def load_trip(self, trip_id: str) -> Trip:\n        \"\"\"Return the current trip, or raise TripNotFoundError when trip_id is absent.\"\"\"\n        raise NotImplementedError\n\n    def save_trip(self, trip: Trip) -> None:\n        \"\"\"Atomically replace the stored trip having trip.trip_id with trip.\"\"\"\n        raise NotImplementedError\n",
+ "fakes_py": "from app.domain import Trip, TripNotFoundError\nfrom app.abilities import TripRepository\n\nclass InMemoryTripRepository(TripRepository):\n    def __init__(self, trips: tuple[Trip, ...] = ()) -> None:\n        self.trips = {trip.trip_id: trip for trip in trips}\n\n    def load_trip(self, trip_id: str) -> Trip:\n        if trip_id not in self.trips:\n            raise TripNotFoundError(trip_id)\n        return self.trips[trip_id]\n\n    def save_trip(self, trip: Trip) -> None:\n        self.trips[trip.trip_id] = trip\n",
+ "functions": [
+  {
+   "name": "validate_trip_configuration",
+   "kind": "pure",
+   "signature": "validate_trip_configuration(trip: Trip) -> str | None",
+   "contract": "validate_trip_configuration(trip) returns None for a usable trip configuration, otherwise one deterministic error message.",
+   "spec": "Input is a Trip. Return the first applicable message below, else None. 1. Require nonempty trip_id, name, base_currency, and at least one member. 2. Member IDs must be nonempty and unique. 3. Rate currencies must be unique; every rate must be finite and > 0. 4. There must be exactly one rate for base_currency and it must equal Decimal('1'). 5. Every existing action ID must be nonempty and unique across expenses and payments. Messages are exactly: 'invalid trip identity', 'no members', 'duplicate or empty member id', 'duplicate rate currency', 'invalid exchange rate', 'missing base rate', 'base rate must be 1', 'duplicate or empty action id'. Examples: a trip with members ('a'), rates USD=1, base USD -> None; two members both id 'a' -> 'duplicate or empty member id'; base USD with only EUR=Decimal('1.1') -> 'missing base rate'.",
+   "calls": []
+  },
+  {
+   "name": "rate_for_currency",
+   "kind": "pure",
+   "signature": "rate_for_currency(trip: Trip, currency: str) -> Decimal | None",
+   "contract": "rate_for_currency returns the unique base-currency Decimal rate for currency, or None when absent.",
+   "spec": "Input is any Trip and currency string. 1. Scan trip.rates by exact case-sensitive currency equality. 2. Return that ExchangeRate.base_per_unit if exactly one match exists. 3. Return None for zero or multiple matches; do not validate positivity here. Examples: rates USD=1, EUR=1.25 and currency 'EUR' -> Decimal('1.25'); currency 'eur' -> None; duplicate USD rates -> None.",
+   "calls": []
+  },
+  {
+   "name": "validate_expense",
+   "kind": "pure",
+   "signature": "validate_expense(expense: Expense, trip: Trip) -> str | None",
+   "contract": "validate_expense returns None when expense is valid against trip, otherwise one deterministic error message.",
+   "spec": "Input is an Expense and Trip. Return the first applicable message. 1. expense_id and description must be nonempty; payer_id must name a trip member. 2. amount must be finite and > 0; currency must have a finite positive rate from rate_for_currency. 3. entries must be nonempty, have nonempty unique member IDs, and every entry member must be a trip member. 4. Every value must be finite and > 0. 5. For EQUAL every value must equal Decimal('1'). For AMOUNTS values must sum exactly to amount. For PERCENTAGES values must sum exactly to Decimal('100'). SHARES has no further total rule. Messages: 'invalid expense identity', 'unknown payer', 'invalid amount', 'unknown currency', 'invalid split members', 'unknown split member', 'invalid split value', 'equal entries must be 1', 'amount split does not total expense', 'percentage split does not total 100'. Examples: USD 10 equal entries a=1,b=1 -> None; amount entries 3 and 6 for amount 10 -> 'amount split does not total expense'; payer z in members a,b -> 'unknown payer'.",
+   "calls": [
+    "rate_for_currency"
+   ]
+  },
+  {
+   "name": "validate_payment",
+   "kind": "pure",
+   "signature": "validate_payment(payment: Payment, trip: Trip) -> str | None",
+   "contract": "validate_payment returns None when payment is a valid base-cent transfer in trip, otherwise one deterministic error message.",
+   "spec": "Input is a Payment and Trip. Return the first applicable message. 1. payment_id and note must be nonempty. 2. from_member_id and to_member_id must both be known members and must differ. 3. amount_cents must be an int greater than zero; bool is not an int for this rule. Messages: 'invalid payment identity', 'unknown payment member', 'payment members must differ', 'invalid payment amount'. Examples: a->b for 125 cents with note 'settle' -> None; a->a for 1 -> 'payment members must differ'; a->b for 0 -> 'invalid payment amount'.",
+   "calls": []
+  },
+  {
+   "name": "validate_new_action",
+   "kind": "pure",
+   "signature": "validate_new_action(trip: Trip, action: Action) -> str | None",
+   "contract": "validate_new_action returns None if action has an ID not already present in trip.actions, otherwise 'duplicate action id'.",
+   "spec": "Input is a Trip and either Action type. 1. Obtain the candidate ID from action.expense.expense_id or action.payment.payment_id. 2. Compare it to every existing action ID, regardless of action kind. 3. Return 'duplicate action id' on any match, otherwise None. Examples: existing expense id e1 and new payment id e1 -> 'duplicate action id'; existing payment p1 and new expense e2 -> None.",
+   "calls": []
+  },
+  {
+   "name": "split_source_amounts",
+   "kind": "pure",
+   "signature": "split_source_amounts(expense: Expense) -> tuple[SplitEntry, ...]",
+   "contract": "split_source_amounts returns source-currency per-member amounts whose member order matches expense.entries.",
+   "spec": "Precondition: validate_expense returned None. 1. For AMOUNTS, return entries unchanged. 2. For PERCENTAGES, each output value is amount * value / 100. 3. For EQUAL, each output value is amount / number of entries. 4. For SHARES, each output value is amount * value / sum of all share values. 5. Perform divisions under decimal local precision 50 and preserve entry order and IDs. Examples: amount 10, equal a,b -> a=5,b=5; amount 12, percentages a=25,b=75 -> a=3,b=9; amount 10, shares a=1,b=3 -> a=2.5,b=7.5.",
+   "calls": []
+  },
+  {
+   "name": "round_to_cents",
+   "kind": "pure",
+   "signature": "round_to_cents(amount: Decimal) -> int",
+   "contract": "round_to_cents returns amount expressed as integer cents using Decimal ROUND_HALF_UP.",
+   "spec": "Input is a finite nonnegative Decimal. 1. Multiply by Decimal('100'). 2. Quantize to Decimal('1') using ROUND_HALF_UP. 3. Return int of that result. Examples: Decimal('1.234') -> 123; Decimal('1.235') -> 124; Decimal('0.005') -> 1.",
+   "calls": []
+  },
+  {
+   "name": "allocate_expense_base_cents",
+   "kind": "pure",
+   "signature": "allocate_expense_base_cents(expense: Expense, trip: Trip) -> tuple[Allocation, ...]",
+   "contract": "allocate_expense_base_cents returns deterministic base-cent allocations summing exactly to the rounded converted expense total.",
+   "spec": "Precondition: validate_expense returned None. 1. Get source amounts using split_source_amounts and the rate using rate_for_currency. 2. total_cents is round_to_cents(expense.amount * rate). 3. For each raw converted share, take floor(raw_share * 100) cents. 4. Give the remaining cents one at a time to entries with largest fractional remainder; ties use ascending member_id. 5. Return allocations in original entry order. This guarantees their sum equals total_cents, so no cent is lost or created. Examples: USD 10 equal a,b at rate 1 -> (a,500),(b,500); EUR 1 equal a,b at rate 1.01 -> total 101 and (a,51),(b,50); EUR 1 shares b=1,a=1 at rate 1.01 -> b gets 50 and a gets 51 because tie goes to member a.",
+   "calls": [
+    "split_source_amounts",
+    "rate_for_currency",
+    "round_to_cents"
+   ]
+  },
+  {
+   "name": "expense_deltas",
+   "kind": "pure",
+   "signature": "expense_deltas(expense: Expense, trip: Trip) -> dict[str, int]",
+   "contract": "expense_deltas returns each affected member's signed balance change, where positive means the group owes that member.",
+   "spec": "Precondition: expense is valid. 1. Allocate base cents with allocate_expense_base_cents. 2. Add the allocation total to the payer. 3. Subtract each member's allocated cents from that member. 4. Return only affected IDs, including an ID whose final delta is zero. Examples: a pays 100 cents split a=50,b=50 -> {'a':50,'b':-50}; a pays 100 split only a=100 -> {'a':0}; b pays 101 split a=51,b=50 -> {'b':51,'a':-51}.",
+   "calls": [
+    "allocate_expense_base_cents"
+   ]
+  },
+  {
+   "name": "payment_deltas",
+   "kind": "pure",
+   "signature": "payment_deltas(payment: Payment) -> dict[str, int]",
+   "contract": "payment_deltas returns the signed balance changes caused by a base-cent payment.",
+   "spec": "Precondition: payment is valid. 1. Add amount_cents to from_member_id because paying reduces that member's debt. 2. Subtract amount_cents from to_member_id because receiving reduces that member's credit. 3. Return exactly those two IDs. Examples: a pays b 250 -> {'a':250,'b':-250}; b pays a 1 -> {'b':1,'a':-1}.",
+   "calls": []
+  },
+  {
+   "name": "compute_balances",
+   "kind": "pure",
+   "signature": "compute_balances(trip: Trip) -> dict[str, int]",
+   "contract": "compute_balances returns every trip member's net base-cent balance after all actions.",
+   "spec": "Input is a Trip whose actions are valid. 1. Initialize every member ID to zero. 2. Process actions in stored order; merge expense_deltas for ExpenseAction and payment_deltas for PaymentAction. 3. Return all trip members, including zero balances. Positive means owed money; negative means owes money. 4. The returned values sum to zero. Examples: members a,b with a-paid 100 split equally -> {'a':50,'b':-50}; adding a b->a payment 50 (b pays a) -> {'a':0,'b':0}; no actions for a,b -> {'a':0,'b':0}.",
+   "calls": [
+    "expense_deltas",
+    "payment_deltas"
+   ]
+  },
+  {
+   "name": "settle_up",
+   "kind": "pure",
+   "signature": "settle_up(balances: dict[str, int]) -> tuple[Transfer, ...]",
+   "contract": "settle_up returns a deterministic minimum-cardinality set of positive-cent debtor-to-creditor transfers that clears balances.",
+   "spec": "Input is a mapping of member ID to integer cents whose values sum to zero. 1. Ignore zero balances; raise ValueError('unbalanced') if the sum is nonzero and ValueError('too many members') if more than MAX_SETTLEMENT_MEMBERS nonzero IDs. 2. Partition nonzero IDs into zero-sum groups, maximizing the number of groups; enumerate all set partitions, and among maxima choose lexicographically smallest tuple of sorted member-ID groups. 3. Within each selected group, repeatedly pair the lexicographically smallest debtor with the lexicographically smallest creditor, transfer min(debt, credit), and update until clear. 4. Sort final transfers by (from_member_id, to_member_id, cents). This is minimum-cardinality because each zero-sum group of n members needs at least n-1 edges. Examples: {'a':-50,'b':50} -> (Transfer('a','b',50),); {'a':-30,'b':-20,'c':50} -> a->c 30,b->c 20; {'a':-5,'b':5,'c':-7,'d':7} -> a->b 5,c->d 7.",
+   "calls": []
+  },
+  {
+   "name": "member_statement",
+   "kind": "pure",
+   "signature": "member_statement(trip: Trip, member_id: str) -> Statement",
+   "contract": "member_statement returns the chronological base-cent statement for a known member, or raises ValueError('unknown member').",
+   "spec": "Input is a valid Trip and member ID. 1. Raise ValueError('unknown member') unless member_id is in trip.members. 2. For each action create one StatementLine: expense payer gets paid equal to converted total, expense participant gets owed equal to allocation, payment sender gets sent, and payment recipient gets received; all other fields are zero. A member may have both payer and participant values on one expense line. 3. Keep every line in action order, including all-zero lines only if the member is the action payer, participant, sender, or recipient. 4. Totals are sums of lines and balance is paid - owed + sent - received. Examples: a pays 100 split a=50,b=50: a statement totals paid=100, owed=50, balance=50; b totals owed=50, balance=-50; after a->b payment 50 both balances are 0.",
+   "calls": [
+    "allocate_expense_base_cents"
+   ]
+  },
+  {
+   "name": "append_action",
+   "kind": "pure",
+   "signature": "append_action(trip: Trip, action: Action) -> Trip",
+   "contract": "append_action returns a copy of trip with action appended to actions and all other fields unchanged.",
+   "spec": "Input is a Trip and Action. Preconditions: trip is not closed and validate_new_action returned None. 1. Do not mutate trip or action. 2. Return dataclasses.replace(trip, actions=trip.actions + (action,)). Examples: actions () plus ExpenseAction(e1) -> actions (ExpenseAction(e1),); actions (PaymentAction(p1),) plus ExpenseAction(e2) preserves that order.",
+   "calls": []
+  },
+  {
+   "name": "remove_last_action",
+   "kind": "pure",
+   "signature": "remove_last_action(trip: Trip) -> Trip",
+   "contract": "remove_last_action returns a copy of trip without its final action, or raises ValueError('empty history').",
+   "spec": "Input is a Trip. 1. If actions is empty, raise ValueError('empty history'). 2. Otherwise return dataclasses.replace(trip, actions=trip.actions[:-1]). 3. Do not alter closed or any other field. Examples: (e1,p1) -> (e1,); (e1,) -> (); () -> ValueError('empty history').",
+   "calls": []
+  },
+  {
+   "name": "record_expense",
+   "kind": "service",
+   "signature": "record_expense(trip_id: str, expense: Expense) -> Generator[object, object, Trip]",
+   "contract": "record_expense loads, validates, appends, saves, and returns the updated open trip or throws a domain error.",
+   "spec": "1. Obtain TripRepository with yield from need(TripRepository), then load trip_id. 2. If closed, return yield from throw(ClosedTripError(trip_id)). 3. Run validate_trip_configuration, validate_expense, and validate_new_action in that order; for a non-None message return yield from throw(ValidationError(message)). 4. Append ExpenseAction(expense), save it, and return it. Examples: valid open trip plus valid e1 -> saved trip containing e1; closed trip plus e1 -> ClosedTripError; amount split totaling 9 for amount 10 -> ValidationError('amount split does not total expense').",
+   "calls": [
+    "validate_trip_configuration",
+    "validate_expense",
+    "validate_new_action",
+    "append_action"
+   ]
+  },
+  {
+   "name": "record_payment",
+   "kind": "service",
+   "signature": "record_payment(trip_id: str, payment: Payment) -> Generator[object, object, Trip]",
+   "contract": "record_payment loads, validates, appends, saves, and returns the updated open trip or throws a domain error.",
+   "spec": "1. Obtain TripRepository and load trip_id. 2. Reject a closed trip with ClosedTripError(trip_id). 3. Run validate_trip_configuration, validate_payment, and validate_new_action in that order; throw ValidationError(message) for the first failure. 4. Append PaymentAction(payment), save, and return the updated trip. Examples: open trip and a->b 50-cent p1 -> saved PaymentAction(p1); p1 reused as an expense or payment ID -> ValidationError('duplicate action id'); 0 cents -> ValidationError('invalid payment amount').",
+   "calls": [
+    "validate_trip_configuration",
+    "validate_payment",
+    "validate_new_action",
+    "append_action"
+   ]
+  },
+  {
+   "name": "close_trip",
+   "kind": "service",
+   "signature": "close_trip(trip_id: str) -> Generator[object, object, Trip]",
+   "contract": "close_trip marks an open valid trip closed, saves it, and returns it, or throws a domain error.",
+   "spec": "1. Obtain TripRepository and load trip_id. 2. If already closed, throw ClosedTripError(trip_id). 3. Validate configuration; throw ValidationError(message) if invalid. 4. Return and save dataclasses.replace(trip, closed=True). Examples: open valid trip -> same trip with closed=True; already closed trip -> ClosedTripError; trip missing base rate -> ValidationError('missing base rate').",
+   "calls": [
+    "validate_trip_configuration"
+   ]
+  },
+  {
+   "name": "undo_last_action",
+   "kind": "service",
+   "signature": "undo_last_action(trip_id: str) -> Generator[object, object, Trip]",
+   "contract": "undo_last_action removes and saves the latest action of an open trip, or throws a domain error.",
+   "spec": "1. Obtain TripRepository and load trip_id. 2. If closed, throw ClosedTripError(trip_id). 3. If actions is empty, throw EmptyHistoryError(trip_id). 4. Call remove_last_action, save its result, and return it. Examples: open actions (e1,p1) -> saved actions (e1,); open empty trip -> EmptyHistoryError; closed trip with e1 -> ClosedTripError.",
+   "calls": [
+    "remove_last_action"
+   ]
+  }
+ ],
+ "acceptance": [
+  "Create an open USD trip with Alice and Bob, USD=1. Record a USD 10 dinner paid by Alice and equally split with Alice and Bob. Balances are Alice +500 and Bob -500 cents; Alice's statement shows paid 1000 and owed 500.",
+  "Use an EUR base-rate conversion case: base USD, EUR rate 1.01, expense EUR 1 paid by Alice and equally split by Alice and Bob. Converted total is 101 cents and deterministic remainder allocation is Alice 51, Bob 50, producing Alice +50 and Bob -50.",
+  "Record a USD 12 expense split by percentages 25/75 and then a 900-cent payment from the debtor to the creditor. The statement totals and compute_balances reflect the payment as sender +900 and receiver -900, and settle_up returns no transfer once balances are zero.",
+  "Reject invalid edits: an amount split whose entries total less than the expense, a percentage split totaling 99, an unknown split member, a missing exchange rate, and a duplicate action ID each produce the specified ValidationError message and do not save changes.",
+  "For balances a=-5, b=+5, c=-7, d=+7, settle_up returns exactly two transfers a->b 5 and c->d 7, demonstrating minimum transfer count and deterministic output.",
+  "After recording an expense and payment, undo_last_action removes only the payment. Closing the resulting trip prevents record_expense, record_payment, and undo_last_action with ClosedTripError, while the stored ledger remains unchanged."
+ ]
+}

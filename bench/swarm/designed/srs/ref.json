@@ -380,9 +380,9 @@
   }
  },
  "acceptance": {
-  "ok": false,
-  "passed": 5,
-  "failed": 1,
-  "out": ".F....                                                                   [100%]\n=================================== FAILURES ===================================\n____ test_review_grades_apply_the_specified_intervals_ease_and_lapse_rules _____\ntest_it.py:167: in test_review_grades_apply_the_specified_intervals_ease_and_lapse_rules\n    assert easy.due_date == date(2026, 3, 6)\nE   AssertionError: assert datetime.date(2026, 3, 8) == datetime.date(2026, 3, 6)\nE    +  where datetime.date(2026, 3, 8) = Card(id='review-1', note_id='note-1', state=<CardState.REVIEW: 'review'>, ease=2.65, interval_days=34, due_date=dateti...etime.datetime(2026, 2, 2, 10, 0), grade=<Grade.EASY: 'easy'>, seconds=5, state_before=<CardState.REVIEW: 'review'>),)).due_date\nE    +  and   datetime.date(2026, 3, 6) = date(2026, 3, 6)\n=========================== short test summary info ============================\nFAILED test_it.py::test_review_grades_apply_the_specified_intervals_ease_and_lapse_rules\n1 failed, 5 passed in 0.18s\n"
+  "ok": true,
+  "passed": 6,
+  "failed": 0,
+  "out": "......                                                                   [100%]\n6 passed in 0.15s\n"
  }
 }

@@ -1,0 +1,378 @@
+{
+ "impl": {
+  "validate_trip_configuration": "def validate_trip_configuration(trip: Trip) -> str | None:\n    from decimal import Decimal\n\n    if not trip.trip_id or not trip.name or not trip.base_currency:\n        return \"invalid trip identity\"\n\n    if not trip.members:\n        return \"no members\"\n\n    member_ids = [member.member_id for member in trip.members]\n    if any(not member_id for member_id in member_ids) or len(set(member_ids)) != len(member_ids):\n        return \"duplicate or empty member id\"\n\n    rate_currencies = [rate.currency for rate in trip.rates]\n    if len(set(rate_currencies)) != len(rate_currencies):\n        return \"duplicate rate currency\"\n\n    for rate in trip.rates:\n        if not rate.base_per_unit.is_finite() or rate.base_per_unit <= 0:\n            return \"invalid exchange rate\"\n\n    base_rates = [rate for rate in trip.rates if rate.currency == trip.base_currency]\n    if len(base_rates) != 1:\n        return \"missing base rate\"\n\n    if base_rates[0].base_per_unit != Decimal(\"1\"):\n        return \"base rate must be 1\"\n\n    action_ids = []\n    for action in trip.actions:\n        if isinstance(action, ExpenseAction):\n            action_ids.append(action.expense.expense_id)\n        elif isinstance(action, PaymentAction):\n            action_ids.append(action.payment.payment_id)\n\n    if any(not action_id for action_id in action_ids) or len(set(action_ids)) != len(action_ids):\n        return \"duplicate or empty action id\"\n\n    return None\n",
+  "rate_for_currency": "def rate_for_currency(trip: Trip, currency: str) -> Decimal | None:\n    matches = [rate.base_per_unit for rate in trip.rates if rate.currency == currency]\n    return matches[0] if len(matches) == 1 else None\n",
+  "validate_expense": "def validate_expense(expense: Expense, trip: Trip) -> str | None:\n    import decimal\n\n    def is_finite_positive(value) -> bool:\n        try:\n            return value.is_finite() and value > 0\n        except (AttributeError, TypeError, decimal.DecimalException):\n            return False\n\n    if not expense.expense_id or not expense.description:\n        return \"invalid expense identity\"\n\n    member_ids = {member.member_id for member in trip.members}\n\n    if expense.payer_id not in member_ids:\n        return \"unknown payer\"\n\n    if not is_finite_positive(expense.amount):\n        return \"invalid amount\"\n\n    rate = rate_for_currency(trip, expense.currency)\n    if not is_finite_positive(rate):\n        return \"unknown currency\"\n\n    if not expense.entries:\n        return \"invalid split members\"\n\n    entry_member_ids = [entry.member_id for entry in expense.entries]\n    if any(not member_id for member_id in entry_member_ids):\n        return \"invalid split members\"\n\n    if len(set(entry_member_ids)) != len(entry_member_ids):\n        return \"invalid split members\"\n\n    if any(member_id not in member_ids for member_id in entry_member_ids):\n        return \"unknown split member\"\n\n    if any(not is_finite_positive(entry.value) for entry in expense.entries):\n        return \"invalid split value\"\n\n    if expense.split_kind == SplitKind.EQUAL:\n        if any(entry.value != Decimal(\"1\") for entry in expense.entries):\n            return \"equal entries must be 1\"\n\n    elif expense.split_kind == SplitKind.AMOUNTS:\n        if sum(entry.value for entry in expense.entries) != expense.amount:\n            return \"amount split does not total expense\"\n\n    elif expense.split_kind == SplitKind.PERCENTAGES:\n        if sum(entry.value for entry in expense.entries) != Decimal(\"100\"):\n            return \"percentage split does not total 100\"\n\n    return None\n",
+  "validate_payment": "def validate_payment(payment: Payment, trip: Trip) -> str | None:\n    if not payment.payment_id or not payment.note:\n        return \"invalid payment identity\"\n\n    member_ids = {member.member_id for member in trip.members}\n    if (\n        payment.from_member_id not in member_ids\n        or payment.to_member_id not in member_ids\n    ):\n        return \"unknown payment member\"\n\n    if payment.from_member_id == payment.to_member_id:\n        return \"payment members must differ\"\n\n    if isinstance(payment.amount_cents, bool) or not isinstance(payment.amount_cents, int) or payment.amount_cents <= 0:\n        return \"invalid payment amount\"\n\n    return None\n",
+  "validate_new_action": "def validate_new_action(trip: Trip, action: Action) -> str | None:\n    candidate_id = (\n        action.expense.expense_id\n        if isinstance(action, ExpenseAction)\n        else action.payment.payment_id\n    )\n\n    for existing_action in trip.actions:\n        existing_id = (\n            existing_action.expense.expense_id\n            if isinstance(existing_action, ExpenseAction)\n            else existing_action.payment.payment_id\n        )\n        if existing_id == candidate_id:\n            return \"duplicate action id\"\n\n    return None\n",
+  "split_source_amounts": "def split_source_amounts(expense: Expense) -> tuple[SplitEntry, ...]:\n    from decimal import localcontext\n\n    if expense.split_kind == SplitKind.AMOUNTS:\n        return expense.entries\n\n    with localcontext() as context:\n        context.prec = 50\n\n        if expense.split_kind == SplitKind.PERCENTAGES:\n            return tuple(\n                SplitEntry(entry.member_id, expense.amount * entry.value / 100)\n                for entry in expense.entries\n            )\n\n        if expense.split_kind == SplitKind.EQUAL:\n            return tuple(\n                SplitEntry(entry.member_id, expense.amount / len(expense.entries))\n                for entry in expense.entries\n            )\n\n        total_shares = sum(entry.value for entry in expense.entries)\n        return tuple(\n            SplitEntry(entry.member_id, expense.amount * entry.value / total_shares)\n            for entry in expense.entries\n        )\n",
+  "round_to_cents": "def round_to_cents(amount: Decimal) -> int:\n    from decimal import Decimal, ROUND_HALF_UP\n    return int((amount * Decimal(\"100\")).quantize(Decimal(\"1\"), rounding=ROUND_HALF_UP))\n",
+  "allocate_expense_base_cents": "def allocate_expense_base_cents(\n    expense: Expense, trip: Trip\n) -> tuple[Allocation, ...]:\n    from decimal import ROUND_FLOOR\n\n    source_amounts = split_source_amounts(expense)\n    rate = rate_for_currency(trip, expense.currency)\n    total_cents = round_to_cents(expense.amount * rate)\n\n    raw_cents = [\n        entry.value * rate * 100\n        for entry in source_amounts\n    ]\n    floored_cents = [\n        int(raw.to_integral_value(rounding=ROUND_FLOOR))\n        for raw in raw_cents\n    ]\n    remaining = total_cents - sum(floored_cents)\n\n    ranked_indices = sorted(\n        range(len(expense.entries)),\n        key=lambda index: (\n            -(raw_cents[index] - floored_cents[index]),\n            expense.entries[index].member_id,\n        ),\n    )\n\n    for index in ranked_indices[:remaining]:\n        floored_cents[index] += 1\n\n    return tuple(\n        Allocation(entry.member_id, floored_cents[index])\n        for index, entry in enumerate(expense.entries)\n    )\n",
+  "expense_deltas": "def expense_deltas(expense: Expense, trip: Trip) -> dict[str, int]:\n    allocations = allocate_expense_base_cents(expense, trip)\n    deltas: dict[str, int] = {expense.payer_id: sum(\n        allocation.cents for allocation in allocations\n    )}\n\n    for allocation in allocations:\n        deltas[allocation.member_id] = (\n            deltas.get(allocation.member_id, 0) - allocation.cents\n        )\n\n    return deltas\n",
+  "payment_deltas": "def payment_deltas(payment: Payment) -> dict[str, int]:\n    return {\n        payment.from_member_id: payment.amount_cents,\n        payment.to_member_id: -payment.amount_cents,\n    }\n",
+  "settle_up": "def settle_up(balances: dict[str, int]) -> tuple[Transfer, ...]:\n    from functools import lru_cache\n\n    if sum(balances.values()) != 0:\n        raise ValueError(\"unbalanced\")\n\n    member_ids = tuple(sorted(member_id for member_id, balance in balances.items() if balance != 0))\n\n    if len(member_ids) > MAX_SETTLEMENT_MEMBERS:\n        raise ValueError(\"too many members\")\n\n    if not member_ids:\n        return ()\n\n    values = tuple(balances[member_id] for member_id in member_ids)\n    size = len(member_ids)\n    full_mask = (1 << size) - 1\n\n    subset_sums = [0] * (1 << size)\n    subset_members: list[tuple[str, ...]] = [()] * (1 << size)\n\n    for mask in range(1, 1 << size):\n        bit = mask & -mask\n        index = bit.bit_length() - 1\n        remainder = mask ^ bit\n        subset_sums[mask] = subset_sums[remainder] + values[index]\n        subset_members[mask] = subset_members[remainder] + (member_ids[index],)\n\n    @lru_cache(maxsize=None)\n    def best_partition(mask: int) -> tuple[tuple[str, ...], ...]:\n        if mask == 0:\n            return ()\n\n        anchor = mask & -mask\n        remainder = mask ^ anchor\n        best: tuple[tuple[str, ...], ...] | None = None\n\n        submask = remainder\n        while True:\n            group_mask = anchor | submask\n\n            if subset_sums[group_mask] == 0:\n                candidate = tuple(sorted((subset_members[group_mask],) + best_partition(mask ^ group_mask)))\n\n                if (\n                    best is None\n                    or len(candidate) > len(best)\n                    or (len(candidate) == len(best) and candidate < best)\n                ):\n                    best = candidate\n\n            if submask == 0:\n                break\n            submask = (submask - 1) & remainder\n\n        return best if best is not None else ()\n\n    transfers: list[Transfer] = []\n\n    for group in best_partition(full_mask):\n        remaining = {member_id: balances[member_id] for member_id in group}\n\n        while True:\n            debtors = sorted(member_id for member_id, balance in remaining.items() if balance < 0)\n            creditors = sorted(member_id for member_id, balance in remaining.items() if balance > 0)\n\n            if not debtors:\n                break\n\n            debtor = debtors[0]\n            creditor = creditors[0]\n            cents = min(-remaining[debtor], remaining[creditor])\n\n            transfers.append(Transfer(debtor, creditor, cents))\n            remaining[debtor] += cents\n            remaining[creditor] -= cents\n\n    return tuple(sorted(transfers, key=lambda transfer: (\n        transfer.from_member_id,\n        transfer.to_member_id,\n        transfer.cents,\n    )))\n",
+  "append_action": "def append_action(trip: Trip, action: Action) -> Trip:\n    return dataclasses.replace(trip, actions=trip.actions + (action,))\n",
+  "remove_last_action": "def remove_last_action(trip: Trip) -> Trip:\n    if not trip.actions:\n        raise ValueError(\"empty history\")\n    return dataclasses.replace(trip, actions=trip.actions[:-1])\n",
+  "record_expense": "def record_expense(trip_id: str, expense: Expense):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    message = validate_trip_configuration(trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    message = validate_expense(expense, trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    action = ExpenseAction(expense)\n    message = validate_new_action(trip, action)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    updated_trip = append_action(trip, action)\n    repository.save_trip(updated_trip)\n    return updated_trip\n",
+  "record_payment": "def record_payment(trip_id: str, payment: Payment):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    message = validate_trip_configuration(trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    message = validate_payment(payment, trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    action = PaymentAction(payment)\n    message = validate_new_action(trip, action)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    updated_trip = append_action(trip, action)\n    repository.save_trip(updated_trip)\n    return updated_trip\n",
+  "close_trip": "def close_trip(trip_id: str):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    message = validate_trip_configuration(trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    closed_trip = dataclasses.replace(trip, closed=True)\n    repository.save_trip(closed_trip)\n    return closed_trip\n",
+  "undo_last_action": "def undo_last_action(trip_id: str):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    if not trip.actions:\n        return (yield from throw(EmptyHistoryError(trip_id)))\n\n    updated_trip = remove_last_action(trip)\n    repository.save_trip(updated_trip)\n    return updated_trip\n",
+  "member_statement": "def member_statement(trip: Trip, member_id: str) -> Statement:\n    if member_id not in {member.member_id for member in trip.members}:\n        raise ValueError(\"unknown member\")\n\n    lines = []\n\n    for action in trip.actions:\n        if isinstance(action, ExpenseAction):\n            expense = action.expense\n            allocations = allocate_expense_base_cents(expense, trip)\n            allocation_by_member = {\n                allocation.member_id: allocation.cents\n                for allocation in allocations\n            }\n            is_payer = expense.payer_id == member_id\n            is_participant = member_id in allocation_by_member\n\n            if is_payer or is_participant:\n                paid_cents = sum(\n                    allocation.cents for allocation in allocations\n                ) if is_payer else 0\n                lines.append(\n                    StatementLine(\n                        action_id=expense.expense_id,\n                        kind=\"expense\",\n                        description=expense.description,\n                        paid_cents=paid_cents,\n                        owed_cents=allocation_by_member.get(member_id, 0),\n                        sent_cents=0,\n                        received_cents=0,\n                    )\n                )\n\n        elif isinstance(action, PaymentAction):\n            payment = action.payment\n            is_sender = payment.from_member_id == member_id\n            is_recipient = payment.to_member_id == member_id\n\n            if is_sender or is_recipient:\n                lines.append(\n                    StatementLine(\n                        action_id=payment.payment_id,\n                        kind=\"payment\",\n                        description=payment.note,\n                        paid_cents=0,\n                        owed_cents=0,\n                        sent_cents=payment.amount_cents if is_sender else 0,\n                        received_cents=payment.amount_cents if is_recipient else 0,\n                    )\n                )\n\n    paid_cents = sum(line.paid_cents for line in lines)\n    owed_cents = sum(line.owed_cents for line in lines)\n    sent_cents = sum(line.sent_cents for line in lines)\n    received_cents = sum(line.received_cents for line in lines)\n\n    return Statement(\n        member_id=member_id,\n        paid_cents=paid_cents,\n        owed_cents=owed_cents,\n        sent_cents=sent_cents,\n        received_cents=received_cents,\n        balance_cents=paid_cents - owed_cents + sent_cents - received_cents,\n        lines=tuple(lines),\n    )\n",
+  "compute_balances": "def compute_balances(trip: Trip) -> dict[str, int]:\n    balances = {member.member_id: 0 for member in trip.members}\n\n    for action in trip.actions:\n        if isinstance(action, ExpenseAction):\n            deltas = expense_deltas(action.expense, trip)\n        else:\n            deltas = payment_deltas(action.payment)\n\n        for member_id, delta in deltas.items():\n            balances[member_id] += delta\n\n    return balances\n"
+ },
+ "rows": {
+  "validate_trip_configuration": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 12,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def validate_trip_configuration(trip: Trip) -> str | None:\n    from decimal import Decimal\n\n    if not trip.trip_id or not trip.name or not trip.base_currency:\n        return \"invalid trip identity\"\n\n    if not trip.members:\n        return \"no members\"\n\n    member_ids = [member.member_id for member in trip.members]\n    if any(not member_id for member_id in member_ids) or len(set(member_ids)) != len(member_ids):\n        return \"duplicate or empty member id\"\n\n    rate_currencies = [rate.currency for rate in trip.rates]\n    if len(set(rate_currencies)) != len(rate_currencies):\n        return \"duplicate rate currency\"\n\n    for rate in trip.rates:\n        if not rate.base_per_unit.is_finite() or rate.base_per_unit <= 0:\n            return \"invalid exchange rate\"\n\n    base_rates = [rate for rate in trip.rates if rate.currency == trip.base_currency]\n    if len(base_rates) != 1:\n        return \"missing base rate\"\n\n    if base_rates[0].base_per_unit != Decimal(\"1\"):\n        return \"base rate must be 1\"\n\n    action_ids = []\n    for action in trip.actions:\n        if isinstance(action, ExpenseAction):\n            action_ids.append(action.expense.expense_id)\n        elif isinstance(action, PaymentAction):\n            action_ids.append(action.payment.payment_id)\n\n    if any(not action_id for action_id in action_ids) or len(set(action_ids)) != len(action_ids):\n        return \"duplicate or empty action id\"\n\n    return None\n",
+     "ok": true,
+     "passed": 12,
+     "failed": 0,
+     "out": "............                                                             [100%]\n12 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "rate_for_currency": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def rate_for_currency(trip: Trip, currency: str) -> Decimal | None:\n    matches = [rate.base_per_unit for rate in trip.rates if rate.currency == currency]\n    return matches[0] if len(matches) == 1 else None\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "validate_expense": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 25,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def validate_expense(expense: Expense, trip: Trip) -> str | None:\n    import decimal\n\n    def is_finite_positive(value) -> bool:\n        try:\n            return value.is_finite() and value > 0\n        except (AttributeError, TypeError, decimal.DecimalException):\n            return False\n\n    if not expense.expense_id or not expense.description:\n        return \"invalid expense identity\"\n\n    member_ids = {member.member_id for member in trip.members}\n\n    if expense.payer_id not in member_ids:\n        return \"unknown payer\"\n\n    if not is_finite_positive(expense.amount):\n        return \"invalid amount\"\n\n    rate = rate_for_currency(trip, expense.currency)\n    if not is_finite_positive(rate):\n        return \"unknown currency\"\n\n    if not expense.entries:\n        return \"invalid split members\"\n\n    entry_member_ids = [entry.member_id for entry in expense.entries]\n    if any(not member_id for member_id in entry_member_ids):\n        return \"invalid split members\"\n\n    if len(set(entry_member_ids)) != len(entry_member_ids):\n        return \"invalid split members\"\n\n    if any(member_id not in member_ids for member_id in entry_member_ids):\n        return \"unknown split member\"\n\n    if any(not is_finite_positive(entry.value) for entry in expense.entries):\n        return \"invalid split value\"\n\n    if expense.split_kind == SplitKind.EQUAL:\n        if any(entry.value != Decimal(\"1\") for entry in expense.entries):\n            return \"equal entries must be 1\"\n\n    elif expense.split_kind == SplitKind.AMOUNTS:\n        if sum(entry.value for entry in expense.entries) != expense.amount:\n            return \"amount split does not total expense\"\n\n    elif expense.split_kind == SplitKind.PERCENTAGES:\n        if sum(entry.value for entry in expense.entries) != Decimal(\"100\"):\n            return \"percentage split does not total 100\"\n\n    return None\n",
+     "ok": true,
+     "passed": 25,
+     "failed": 0,
+     "out": ".........................                                                [100%]\n25 passed in 0.12s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "validate_payment": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 14,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def validate_payment(payment: Payment, trip: Trip) -> str | None:\n    if not payment.payment_id or not payment.note:\n        return \"invalid payment identity\"\n\n    member_ids = {member.member_id for member in trip.members}\n    if (\n        payment.from_member_id not in member_ids\n        or payment.to_member_id not in member_ids\n    ):\n        return \"unknown payment member\"\n\n    if payment.from_member_id == payment.to_member_id:\n        return \"payment members must differ\"\n\n    if isinstance(payment.amount_cents, bool) or not isinstance(payment.amount_cents, int) or payment.amount_cents <= 0:\n        return \"invalid payment amount\"\n\n    return None\n",
+     "ok": true,
+     "passed": 14,
+     "failed": 0,
+     "out": "..............                                                           [100%]\n14 passed in 0.12s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "validate_new_action": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def validate_new_action(trip: Trip, action: Action) -> str | None:\n    candidate_id = (\n        action.expense.expense_id\n        if isinstance(action, ExpenseAction)\n        else action.payment.payment_id\n    )\n\n    for existing_action in trip.actions:\n        existing_id = (\n            existing_action.expense.expense_id\n            if isinstance(existing_action, ExpenseAction)\n            else existing_action.payment.payment_id\n        )\n        if existing_id == candidate_id:\n            return \"duplicate action id\"\n\n    return None\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "split_source_amounts": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def split_source_amounts(expense: Expense) -> tuple[SplitEntry, ...]:\n    from decimal import localcontext\n\n    if expense.split_kind == SplitKind.AMOUNTS:\n        return expense.entries\n\n    with localcontext() as context:\n        context.prec = 50\n\n        if expense.split_kind == SplitKind.PERCENTAGES:\n            return tuple(\n                SplitEntry(entry.member_id, expense.amount * entry.value / 100)\n                for entry in expense.entries\n            )\n\n        if expense.split_kind == SplitKind.EQUAL:\n            return tuple(\n                SplitEntry(entry.member_id, expense.amount / len(expense.entries))\n                for entry in expense.entries\n            )\n\n        total_shares = sum(entry.value for entry in expense.entries)\n        return tuple(\n            SplitEntry(entry.member_id, expense.amount * entry.value / total_shares)\n            for entry in expense.entries\n        )\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "round_to_cents": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 17,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def round_to_cents(amount: Decimal) -> int:\n    from decimal import Decimal, ROUND_HALF_UP\n    return int((amount * Decimal(\"100\")).quantize(Decimal(\"1\"), rounding=ROUND_HALF_UP))\n",
+     "ok": true,
+     "passed": 17,
+     "failed": 0,
+     "out": ".................                                                        [100%]\n17 passed in 0.12s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "allocate_expense_base_cents": {
+   "kind": "pure",
+   "first": false,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def allocate_expense_base_cents(\n    expense: Expense, trip: Trip\n) -> tuple[Allocation, ...]:\n    from decimal import ROUND_FLOOR\n\n    source_amounts = split_source_amounts(expense)\n    rate = rate_for_currency(trip, expense.currency)\n    total_cents = round_to_cents(expense.amount * rate)\n\n    raw_cents = [amount * rate * 100 for amount in source_amounts]\n    floored_cents = [\n        int(raw.to_integral_value(rounding=ROUND_FLOOR))\n        for raw in raw_cents\n    ]\n    remaining = total_cents - sum(floored_cents)\n\n    ranked_indices = sorted(\n        range(len(expense.entries)),\n        key=lambda index: (\n            -(raw_cents[index] - floored_cents[index]),\n            expense.entries[index].member_id,\n        ),\n    )\n\n    for index in ranked_indices[:remaining]:\n        floored_cents[index] += 1\n\n    return tuple(\n        Allocation(entry.member_id, floored_cents[index])\n        for index, entry in enumerate(expense.entries)\n    )\n",
+     "ok": false,
+     "passed": 0,
+     "failed": 5,
+     "out": "s]\nE   TypeError: unsupported operand type(s) for *: 'SplitEntry' and 'decimal.Decimal'\n_____ test_allocates_extra_cent_to_member_with_largest_non_tied_remainder ______\ntest_it.py:112: in test_allocates_extra_cent_to_member_with_largest_non_tied_remainder\n    assert allocate_expense_base_cents(expense, make_trip()) == (\napp/logic.py:192: in allocate_expense_base_cents\n    raw_cents = [amount * rate * 100 for amount in source_amounts]\nE   TypeError: unsupported operand type(s) for *: 'SplitEntry' and 'decimal.Decimal'\n_ test_distributes_multiple_remaining_cents_by_member_id_and_keeps_entry_order _\ntest_it.py:130: in test_distributes_multiple_remaining_cents_by_member_id_and_keeps_entry_order\n    allocations = allocate_expense_base_cents(expense, make_trip())\napp/logic.py:192: in allocate_expense_base_cents\n    raw_cents = [amount * rate * 100 for amount in source_amounts]\nE   TypeError: unsupported operand type(s) for *: 'SplitEntry' and 'decimal.Decimal'\n=========================== short test summary info ============================\nFAILED test_it.py::test_allocates_equal_usd_expense_exactly - TypeError: unsu...\nFAILED test_it.py::test_equal_split_assigns_extra_cent_to_largest_fractional_remainder\nFAILED test_it.py::test_tied_remainders_use_member_id_not_entry_order - TypeE...\nFAILED test_it.py::test_allocates_extra_cent_to_member_with_largest_non_tied_remainder\nFAILED test_it.py::test_distributes_multiple_remaining_cents_by_member_id_and_keeps_entry_order\n5 failed in 0.16s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def allocate_expense_base_cents(\n    expense: Expense, trip: Trip\n) -> tuple[Allocation, ...]:\n    from decimal import ROUND_FLOOR\n\n    source_amounts = split_source_amounts(expense)\n    rate = rate_for_currency(trip, expense.currency)\n    total_cents = round_to_cents(expense.amount * rate)\n\n    raw_cents = [\n        entry.value * rate * 100\n        for entry in source_amounts\n    ]\n    floored_cents = [\n        int(raw.to_integral_value(rounding=ROUND_FLOOR))\n        for raw in raw_cents\n    ]\n    remaining = total_cents - sum(floored_cents)\n\n    ranked_indices = sorted(\n        range(len(expense.entries)),\n        key=lambda index: (\n            -(raw_cents[index] - floored_cents[index]),\n            expense.entries[index].member_id,\n        ),\n    )\n\n    for index in ranked_indices[:remaining]:\n        floored_cents[index] += 1\n\n    return tuple(\n        Allocation(entry.member_id, floored_cents[index])\n        for index, entry in enumerate(expense.entries)\n    )\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "expense_deltas": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def expense_deltas(expense: Expense, trip: Trip) -> dict[str, int]:\n    allocations = allocate_expense_base_cents(expense, trip)\n    deltas: dict[str, int] = {expense.payer_id: sum(\n        allocation.cents for allocation in allocations\n    )}\n\n    for allocation in allocations:\n        deltas[allocation.member_id] = (\n            deltas.get(allocation.member_id, 0) - allocation.cents\n        )\n\n    return deltas\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "payment_deltas": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def payment_deltas(payment: Payment) -> dict[str, int]:\n    return {\n        payment.from_member_id: payment.amount_cents,\n        payment.to_member_id: -payment.amount_cents,\n    }\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "settle_up": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 10,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def settle_up(balances: dict[str, int]) -> tuple[Transfer, ...]:\n    from functools import lru_cache\n\n    if sum(balances.values()) != 0:\n        raise ValueError(\"unbalanced\")\n\n    member_ids = tuple(sorted(member_id for member_id, balance in balances.items() if balance != 0))\n\n    if len(member_ids) > MAX_SETTLEMENT_MEMBERS:\n        raise ValueError(\"too many members\")\n\n    if not member_ids:\n        return ()\n\n    values = tuple(balances[member_id] for member_id in member_ids)\n    size = len(member_ids)\n    full_mask = (1 << size) - 1\n\n    subset_sums = [0] * (1 << size)\n    subset_members: list[tuple[str, ...]] = [()] * (1 << size)\n\n    for mask in range(1, 1 << size):\n        bit = mask & -mask\n        index = bit.bit_length() - 1\n        remainder = mask ^ bit\n        subset_sums[mask] = subset_sums[remainder] + values[index]\n        subset_members[mask] = subset_members[remainder] + (member_ids[index],)\n\n    @lru_cache(maxsize=None)\n    def best_partition(mask: int) -> tuple[tuple[str, ...], ...]:\n        if mask == 0:\n            return ()\n\n        anchor = mask & -mask\n        remainder = mask ^ anchor\n        best: tuple[tuple[str, ...], ...] | None = None\n\n        submask = remainder\n        while True:\n            group_mask = anchor | submask\n\n            if subset_sums[group_mask] == 0:\n                candidate = tuple(sorted((subset_members[group_mask],) + best_partition(mask ^ group_mask)))\n\n                if (\n                    best is None\n                    or len(candidate) > len(best)\n                    or (len(candidate) == len(best) and candidate < best)\n                ):\n                    best = candidate\n\n            if submask == 0:\n                break\n            submask = (submask - 1) & remainder\n\n        return best if best is not None else ()\n\n    transfers: list[Transfer] = []\n\n    for group in best_partition(full_mask):\n        remaining = {member_id: balances[member_id] for member_id in group}\n\n        while True:\n            debtors = sorted(member_id for member_id, balance in remaining.items() if balance < 0)\n            creditors = sorted(member_id for member_id, balance in remaining.items() if balance > 0)\n\n            if not debtors:\n                break\n\n            debtor = debtors[0]\n            creditor = creditors[0]\n            cents = min(-remaining[debtor], remaining[creditor])\n\n            transfers.append(Transfer(debtor, creditor, cents))\n            remaining[debtor] += cents\n            remaining[creditor] -= cents\n\n    return tuple(sorted(transfers, key=lambda transfer: (\n        transfer.from_member_id,\n        transfer.to_member_id,\n        transfer.cents,\n    )))\n",
+     "ok": true,
+     "passed": 10,
+     "failed": 0,
+     "out": "..........                                                               [100%]\n10 passed in 0.12s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "append_action": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def append_action(trip: Trip, action: Action) -> Trip:\n    return dataclasses.replace(trip, actions=trip.actions + (action,))\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "remove_last_action": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def remove_last_action(trip: Trip) -> Trip:\n    if not trip.actions:\n        raise ValueError(\"empty history\")\n    return dataclasses.replace(trip, actions=trip.actions[:-1])\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "record_expense": {
+   "kind": "service",
+   "first": false,
+   "ok": true,
+   "passed": 7,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def record_expense(trip_id: str, expense: Expense):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    for validator, argument in (\n        (validate_trip_configuration, trip),\n        (validate_expense, (trip, expense)),\n        (validate_new_action, (trip, ExpenseAction(expense))),\n    ):\n        if validator is validate_trip_configuration:\n            message = validator(argument)\n        else:\n            message = validator(*argument)\n        if message is not None:\n            return (yield from throw(ValidationError(message)))\n\n    updated_trip = append_action(trip, ExpenseAction(expense))\n    repository.save_trip(updated_trip)\n    return updated_trip\n",
+     "ok": false,
+     "passed": 6,
+     "failed": 1,
+     "out": "               [100%]\n=================================== FAILURES ===================================\n_____ test_record_expense_rejects_amount_split_that_does_not_total_expense _____\ntest_it.py:215: in test_record_expense_rejects_amount_split_that_does_not_total_expense\n    _run(repository, trip.trip_id, expense)\ntest_it.py:49: in _run\n    return run(supply(repository)(record_expense)(trip_id, expense))\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:89: in decorator\n    ability_or_error = effect.send(value)\napp/logic.py:465: in record_expense\n    message = validator(*argument)\napp/logic.py:65: in validate_expense\n    if not expense.expense_id or not expense.description:\nE   AttributeError: 'Trip' object has no attribute 'expense_id'\n=========================== short test summary info ============================\nFAILED test_it.py::test_record_expense_rejects_amount_split_that_does_not_total_expense\n1 failed, 6 passed in 0.21s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def record_expense(trip_id: str, expense: Expense):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    message = validate_trip_configuration(trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    message = validate_expense(expense, trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    action = ExpenseAction(expense)\n    message = validate_new_action(trip, action)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    updated_trip = append_action(trip, action)\n    repository.save_trip(updated_trip)\n    return updated_trip\n",
+     "ok": true,
+     "passed": 7,
+     "failed": 0,
+     "out": ".......                                                                  [100%]\n7 passed in 0.12s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "record_payment": {
+   "kind": "service",
+   "first": false,
+   "ok": true,
+   "passed": 7,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def record_payment(trip_id: str, payment: Payment):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    for validation in (\n        validate_trip_configuration(trip),\n        validate_payment(trip, payment),\n        validate_new_action(trip, PaymentAction(payment)),\n    ):\n        if validation is not None:\n            return (yield from throw(ValidationError(validation)))\n\n    updated_trip = append_action(trip, PaymentAction(payment))\n    repository.save_trip(updated_trip)\n    return updated_trip\n",
+     "ok": false,
+     "passed": 2,
+     "failed": 5,
+     "out": "ord\n    return run(supply(repo)(record_payment)(trip_id, payment))\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:89: in decorator\n    ability_or_error = effect.send(value)\napp/logic.py:484: in record_payment\n    validate_payment(trip, payment),\napp/logic.py:112: in validate_payment\n    if not payment.payment_id or not payment.note:\nE   AttributeError: 'Trip' object has no attribute 'payment_id'\n=========================== short test summary info ============================\nFAILED test_it.py::test_record_payment_appends_saves_and_returns_updated_trip\nFAILED test_it.py::test_record_payment_rejects_id_used_by_existing_expense_or_payment[expense]\nFAILED test_it.py::test_record_payment_rejects_id_used_by_existing_expense_or_payment[payment]\nFAILED test_it.py::test_record_payment_rejects_zero_cent_payment - AttributeE...\nFAILED test_it.py::test_record_payment_validates_payment_before_duplicate_action_id\n5 failed, 2 passed in 0.41s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def record_payment(trip_id: str, payment: Payment):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    message = validate_trip_configuration(trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    message = validate_payment(payment, trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    action = PaymentAction(payment)\n    message = validate_new_action(trip, action)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    updated_trip = append_action(trip, action)\n    repository.save_trip(updated_trip)\n    return updated_trip\n",
+     "ok": true,
+     "passed": 7,
+     "failed": 0,
+     "out": ".......                                                                  [100%]\n7 passed in 0.16s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "close_trip": {
+   "kind": "service",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def close_trip(trip_id: str):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    message = validate_trip_configuration(trip)\n    if message is not None:\n        return (yield from throw(ValidationError(message)))\n\n    closed_trip = dataclasses.replace(trip, closed=True)\n    repository.save_trip(closed_trip)\n    return closed_trip\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "undo_last_action": {
+   "kind": "service",
+   "first": true,
+   "ok": true,
+   "passed": 6,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def undo_last_action(trip_id: str):\n    repository = yield from need(TripRepository)\n    trip = repository.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    if not trip.actions:\n        return (yield from throw(EmptyHistoryError(trip_id)))\n\n    updated_trip = remove_last_action(trip)\n    repository.save_trip(updated_trip)\n    return updated_trip\n",
+     "ok": true,
+     "passed": 6,
+     "failed": 0,
+     "out": "......                                                                   [100%]\n6 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "member_statement": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def member_statement(trip: Trip, member_id: str) -> Statement:\n    if member_id not in {member.member_id for member in trip.members}:\n        raise ValueError(\"unknown member\")\n\n    lines = []\n\n    for action in trip.actions:\n        if isinstance(action, ExpenseAction):\n            expense = action.expense\n            allocations = allocate_expense_base_cents(expense, trip)\n            allocation_by_member = {\n                allocation.member_id: allocation.cents\n                for allocation in allocations\n            }\n            is_payer = expense.payer_id == member_id\n            is_participant = member_id in allocation_by_member\n\n            if is_payer or is_participant:\n                paid_cents = sum(\n                    allocation.cents for allocation in allocations\n                ) if is_payer else 0\n                lines.append(\n                    StatementLine(\n                        action_id=expense.expense_id,\n                        kind=\"expense\",\n                        description=expense.description,\n                        paid_cents=paid_cents,\n                        owed_cents=allocation_by_member.get(member_id, 0),\n                        sent_cents=0,\n                        received_cents=0,\n                    )\n                )\n\n        elif isinstance(action, PaymentAction):\n            payment = action.payment\n            is_sender = payment.from_member_id == member_id\n            is_recipient = payment.to_member_id == member_id\n\n            if is_sender or is_recipient:\n                lines.append(\n                    StatementLine(\n                        action_id=payment.payment_id,\n                        kind=\"payment\",\n                        description=payment.note,\n                        paid_cents=0,\n                        owed_cents=0,\n                        sent_cents=payment.amount_cents if is_sender else 0,\n                        received_cents=payment.amount_cents if is_recipient else 0,\n                    )\n                )\n\n    paid_cents = sum(line.paid_cents for line in lines)\n    owed_cents = sum(line.owed_cents for line in lines)\n    sent_cents = sum(line.sent_cents for line in lines)\n    received_cents = sum(line.received_cents for line in lines)\n\n    return Statement(\n        member_id=member_id,\n        paid_cents=paid_cents,\n        owed_cents=owed_cents,\n        sent_cents=sent_cents,\n        received_cents=received_cents,\n        balance_cents=paid_cents - owed_cents + sent_cents - received_cents,\n        lines=tuple(lines),\n    )\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.12s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "compute_balances": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 6,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def compute_balances(trip: Trip) -> dict[str, int]:\n    balances = {member.member_id: 0 for member in trip.members}\n\n    for action in trip.actions:\n        if isinstance(action, ExpenseAction):\n            deltas = expense_deltas(action.expense, trip)\n        else:\n            deltas = payment_deltas(action.payment)\n\n        for member_id, delta in deltas.items():\n            balances[member_id] += delta\n\n    return balances\n",
+     "ok": true,
+     "passed": 6,
+     "failed": 0,
+     "out": "......                                                                   [100%]\n6 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  }
+ },
+ "acceptance": {
+  "ok": true,
+  "passed": 6,
+  "failed": 0,
+  "out": "......                                                                   [100%]\n6 passed in 0.13s\n"
+ }
+}

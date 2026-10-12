@@ -181,7 +181,7 @@ def shared(d) -> str:
 
 def callees(d, f) -> str:
     by = {g["name"]: g for g in d["functions"]}
-    lines = [f"- {by[c]['contract']}" for c in f.get("calls", []) if c in by]
+    lines = [f"- {by[c]['signature']}: {by[c]['contract']}" for c in f.get("calls", []) if c in by]
     return "\n".join(lines) or "(none)"
 
 
@@ -252,7 +252,8 @@ from independently written functions, so test behaviour the specs pin down.
 """ + "\n".join(f"- {s}" for s in d["acceptance"]) + """
 
 Imports: `from app.domain import *`, `from app.abilities import *`, `from app.fakes import *`,
-`from app.logic import *`, `from stateless import run, supply`. Return one ```python block.""",
+`from app.logic import *`, `from stateless import run, supply`. Run a service with
+`run(supply(fake1, fake2)(service_fn)(args))`. Return one ```python block.""",
                      f"{prog}:acceptance")
         out["__acceptance__"] = code_block(reply)
         save(prog, "tests.json", out)

@@ -1,0 +1,272 @@
+{
+ "impl": {
+  "clamp_ease": "def clamp_ease(ease: float) -> float:\n    return max(MIN_EASE, ease)\n",
+  "overdue_priority": "def overdue_priority(card: Card, today: date) -> float:\n    overdue_days = (today - card.due_date).days\n    interval_days = max(card.interval_days, 1)\n    return overdue_days / interval_days\n",
+  "is_buried": "def is_buried(card: Card, today: date) -> bool:\n    if card.buried_until is None:\n        return False\n    return card.buried_until >= today\n",
+  "is_due_review": "def is_due_review(card: Card, today: date) -> bool:\n    if card.state != CardState.REVIEW:\n        return False\n    if is_buried(card, today):\n        return False\n    return card.due_date <= today\n",
+  "is_due_learning": "def is_due_learning(card: Card, today: date) -> bool:\n    if card.state != CardState.LEARNING:\n        return False\n    if is_buried(card, today):\n        return False\n    return card.due_date <= today\n",
+  "is_due_new": "def is_due_new(card: Card, today: date) -> bool:\n    if card.state != CardState.NEW:\n        return False\n    if is_buried(card, today):\n        return False\n    return card.due_date <= today\n",
+  "select_study_queue": "def select_study_queue(cards: tuple[Card, ...], today: date, settings: SchedulerSettings) -> StudyQueue:\n    learning_cards = tuple(\n        card for card in cards\n        if is_due_learning(card, today)\n    )\n    learning_cards = sorted(\n        learning_cards,\n        key=lambda card: (card.due_date, card.id)\n    )\n\n    review_cards = tuple(\n        card for card in cards\n        if is_due_review(card, today)\n    )\n    review_cards = sorted(\n        review_cards,\n        key=lambda card: (-overdue_priority(card, today), card.due_date, card.id)\n    )\n    review_cards = review_cards[:settings.daily_review_limit]\n\n    new_cards = tuple(\n        card for card in cards\n        if is_due_new(card, today)\n    )\n    new_cards = sorted(\n        new_cards,\n        key=lambda card: (card.due_date, card.id)\n    )\n    new_cards = new_cards[:settings.daily_new_limit]\n\n    return StudyQueue(learning_cards, review_cards, new_cards)\n",
+  "learning_delay_days": "def learning_delay_days(settings: SchedulerSettings, step_index: int, hard: bool) -> int:\n    # Step 1: Form effective steps from settings.learning_steps_days\n    learning_steps = tuple(max(1, step) for step in settings.learning_steps_days)\n    if not learning_steps:\n        learning_steps = (1,)\n\n    # Step 2: Clamp step_index into the valid effective-step index range\n    max_index = len(learning_steps) - 1\n    clamped_index = max(0, min(step_index, max_index))\n    delay = learning_steps[clamped_index]\n\n    # Step 3: Adjust delay based on hard flag\n    if hard:\n        delay = max(1, math.ceil(delay * 1.5))\n\n    return delay\n",
+  "schedule_new_or_learning": "def schedule_new_or_learning(card: Card, grade: Grade, today: date, settings: SchedulerSettings) -> Card:\n    if card.state not in (CardState.NEW, CardState.LEARNING):\n        raise DomainError(\"Card must be in NEW or LEARNING state\")\n\n    if grade == Grade.EASY:\n        interval_days = max(settings.easy_interval_days, 1)\n        due_date = today + timedelta(days=interval_days)\n        return dataclasses.replace(\n            card,\n            state=CardState.REVIEW,\n            interval_days=interval_days,\n            due_date=due_date,\n            learning_step=0,\n            relearning_interval_days=0,\n        )\n\n    elif grade == Grade.AGAIN:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=False))\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=0,\n                due_date=today + timedelta(days=learning_delay_days(settings, 0, hard=False)),\n                relearning_interval_days=0,\n            )\n\n    elif grade == Grade.HARD:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=True))\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            current_step = card.learning_step\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=current_step,\n                due_date=today + timedelta(days=learning_delay_days(settings, current_step, hard=True)),\n                relearning_interval_days=0,\n            )\n\n    elif grade == Grade.GOOD:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=False))\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            current_step = card.learning_step\n            next_step = current_step + 1\n            if next_step < len(settings.learning_steps_days):\n                delay_days = learning_delay_days(settings, next_step, hard=False)\n                return dataclasses.replace(\n                    card,\n                    state=CardState.LEARNING,\n                    learning_step=next_step,\n                    due_date=today + timedelta(days=delay_days),\n                    relearning_interval_days=0,\n                )\n            else:\n                interval_days = max(\n                    settings.minimum_interval_days,\n                    card.relearning_interval_days if card.relearning_interval_days > 0 else settings.graduating_interval_days\n                )\n                due_date = today + timedelta(days=interval_days)\n                return dataclasses.replace(\n                    card,\n                    state=CardState.REVIEW,\n                    interval_days=interval_days,\n                    due_date=due_date,\n                    learning_step=0,\n                    relearning_interval_days=0,\n                )\n\n    else:\n        raise DomainError(\"Unknown grade\")\n",
+  "schedule_review": "def schedule_review(card: Card, grade: Grade, today: date, settings: SchedulerSettings) -> Card:\n    if card.state != CardState.REVIEW:\n        raise DomainError(\"Card must be in REVIEW state for scheduling a review.\")\n\n    old_interval = max(card.interval_days, 1)\n    new_card = dataclasses.replace(card)\n\n    if grade == Grade.AGAIN:\n        new_card = dataclasses.replace(new_card,\n                                       state=CardState.LEARNING,\n                                       lapses=new_card.lapses + 1,\n                                       ease=clamp_ease(new_card.ease - 0.20),\n                                       relearning_interval_days=old_interval,\n                                       learning_step=0,\n                                       due_date=today + timedelta(days=learning_delay_days(settings, 0, False)))\n        new_card = dataclasses.replace(new_card, interval_days=old_interval)\n\n    elif grade == Grade.HARD:\n        new_ease = clamp_ease(new_card.ease - 0.15)\n        new_interval = max(settings.minimum_interval_days, old_interval + 1, math.ceil(old_interval * 1.2))\n        new_card = dataclasses.replace(new_card,\n                                       ease=new_ease,\n                                       interval_days=new_interval,\n                                       due_date=today + timedelta(days=new_interval))\n\n    elif grade == Grade.GOOD:\n        new_interval = max(settings.minimum_interval_days, round(old_interval * new_card.ease))\n        new_card = dataclasses.replace(new_card,\n                                       interval_days=new_interval,\n                                       due_date=today + timedelta(days=new_interval))\n\n    elif grade == Grade.EASY:\n        new_ease = clamp_ease(new_card.ease + 0.15)\n        new_interval = max(settings.minimum_interval_days, round(old_interval * new_ease * 1.3))\n        new_card = dataclasses.replace(new_card,\n                                       ease=new_ease,\n                                       interval_days=new_interval,\n                                       due_date=today + timedelta(days=new_interval))\n\n    return dataclasses.replace(new_card,\n                               state=CardState.REVIEW if grade != Grade.AGAIN else CardState.LEARNING,\n                               due_date=new_card.due_date,\n                               interval_days=new_card.interval_days,\n                               history=new_card.history)\n",
+  "is_leech": "def is_leech(card: Card, settings: SchedulerSettings) -> bool:\n    if settings.leech_threshold <= 0:\n        return False\n    return card.lapses >= settings.leech_threshold\n",
+  "suspend_leech": "def suspend_leech(card: Card, settings: SchedulerSettings) -> Card:\n    if not is_leech(card, settings):\n        return card\n    return dataclasses.replace(card, state=CardState.SUSPENDED)\n",
+  "grade_card": "def grade_card(card: Card, grade: Grade, reviewed_at: datetime, seconds: int, settings: SchedulerSettings) -> Card:\n    if card.state == CardState.SUSPENDED:\n        return card\n\n    today = reviewed_at.date()\n    original_state = card.state\n    original_id = card.id\n    original_history = card.history\n\n    if original_state in (CardState.NEW, CardState.LEARNING):\n        scheduled_card = schedule_new_or_learning(card, grade, today, settings)\n    elif original_state == CardState.REVIEW:\n        scheduled_card = schedule_review(card, grade, today, settings)\n    else:\n        raise DomainError(f\"Invalid card state: {original_state}\")\n\n    leech_suspended_card = suspend_leech(scheduled_card, settings)\n\n    new_history = original_history + (\n        ReviewEvent(\n            card_id=original_id,\n            reviewed_at=reviewed_at,\n            grade=grade,\n            seconds=max(seconds, 0),\n            state_before=original_state\n        ),\n    )\n\n    return dataclasses.replace(\n        leech_suspended_card,\n        history=new_history\n    )\n"
+ },
+ "rows": {
+  "clamp_ease": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def clamp_ease(ease: float) -> float:\n    return max(MIN_EASE, ease)\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.09s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "overdue_priority": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def overdue_priority(card: Card, today: date) -> float:\n    overdue_days = (today - card.due_date).days\n    interval_days = max(card.interval_days, 1)\n    return overdue_days / interval_days\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "is_buried": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def is_buried(card: Card, today: date) -> bool:\n    if card.buried_until is None:\n        return False\n    return card.buried_until >= today\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "is_due_review": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 7,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def is_due_review(card: Card, today: date) -> bool:\n    if card.state != CardState.REVIEW:\n        return False\n    if is_buried(card, today):\n        return False\n    return card.due_date <= today\n",
+     "ok": true,
+     "passed": 7,
+     "failed": 0,
+     "out": ".......                                                                  [100%]\n7 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "is_due_learning": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 6,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def is_due_learning(card: Card, today: date) -> bool:\n    if card.state != CardState.LEARNING:\n        return False\n    if is_buried(card, today):\n        return False\n    return card.due_date <= today\n",
+     "ok": true,
+     "passed": 6,
+     "failed": 0,
+     "out": "......                                                                   [100%]\n6 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "is_due_new": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 7,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def is_due_new(card: Card, today: date) -> bool:\n    if card.state != CardState.NEW:\n        return False\n    if is_buried(card, today):\n        return False\n    return card.due_date <= today\n",
+     "ok": true,
+     "passed": 7,
+     "failed": 0,
+     "out": ".......                                                                  [100%]\n7 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "select_study_queue": {
+   "kind": "pure",
+   "first": false,
+   "ok": false,
+   "passed": 1,
+   "failed": 4,
+   "tries": [
+    {
+     "src": "def select_study_queue(cards: tuple[Card, ...], today: date, settings: SchedulerSettings) -> StudyQueue:\n    learning_cards = tuple(\n        card for card in cards\n        if is_due_learning(card, today)\n    )\n    learning_cards = sorted(\n        learning_cards,\n        key=lambda card: (card.due_date, card.id)\n    )\n\n    review_cards = tuple(\n        card for card in cards\n        if is_due_review(card, today)\n    )\n    review_cards = sorted(\n        review_cards,\n        key=lambda card: (-overdue_priority(card, today), card.due_date, card.id)\n    )\n    review_cards = review_cards[:settings.daily_review_limit]\n\n    new_cards = tuple(\n        card for card in cards\n        if is_due_new(card, today)\n    )\n    new_cards = sorted(\n        new_cards,\n        key=lambda card: (card.due_date, card.id)\n    )\n    new_cards = new\n",
+     "ok": false,
+     "passed": 0,
+     "failed": 5,
+     "out": "test_select_study_queue_review_limit_is_clamped_to_zero_when_negative _____\ntest_it.py:67: in test_select_study_queue_review_limit_is_clamped_to_zero_when_negative\n    queue = select_study_queue(\napp/logic.py:75: in select_study_queue\n    new_cards = new\nE   NameError: name 'new' is not defined\n______________ test_select_study_queue_sorts_and_limits_new_cards ______________\ntest_it.py:85: in test_select_study_queue_sorts_and_limits_new_cards\n    unlimited_queue = select_study_queue(\napp/logic.py:75: in select_study_queue\n    new_cards = new\nE   NameError: name 'new' is not defined\n_ test_select_study_queue_negative_new_limit_returns_no_new_cards_and_does_not_mutate_cards _\ntest_it.py:108: in test_select_study_queue_negative_new_limit_returns_no_new_cards_and_does_not_mutate_cards\n    queue = select_study_queue(\napp/logic.py:75: in select_study_queue\n    new_cards = new\nE   NameError: name 'new' is not defined\n=========================== short test summary info ============================\nFAILED test_it.py::test_select_study_queue_includes_all_due_learning_cards_in_due_date_and_id_order\nFAILED test_it.py::test_select_study_queue_orders_reviews_by_overdue_priority_then_due_date_and_id\nFAILED test_it.py::test_select_study_queue_review_limit_is_clamped_to_zero_when_negative\nFAILED test_it.py::test_select_study_queue_sorts_and_limits_new_cards - NameE...\nFAILED test_it.py::test_select_study_queue_negative_new_limit_returns_no_new_cards_and_does_not_mutate_cards\n5 failed in 0.19s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def select_study_queue(cards: tuple[Card, ...], today: date, settings: SchedulerSettings) -> StudyQueue:\n    learning_cards = tuple(\n        card for card in cards\n        if is_due_learning(card, today)\n    )\n    learning_cards = sorted(\n        learning_cards,\n        key=lambda card: (card.due_date, card.id)\n    )\n\n    review_cards = tuple(\n        card for card in cards\n        if is_due_review(card, today)\n    )\n    review_cards = sorted(\n        review_cards,\n        key=lambda card: (-overdue_priority(card, today), card.due_date, card.id)\n    )\n    review_cards = review_cards[:settings.daily_review_limit]\n\n    new_cards = tuple(\n        card for card in cards\n        if is_due_new(card, today)\n    )\n    new_cards = sorted(\n        new_cards,\n        key=lambda card: (card.due_date, card.id)\n    )\n    new_cards = new_cards[:settings.daily_new_limit]\n\n    return StudyQueue(learning_cards, review_cards, new_cards)\n",
+     "ok": false,
+     "passed": 1,
+     "failed": 4,
+     "out": "ws_by_overdue_priority_then_due_date_and_id\n    assert queue.learning_cards == ()\nE   assert [] == ()\nE     \nE     Use -v to get more diff\n____ test_select_study_queue_review_limit_is_clamped_to_zero_when_negative _____\ntest_it.py:73: in test_select_study_queue_review_limit_is_clamped_to_zero_when_negative\n    assert queue.review_cards == ()\nE   AssertionError: assert [Card(id='one..., history=())] == ()\nE     \nE     Left contains one more item: Card(id='one', note_id='note-one', state=<CardState.REVIEW: 'review'>, ease=2.5, interval_days=10, due_date=datetime.date(2026, 1, 9), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())\nE     Use -v to get more diff\n_ test_select_study_queue_negative_new_limit_returns_no_new_cards_and_does_not_mutate_cards _\ntest_it.py:114: in test_select_study_queue_negative_new_limit_returns_no_new_cards_and_does_not_mutate_cards\n    assert queue.new_cards == ()\nE   assert [] == ()\nE     \nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_it.py::test_select_study_queue_includes_all_due_learning_cards_in_due_date_and_id_order\nFAILED test_it.py::test_select_study_queue_orders_reviews_by_overdue_priority_then_due_date_and_id\nFAILED test_it.py::test_select_study_queue_review_limit_is_clamped_to_zero_when_negative\nFAILED test_it.py::test_select_study_queue_negative_new_limit_returns_no_new_cards_and_does_not_mutate_cards\n4 failed, 1 passed in 0.14s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "learning_delay_days": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def learning_delay_days(settings: SchedulerSettings, step_index: int, hard: bool) -> int:\n    # Step 1: Form effective steps from settings.learning_steps_days\n    learning_steps = tuple(max(1, step) for step in settings.learning_steps_days)\n    if not learning_steps:\n        learning_steps = (1,)\n\n    # Step 2: Clamp step_index into the valid effective-step index range\n    max_index = len(learning_steps) - 1\n    clamped_index = max(0, min(step_index, max_index))\n    delay = learning_steps[clamped_index]\n\n    # Step 3: Adjust delay based on hard flag\n    if hard:\n        delay = max(1, math.ceil(delay * 1.5))\n\n    return delay\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "schedule_new_or_learning": {
+   "kind": "pure",
+   "first": false,
+   "ok": false,
+   "passed": 7,
+   "failed": 2,
+   "tries": [
+    {
+     "src": "def schedule_new_or_learning(card: Card, grade: Grade, today: date, settings: SchedulerSettings) -> Card:\n    if card.state not in (CardState.NEW, CardState.LEARNING):\n        raise DomainError(\"Card must be in NEW or LEARNING state\")\n\n    if grade == Grade.EASY:\n        interval_days = max(settings.easy_interval_days, 1)\n        due_date = today + timedelta(days=interval_days)\n        return replace(\n            card,\n            state=CardState.REVIEW,\n            interval_days=interval_days,\n            due_date=due_date,\n            learning_step=0,\n            relearning_interval_days=0,\n        )\n\n    elif grade == Grade.AGAIN:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=False))\n            return replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            return replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=0,\n                due_date=today + timedelta(days=learning_delay_days(settings, 0, hard=False)),\n                relearn_interval_days=0,\n            )\n\n    elif grade == Grade.HARD:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=True))\n            return replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            current_step = card.learning_step\n            return replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=current_step,\n                due_date=today + timedelta(days=learning_delay_days(settings, current_step, hard=True)),\n                relearning_interval_days=0,\n            )\n\n    elif grade == Grade.GOOD:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=False))\n            return replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            current_step = card.learning_step\n            next_step = current_step + 1\n            if next_step < len(settings.learning_steps_days):\n                delay_days = learning_delay_days(settings, next_step, hard=False)\n                return replace(\n                    card,\n                    state=CardState.LEARNING,\n                    learning_step=next_step,\n                    due_date=today + timedelta(days=delay_days),\n                    relearning_interval_days=0,\n                )\n            else:\n                interval_days = max(\n                    settings.minimum_interval_days,\n                    card.relearning_interval_days if card.relearning_interval_days > 0 else settings.graduating_interval_days\n                )\n                due_date = today + timedelta(days=interval_days)\n                return replace(\n                    card,\n                    state=CardState.REVIEW,\n                    interval_days=interval_days,\n                    due_date=due_date,\n                    learning_step=0,\n                    relearning_interval_days=0,\n                )\n\n    else:\n        raise DomainError(\"Unknown grade\")\n",
+     "ok": false,
+     "passed": 0,
+     "failed": 9,
+     "out": "_minimum\n    result = schedule_new_or_learning(card, Grade.GOOD, today, settings)\napp/logic.py:173: in schedule_new_or_learning\n    return replace(\nE   NameError: name 'replace' is not defined\n_ test_graduation_uses_positive_relearning_interval_subject_to_minimum[6-3-6] __\ntest_it.py:186: in test_graduation_uses_positive_relearning_interval_subject_to_minimum\n    result = schedule_new_or_learning(card, Grade.GOOD, today, settings)\napp/logic.py:173: in schedule_new_or_learning\n    return replace(\nE   NameError: name 'replace' is not defined\n=========================== short test summary info ============================\nFAILED test_it.py::test_new_good_starts_learning_at_first_step_and_preserves_required_fields\nFAILED test_it.py::test_learning_good_advances_then_graduates_after_last_step\nFAILED test_it.py::test_again_resets_new_and_learning_cards_to_first_learning_step_without_resetting_intervals\nFAILED test_it.py::test_hard_treats_new_as_again_and_keeps_learning_card_at_clamped_step\nFAILED test_it.py::test_easy_immediately_graduates_with_at_least_one_day_interval[CardState.NEW]\nFAILED test_it.py::test_easy_immediately_graduates_with_at_least_one_day_interval[CardState.LEARNING]\nFAILED test_it.py::test_graduation_uses_positive_relearning_interval_subject_to_minimum[0-3-4]\nFAILED test_it.py::test_graduation_uses_positive_relearning_interval_subject_to_minimum[2-3-3]\nFAILED test_it.py::test_graduation_uses_positive_relearning_interval_subject_to_minimum[6-3-6]\n9 failed in 0.23s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def schedule_new_or_learning(card: Card, grade: Grade, today: date, settings: SchedulerSettings) -> Card:\n    if card.state not in (CardState.NEW, CardState.LEARNING):\n        raise DomainError(\"Card must be in NEW or LEARNING state\")\n\n    if grade == Grade.EASY:\n        interval_days = max(settings.easy_interval_days, 1)\n        due_date = today + timedelta(days=interval_days)\n        return dataclasses.replace(\n            card,\n            state=CardState.REVIEW,\n            interval_days=interval_days,\n            due_date=due_date,\n            learning_step=0,\n            relearning_interval_days=0,\n        )\n\n    elif grade == Grade.AGAIN:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=False))\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=0,\n                due_date=today + timedelta(days=learning_delay_days(settings, 0, hard=False)),\n                relearning_interval_days=0,\n            )\n\n    elif grade == Grade.HARD:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=True))\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            current_step = card.learning_step\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=current_step,\n                due_date=today + timedelta(days=learning_delay_days(settings, current_step, hard=True)),\n                relearning_interval_days=0,\n            )\n\n    elif grade == Grade.GOOD:\n        if card.state == CardState.NEW:\n            learning_step = 0\n            due_date = today + timedelta(days=learning_delay_days(settings, learning_step, hard=False))\n            return dataclasses.replace(\n                card,\n                state=CardState.LEARNING,\n                learning_step=learning_step,\n                due_date=due_date,\n                relearning_interval_days=0,\n            )\n        else:  # LEARNING\n            current_step = card.learning_step\n            next_step = current_step + 1\n            if next_step < len(settings.learning_steps_days):\n                delay_days = learning_delay_days(settings, next_step, hard=False)\n                return dataclasses.replace(\n                    card,\n                    state=CardState.LEARNING,\n                    learning_step=next_step,\n                    due_date=today + timedelta(days=delay_days),\n                    relearning_interval_days=0,\n                )\n            else:\n                interval_days = max(\n                    settings.minimum_interval_days,\n                    card.relearning_interval_days if card.relearning_interval_days > 0 else settings.graduating_interval_days\n                )\n                due_date = today + timedelta(days=interval_days)\n                return dataclasses.replace(\n                    card,\n                    state=CardState.REVIEW,\n                    interval_days=interval_days,\n                    due_date=due_date,\n                    learning_step=0,\n                    relearning_interval_days=0,\n                )\n\n    else:\n        raise DomainError(\"Unknown grade\")\n",
+     "ok": false,
+     "passed": 7,
+     "failed": 2,
+     "out": "ote_id='note-1', state=<CardState.LEARNING: 'learning'>, ease=2.5, interval_days=9, due_date=dateti...datetime.datetime(2025, 12, 31, 10, 0), grade=<Grade.GOOD: 'good'>, seconds=12, state_before=<CardState.NEW: 'new'>),)).relearning_interval_days\n____ test_hard_treats_new_as_again_and_keeps_learning_card_at_clamped_step _____\ntest_it.py:120: in test_hard_treats_new_as_again_and_keeps_learning_card_at_clamped_step\n    assert hard_new.due_date == today + timedelta(\nE   AssertionError: assert datetime.date(2026, 1, 3) == (datetime.date(2026, 1, 1) + datetime.timedelta(days=1))\nE    +  where datetime.date(2026, 1, 3) = Card(id='card-1', note_id='note-1', state=<CardState.LEARNING: 'learning'>, ease=2.5, interval_days=0, due_date=dateti...datetime.datetime(2025, 12, 31, 10, 0), grade=<Grade.GOOD: 'good'>, seconds=12, state_before=<CardState.NEW: 'new'>),)).due_date\nE    +  and   datetime.timedelta(days=1) = timedelta(days=1)\nE    +    where 1 = learning_delay_days(SchedulerSettings(learning_steps_days=(1, 3), graduating_interval_days=4, easy_interval_days=7, lapse_multiplier=0.5, minimum_interval_days=1, leech_threshold=8, daily_new_limit=20, daily_review_limit=200), 0, False)\n=========================== short test summary info ============================\nFAILED test_it.py::test_again_resets_new_and_learning_cards_to_first_learning_step_without_resetting_intervals\nFAILED test_it.py::test_hard_treats_new_as_again_and_keeps_learning_card_at_clamped_step\n2 failed, 7 passed in 0.15s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "schedule_review": {
+   "kind": "pure",
+   "first": false,
+   "ok": true,
+   "passed": 6,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def schedule_review(card: Card, grade: Grade, today: date, settings: SchedulerSettings) -> Card:\n    if card.state != CardState.REVIEW:\n        raise DomainError(\"Card must be in REVIEW state for scheduling a review.\")\n\n    old_interval = max(card.interval_days, 1)\n    new_card = replace(card)\n\n    if grade == Grade.AGAIN:\n        new_card = replace(new_card,\n                           state=CardState.LEARNING,\n                           lapses=new_card.lapses + 1,\n                           ease=clamp_ease(new_card.ease - 0.20),\n                           relearning_interval_days=old_interval,\n                           learning_step=0,\n                           due_date=today + timedelta(days=learning_delay_days(settings, 0, False)))\n        new_card = replace(new_card, interval_days=old_interval)\n\n    elif grade == Grade.HARD:\n        new_ease = clamp_ease(new_card.ease - 0.15)\n        new_interval = max(settings.minimum_interval_days, old_interval + 1, ceil(old_interval * 1.2))\n        new_card = replace(new_card,\n                           ease=new_ease,\n                           interval_days=new_interval,\n                           due_date=today + timedelta(days=new_interval))\n\n    elif grade == Grade.GOOD:\n        new_interval = max(settings.minimum_interval_days, round(old_interval * new_card.ease))\n        new_card = replace(new_card,\n                           interval_days=new_interval,\n                           due_date=today + timedelta(days=new_interval))\n\n    elif grade == Grade.EASY:\n        new_ease = clamp_ease(new_card.ease + 0.15)\n        new_interval = max(settings.minimum_interval_days, round(old_interval * new_ease * 1.3))\n        new_card = replace(new_card,\n                           ease=new_ease,\n                           interval_days=new_interval,\n                           due_date=today + timedelta(days=new_interval))\n\n    return replace(new_card,\n                   state=CardState.REVIEW if grade not in (Grade.AGAIN,) else CardState.LEARNING,\n                   due_date=new_card.due_date,\n                   interval_days=new_card.interval_days,\n                   history=new_card.history)\n",
+     "ok": false,
+     "passed": 0,
+     "failed": 6,
+     "out": "result = schedule_review(card, Grade.GOOD, today, SchedulerSettings())\napp/logic.py:180: in schedule_review\n    new_card = replace(card)\nE   NameError: name 'replace' is not defined\n_________ test_schedule_review_good_uses_old_interval_of_at_least_one __________\ntest_it.py:111: in test_schedule_review_good_uses_old_interval_of_at_least_one\n    result = schedule_review(card, Grade.GOOD, today, settings)\napp/logic.py:180: in schedule_review\n    new_card = replace(card)\nE   NameError: name 'replace' is not defined\n__ test_schedule_review_easy_increases_ease_and_uses_scaled_rounded_interval ___\ntest_it.py:121: in test_schedule_review_easy_increases_ease_and_uses_scaled_rounded_interval\n    result = schedule_review(card, Grade.EASY, today, SchedulerSettings())\napp/logic.py:180: in schedule_review\n    new_card = replace(card)\nE   NameError: name 'replace' is not defined\n=========================== short test summary info ============================\nFAILED test_it.py::test_schedule_review_again_moves_to_learning_and_records_relearning_interval\nFAILED test_it.py::test_schedule_review_hard_uses_ceiling_growth_and_reduces_ease\nFAILED test_it.py::test_schedule_review_hard_respects_minimum_interval_and_ease_floor\nFAILED test_it.py::test_schedule_review_good_uses_python_round_semantics_and_keeps_ease\nFAILED test_it.py::test_schedule_review_good_uses_old_interval_of_at_least_one\nFAILED test_it.py::test_schedule_review_easy_increases_ease_and_uses_scaled_rounded_interval\n6 failed in 0.18s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def schedule_review(card: Card, grade: Grade, today: date, settings: SchedulerSettings) -> Card:\n    if card.state != CardState.REVIEW:\n        raise DomainError(\"Card must be in REVIEW state for scheduling a review.\")\n\n    old_interval = max(card.interval_days, 1)\n    new_card = dataclasses.replace(card)\n\n    if grade == Grade.AGAIN:\n        new_card = dataclasses.replace(new_card,\n                                       state=CardState.LEARNING,\n                                       lapses=new_card.lapses + 1,\n                                       ease=clamp_ease(new_card.ease - 0.20),\n                                       relearning_interval_days=old_interval,\n                                       learning_step=0,\n                                       due_date=today + timedelta(days=learning_delay_days(settings, 0, False)))\n        new_card = dataclasses.replace(new_card, interval_days=old_interval)\n\n    elif grade == Grade.HARD:\n        new_ease = clamp_ease(new_card.ease - 0.15)\n        new_interval = max(settings.minimum_interval_days, old_interval + 1, math.ceil(old_interval * 1.2))\n        new_card = dataclasses.replace(new_card,\n                                       ease=new_ease,\n                                       interval_days=new_interval,\n                                       due_date=today + timedelta(days=new_interval))\n\n    elif grade == Grade.GOOD:\n        new_interval = max(settings.minimum_interval_days, round(old_interval * new_card.ease))\n        new_card = dataclasses.replace(new_card,\n                                       interval_days=new_interval,\n                                       due_date=today + timedelta(days=new_interval))\n\n    elif grade == Grade.EASY:\n        new_ease = clamp_ease(new_card.ease + 0.15)\n        new_interval = max(settings.minimum_interval_days, round(old_interval * new_ease * 1.3))\n        new_card = dataclasses.replace(new_card,\n                                       ease=new_ease,\n                                       interval_days=new_interval,\n                                       due_date=today + timedelta(days=new_interval))\n\n    return dataclasses.replace(new_card,\n                               state=CardState.REVIEW if grade != Grade.AGAIN else CardState.LEARNING,\n                               due_date=new_card.due_date,\n                               interval_days=new_card.interval_days,\n                               history=new_card.history)\n",
+     "ok": true,
+     "passed": 6,
+     "failed": 0,
+     "out": "......                                                                   [100%]\n6 passed in 0.12s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "is_leech": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 6,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def is_leech(card: Card, settings: SchedulerSettings) -> bool:\n    if settings.leech_threshold <= 0:\n        return False\n    return card.lapses >= settings.leech_threshold\n",
+     "ok": true,
+     "passed": 6,
+     "failed": 0,
+     "out": "......                                                                   [100%]\n6 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "suspend_leech": {
+   "kind": "pure",
+   "first": false,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def suspend_leech(card: Card, settings: SchedulerSettings) -> Card:\n    if not is_leech(card, settings):\n        return card\n    return replace(card, state=CardState.SUSPENDED)\n",
+     "ok": false,
+     "passed": 1,
+     "failed": 3,
+     "out": "=================================== FAILURES ===================================\n___ test_suspend_leech_suspends_card_at_threshold_and_preserves_other_fields ___\ntest_it.py:47: in test_suspend_leech_suspends_card_at_threshold_and_preserves_other_fields\n    result = suspend_leech(card, SchedulerSettings(leech_threshold=8))\napp/logic.py:238: in suspend_leech\n    return replace(card, state=CardState.SUSPENDED)\nE   NameError: name 'replace' is not defined\n____________ test_suspend_leech_uses_the_configured_leech_threshold ____________\ntest_it.py:75: in test_suspend_leech_uses_the_configured_leech_threshold\n    result = suspend_leech(card, settings)\napp/logic.py:238: in suspend_leech\n    return replace(card, state=CardState.SUSPENDED)\nE   NameError: name 'replace' is not defined\n______________ test_suspend_leech_does_not_mutate_the_input_card _______________\ntest_it.py:95: in test_suspend_leech_does_not_mutate_the_input_card\n    result = suspend_leech(card, SchedulerSettings(leech_threshold=8))\napp/logic.py:238: in suspend_leech\n    return replace(card, state=CardState.SUSPENDED)\nE   NameError: name 'replace' is not defined\n=========================== short test summary info ============================\nFAILED test_it.py::test_suspend_leech_suspends_card_at_threshold_and_preserves_other_fields\nFAILED test_it.py::test_suspend_leech_uses_the_configured_leech_threshold - N...\nFAILED test_it.py::test_suspend_leech_does_not_mutate_the_input_card - NameEr...\n3 failed, 1 passed in 0.16s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def suspend_leech(card: Card, settings: SchedulerSettings) -> Card:\n    if not is_leech(card, settings):\n        return card\n    return dataclasses.replace(card, state=CardState.SUSPENDED)\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "grade_card": {
+   "kind": "pure",
+   "first": true,
+   "ok": true,
+   "passed": 6,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def grade_card(card: Card, grade: Grade, reviewed_at: datetime, seconds: int, settings: SchedulerSettings) -> Card:\n    if card.state == CardState.SUSPENDED:\n        return card\n\n    today = reviewed_at.date()\n    original_state = card.state\n    original_id = card.id\n    original_history = card.history\n\n    if original_state in (CardState.NEW, CardState.LEARNING):\n        scheduled_card = schedule_new_or_learning(card, grade, today, settings)\n    elif original_state == CardState.REVIEW:\n        scheduled_card = schedule_review(card, grade, today, settings)\n    else:\n        raise DomainError(f\"Invalid card state: {original_state}\")\n\n    leech_suspended_card = suspend_leech(scheduled_card, settings)\n\n    new_history = original_history + (\n        ReviewEvent(\n            card_id=original_id,\n            reviewed_at=reviewed_at,\n            grade=grade,\n            seconds=max(seconds, 0),\n            state_before=original_state\n        ),\n    )\n\n    return dataclasses.replace(\n        leech_suspended_card,\n        history=new_history\n    )\n",
+     "ok": true,
+     "passed": 6,
+     "failed": 0,
+     "out": "......                                                                   [100%]\n6 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  }
+ }
+}
