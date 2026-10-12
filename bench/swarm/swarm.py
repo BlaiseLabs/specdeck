@@ -35,7 +35,8 @@ MODEL = os.environ.get("SWARM_MODEL", "gpt-4o-mini")
 CAP = int(os.environ.get("SWARM_CAP", "450000"))     # OpenAI tokens across all arms
 LEDGER = HERE / "ledger.jsonl"
 IGNORE = shutil.ignore_patterns(".git", "__pycache__", ".specdeck", "*.egg-info", ".pytest_cache", "bench")
-MAX_TESTS = 3
+V2 = os.environ.get("SWARM_V2") == "1"   # all direct tests shown; the whole suite gates and feeds the retry
+MAX_TESTS = 99 if V2 else 3
 
 
 def fn_id(f) -> str:
@@ -215,7 +216,7 @@ def grade(f, module_text: str, tests: list) -> dict:
         res = {"direct": ok, "direct_out": out}
         if ok:
             full, fout = pytest(tree, [])
-            res.update(full=full, full_out=fout[-800:])
+            res.update(full=full, full_out=fout[-1500:])
         return res
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
@@ -256,11 +257,12 @@ inputs and outputs. Do not describe how it works internally. Reply with the sent
 
 def run():
     purposes = json.loads(PURPOSES.read_text()) if PURPOSES.exists() else {}
-    log = HERE / f"results_{MODEL.replace(':', '_')}.jsonl"
+    log = HERE / f"results{'_v2' if V2 else ''}_{MODEL.replace(':', '_')}.jsonl"
+    only = set(os.environ.get("SWARM_ONLY", "").split(",")) - {""}
     done = {json.loads(l)["fn"] for l in log.read_text().splitlines()} if log.exists() else set()
     for f in json.loads((HERE / "functions_ok.json").read_text()):
         fid = fn_id(f)
-        if fid in done:
+        if fid in done or (only and f["name"] not in only):
             continue
         p = prompt(f, purposes.get(fid, ""))
         _, tests = test_context(f)
@@ -270,10 +272,11 @@ def run():
             src = extract(reply, f)
             g = grade(f, spliced(f, src), tests) if src else {"direct": False, "direct_out": "no function in reply"}
             attempts.append({"src": src, **{k: v for k, v in g.items()}})
-            if g["direct"]:
+            if g["direct"] and (g.get("full") or not V2):
                 break
+            failed = g["direct_out"] if not g["direct"] else g.get("full_out", "")
             p += f"\n=== your previous answer ===\n```python\n{src or reply[:3000]}\n```\n" \
-                 f"=== it failed the tests ===\n{g['direct_out'][-1500:]}\nFix the function. Return only the function."
+                 f"=== it failed the tests ===\n{failed[-1500:]}\nFix the function. Return only the function."
         rec = {"fn": fid, "model": MODEL, "body_lines": f["body_lines"], "doc": f["doc"],
                "direct_first": attempts[0]["direct"], "direct": attempts[-1]["direct"],
                "full": attempts[-1].get("full", False), "attempts": attempts}

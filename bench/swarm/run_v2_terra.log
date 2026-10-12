@@ -1,0 +1,3 @@
+gpt-5.6-terra tapedeck:tapedeck/gateway/services.py:diff_tapes:95                    first=True direct=True full=True
+gpt-5.6-terra proofdeck:proofdeck/report.py:render_json:144                          first=True direct=True full=True
+gpt-5.6-terra proofdeck:proofdeck/arid.py:is_arid:47                                 first=False direct=True full=True
