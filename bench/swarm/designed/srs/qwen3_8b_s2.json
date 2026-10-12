@@ -1,0 +1,100 @@
+{
+ "impl": {
+  "grade_review": "def grade_review(card_id: str, grade: Grade, reviewed_at: dt, seconds: int, settings: SchedulerSettings) -> Generator[object, object, Card]:\n    repo = yield from need(CardRepository)\n    card = repo.get_card(card_id)\n    if card is None:\n        return (yield from throw(CardNotFound(card_id)))\n    graded = grade_card(card, grade, reviewed_at, seconds, settings)\n    repo.save_card(graded)\n    all_cards = repo.list_cards()\n    updated_cards = bury_siblings(all_cards, card_id, reviewed_at.date())\n    for updated_card in updated_cards:\n        if updated_card.id != card_id:\n            original_card = next((c for c in all_cards if c.id == updated_card.id), None)\n            if updated_card != original_card:\n                repo.save_card(updated_card)\n    return graded\n",
+  "build_today_queue": "def build_today_queue(today: date, settings: SchedulerSettings) -> StudyQueue:\n    repo = yield from need(CardRepository)\n    cards = repo.list_cards()\n    return select_study_queue(cards, today, settings)\n",
+  "daily_summary": "def daily_summary(study_date: date) -> DailySummary:\n    repo = yield from need(CardRepository)\n    cards = repo.list_cards()\n    reviewed_cards = []\n    grade_counts = Counter()\n    total_seconds = 0\n\n    for card in cards:\n        for event in card.history:\n            if event.reviewed_at.date() == study_date:\n                grade_counts[event.grade] += 1\n                total, = event.seconds,  # Ensure we're using the seconds attribute\n                total_seconds += to\n                reviewed_cards.append(card)\n\n    retention_rate = len(reviewed_cards) / len(cards) if cards else 0.0\n    grade_counts = tuple(sorted(grade_counts.items()))\n    return summarise_day(reviewed_cards, study_date)\n",
+  "study_streak": "def study_streak(today: date) -> Generator[object, object, int]:\n    repo = yield from need(CardRepository)\n    cards = repo.list_cards()\n    return current_streak(cards, today)\n"
+ },
+ "rows": {
+  "grade_review": {
+   "kind": "service",
+   "first": false,
+   "ok": true,
+   "passed": 5,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def grade_review(card_id: str, grade: Grade, reviewed_at: dt, seconds: int, settings: SchedulerSettings) -> Generator[object, object, Card]:\n    repo = yield from need(CardRepository)\n    card = repo.get_card(card_id)\n    if card is None:\n        return (yield from throw(CardNotFound(card_id)))\n    graded = grade_card(card, grade, reviewed_at, seconds, settings)\n    repo.save_card(graded)\n    all_cards = repo.list_cards()\n    updated_cards = bury_siblings(all_cards, card_id, reviewed_at.date())\n    for updated_card in updated_cards:\n        if updated_card.id != card_id and updated_card != card:\n            repo.save_card(updated_card)\n    return graded\n",
+     "ok": false,
+     "passed": 3,
+     "failed": 2,
+     "out": "saved_cards} == {reviewed.id, sibling.id}\nE   AssertionError: assert {'reviewed', ..., 'unrelated'} == {'reviewed', 'sibling'}\nE     \nE     Extra items in the left set:\nE     'unrelated'\nE     Use -v to get more diff\n___ test_grade_review_saves_only_changed_non_reviewed_cards_returned_by_bury ___\ntest_it.py:186: in test_grade_review_saves_only_changed_non_reviewed_cards_returned_by_bury\n    assert repo.saved_cards == [graded, changed_buried]\nE   AssertionError: assert [Card(id='rev..., history=())] == [Card(id='rev..., history=())]\nE     \nE     At index 1 diff: Card(id='unchanged', note_id='shared', state=<CardState.REVIEW: 'review'>, ease=2.5, interval_days=10, due_date=datetime.date(2026, 10, 1), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()) != Card(id='changed', note_id='shared', state=<CardState.REVIEW: 'review'>, ease=2.5, interval_days=10, due_date=datetime.date(2026, 10, 1), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=datetime.date(2026, 10, 12), history=())\nE     Left contains one more item: Card(id='changed', note_id='shared', state=<CardState.R...\nE     \nE     ...Full output truncated (2 lines hidden), use '-vv' to show\n=========================== short test summary info ============================\nFAILED test_it.py::test_grade_review_buries_same_note_siblings_but_not_unrelated_cards\nFAILED test_it.py::test_grade_review_saves_only_changed_non_reviewed_cards_returned_by_bury\n2 failed, 3 passed in 0.14s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def grade_review(card_id: str, grade: Grade, reviewed_at: dt, seconds: int, settings: SchedulerSettings) -> Generator[object, object, Card]:\n    repo = yield from need(CardRepository)\n    card = repo.get_card(card_id)\n    if card is None:\n        return (yield from throw(CardNotFound(card_id)))\n    graded = grade_card(card, grade, reviewed_at, seconds, settings)\n    repo.save_card(graded)\n    all_cards = repo.list_cards()\n    updated_cards = bury_siblings(all_cards, card_id, reviewed_at.date())\n    for updated_card in updated_cards:\n        if updated_card.id != card_id:\n            original_card = next((c for c in all_cards if c.id == updated_card.id), None)\n            if updated_card != original_card:\n                repo.save_card(updated_card)\n    return graded\n",
+     "ok": true,
+     "passed": 5,
+     "failed": 0,
+     "out": ".....                                                                    [100%]\n5 passed in 0.13s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "build_today_queue": {
+   "kind": "service",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def build_today_queue(today: date, settings: SchedulerSettings) -> StudyQueue:\n    repo = yield from need(CardRepository)\n    cards = repo.list_cards()\n    return select_study_queue(cards, today, settings)\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "daily_summary": {
+   "kind": "service",
+   "first": false,
+   "ok": false,
+   "passed": 2,
+   "failed": 2,
+   "tries": [
+    {
+     "src": "def daily_summary(study_date: date) -> DailySummary:\n    repo = yield from need(CardRepository)\n    cards = repo.list_cards()\n    reviewed_cards = []\n    grade_counts = Counter()\n    total_seconds = 0\n\n    for card in cards:\n        for event in card.history:\n            if event.reviewed_at.date() == study_date:\n                grade_counts[event.grade] += 1\n                total_seconds += event.seconds\n                reviewed_cards.append(card)\n\n    retention_rate = len(reviewed_cards) / len(cards) if cards else 0.0\n    grade_counts = tuple(sorted(grade_counts.items()))\n    return summarise_day(reviewed_cards, study_date)\n",
+     "ok": false,
+     "passed": 3,
+     "failed": 1,
+     "out": "...F                                                                     [100%]\n=================================== FAILURES ===================================\n_ test_daily_summary_returns_the_result_of_summarise_day_for_repository_cards __\ntest_it.py:107: in test_daily_summary_returns_the_result_of_summarise_day_for_repository_cards\n    assert calls == [(cards, study_date)]\nE   AssertionError: assert [([], datetim...2025, 1, 15))] == [((Card(id='c...2025, 1, 15))]\nE     \nE     At index 0 diff: ([], datetime.date(2025, 1, 15)) != ((Card(id='card-1', note_id='note-1', state=<CardState.REVIEW: 'review'>, ease=2.5, interval_days=10, due_date=datetime.date(2025, 1, 1), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()),), datetime.date(2025, 1, 15))\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_it.py::test_daily_summary_returns_the_result_of_summarise_day_for_repository_cards\n1 failed, 3 passed in 0.13s\n",
+     "out_tokens": null
+    },
+    {
+     "src": "def daily_summary(study_date: date) -> DailySummary:\n    repo = yield from need(CardRepository)\n    cards = repo.list_cards()\n    reviewed_cards = []\n    grade_counts = Counter()\n    total_seconds = 0\n\n    for card in cards:\n        for event in card.history:\n            if event.reviewed_at.date() == study_date:\n                grade_counts[event.grade] += 1\n                total, = event.seconds,  # Ensure we're using the seconds attribute\n                total_seconds += to\n                reviewed_cards.append(card)\n\n    retention_rate = len(reviewed_cards) / len(cards) if cards else 0.0\n    grade_counts = tuple(sorted(grade_counts.items()))\n    return summarise_day(reviewed_cards, study_date)\n",
+     "ok": false,
+     "passed": 2,
+     "failed": 2,
+     "out": ")\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:89: in decorator\n    ability_or_error = effect.send(value)\napp/logic.py:382: in daily_summary\n    total_seconds += to\nE   NameError: name 'to' is not defined\n_ test_daily_summary_returns_the_result_of_summarise_day_for_repository_cards __\ntest_it.py:107: in test_daily_summary_returns_the_result_of_summarise_day_for_repository_cards\n    assert calls == [(cards, study_date)]\nE   AssertionError: assert [([], datetim...2025, 1, 15))] == [((Card(id='c...2025, 1, 15))]\nE     \nE     At index 0 diff: ([], datetime.date(2025, 1, 15)) != ((Card(id='card-1', note_id='note-1', state=<CardState.REVIEW: 'review'>, ease=2.5, interval_days=10, due_date=datetime.date(2025, 1, 1), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()),), datetime.date(2025, 1, 15))\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_it.py::test_daily_summary_includes_good_event_on_requested_date\nFAILED test_it.py::test_daily_summary_returns_the_result_of_summarise_day_for_repository_cards\n2 failed, 2 passed in 0.17s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "study_streak": {
+   "kind": "service",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def study_streak(today: date) -> Generator[object, object, int]:\n    repo = yield from need(CardRepository)\n    cards = repo.list_cards()\n    return current_streak(cards, today)\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.10s\n",
+     "out_tokens": null
+    }
+   ]
+  }
+ },
+ "acceptance": {
+  "ok": false,
+  "passed": 0,
+  "failed": 6,
+  "out": "s/stateless/handler.py:89: in decorator\n    ability_or_error = effect.send(value)\napp/logic.py:94: in build_today_queue\n    return select_study_queue(cards, today, settings)\napp/logic.py:35: in select_study_queue\n    raise NotImplementedError\nE   NotImplementedError\n____ test_daily_summary_and_streak_use_event_dates_and_nonnegative_seconds _____\ntest_it.py:424: in test_daily_summary_and_streak_use_event_dates_and_nonnegative_seconds\n    summary = _run(daily_summary(today), repository)\ntest_it.py:11: in _run\n    return run(supply(repository)(lambda: program)())  # fixed by hand: wrong stateless API\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:89: in decorator\n    ability_or_error = effect.send(value)\napp/logic.py:109: in daily_summary\n    total_seconds += to\nE   NameError: name 'to' is not defined\n=========================== short test summary info ============================\nFAILED test_it.py::test_new_card_progresses_through_learning_steps_and_graduates\nFAILED test_it.py::test_review_grades_apply_the_specified_intervals_ease_and_lapse_rules\nFAILED test_it.py::test_second_lapse_suspends_a_leech_and_suspended_cards_remain_unchanged\nFAILED test_it.py::test_grading_a_card_buries_active_siblings_and_queue_restores_them_next_day\nFAILED test_it.py::test_today_queue_orders_and_caps_review_and_new_cards_independently\nFAILED test_it.py::test_daily_summary_and_streak_use_event_dates_and_nonnegative_seconds\n6 failed in 0.47s\n"
+ }
+}

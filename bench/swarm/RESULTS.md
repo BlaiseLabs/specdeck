@@ -85,3 +85,81 @@ Files:
 - `functions*.json`, `purposes.json`
 - `results*.jsonl`
 - `ledger.jsonl`
+
+---
+
+# Round 2: code designed for the swarm (2026-10-12, `designed.py`)
+
+The user's correction: a swarm prompt should be a succinct functional spec, not a whole file.
+Each function should be pure, so it depends on nothing but its inputs.
+
+**The setup:**
+- terra designs a new program in the `stateless` effects style. Pure functions work over frozen
+  data; side effects go only through declared abilities, with in-memory fakes for tests.
+- A worker sees only `domain.py`, `abilities.py`, its own spec (input shapes, output, numbered
+  logic rules, examples) and its callees' signatures and contracts. That's about 1k tokens.
+- **Hidden tests:** terra writes per-function tests and 6 acceptance tests from the specs,
+  before any code exists.
+- **Grading:** a function is graded on its own tests with terra's reference for everything
+  else; then the whole program is assembled and run against the acceptance tests.
+
+**Two programs:**
+- `srs`, a flashcard scheduler: 20 functions, 16 pure.
+- `ledger`, shared expenses: 19 functions, 15 pure.
+
+| | srs functions | srs program built from the worker's code | ledger functions | ledger program built from the worker's code |
+|---|---|---|---|---|
+| terra (reference, same prompt) | 20/20 (18 first try) | 6/6 | 19/19 (16 first try) | 6/6 |
+| gpt-4o-mini | **18/20** | 2/6 → **6/6** with terra for its 2 failures | **13/19** | 2/6 → **6/6** with terra for its 6 |
+| qwen3:8b (Mac, free) | **16/20** | 4/6 → **6/6** with terra for its 4 | **9/19** | 2/6 → **6/6** with terra for its 10 |
+
+Compare round 1, which filled holes in existing code: gpt-4o-mini 9/22, qwen 8/22.
+
+**Services** use the clearer worker note (`DESIGNED_STYLE=2`); pure functions use the first
+note.
+
+## What it says
+
+1. **The format was the problem.** Succinct, self-contained specs roughly double the small
+   models' success. On the flashcard program gpt-4o-mini lands within 2 functions of terra.
+2. **Service failures were the worker kit's fault, not the model's.**
+   - With the first style note, every service failure was one `stateless` misunderstanding:
+     `yield from` on plain method calls, plus Qwen's `return yield from` syntax error.
+   - One explicit rule plus a 9-line worked example fixed gpt-4o-mini 8/8 and Qwen 6/8.
+   - The kit (style rules + example) is a product component, and cheap to get right once.
+3. **What small models still miss:**
+   - exact validation edge cases: a bool passed as an amount, an infinite exchange rate, which
+     error message wins
+   - real algorithms: settle-up with the fewest transfers, cent allocation, statements
+
+   The ledger (money, Decimal, rounding) is much harder for them than the scheduler.
+4. **Escalation is essential, and it works.** Built only from small-model code, the programs
+   pass 2-4 of 6 acceptance tests. With terra redoing the failures, every program passes 6/6.
+5. **The strong model's specs have bugs too, and its own tests catch them.** Fixed by hand
+   before any worker ran (each fix is noted inline in `tests.json`):
+   - an ambiguous formula (EASY interval: old or new ease?)
+   - a worked example contradicting its own payment rule
+   - callee contracts missing signatures (a harness fix)
+   - test typos (`dt`, a 4-tuple compared with a 5-tuple)
+   - acceptance tests using the wrong `stateless.run` call (a prompt fix)
+
+   The step "terra implements against its own tests" is the spec's check and must come before
+   the swarm.
+6. **The economics are the catch.** terra output tokens per program:
+
+   | | srs | ledger |
+   |---|---|---|
+   | design (specs) | 7.4k | 8.5k |
+   | tests + acceptance | 42.7k | 43.9k |
+   | implementing everything | 8.5k | 15.8k |
+
+   - The implementation is only 15-25% of the strong model's output.
+   - Workers take the easy functions; the hard, reasoning-heavy ones escalate. So the terra
+     implementation output avoided was 49% (srs) / 28% (ledger) for gpt-4o-mini, and 44% / 20%
+     for Qwen.
+   - That's under 10% of terra's total output per program.
+   - Unless the tests get cheaper (fewer, or written by a cheaper model and checked), the swarm
+     is a quality/locality story, not a cost one.
+
+**Cost:** 339k OpenAI tokens of the 750k grant (account one); Qwen ran locally for free.
+`combine.py` rebuilds the tables.

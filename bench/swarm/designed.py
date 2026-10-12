@@ -64,6 +64,22 @@ STYLE = """Style (the `stateless` effects library, already imported in logic.py)
   `from datetime import date, datetime as dt, timedelta`, `from collections import Counter, defaultdict`.
   Any other import goes inside the function body."""
 
+if os.environ.get("DESIGNED_STYLE") == "2":   # v2: say plainly what is and isn't an effect, with an example
+    STYLE += """
+- ONLY two things are ever used with `yield from`: `need(...)`/`throw(...)`, and calls to other
+  SERVICE functions. Ability methods and pure functions return plain values: call them normally.
+  Never `yield from repo.method(...)` and never `yield from pure_fn(...)`.
+- Return what the contract says; if a callee returns the object you need, return it as is.
+Example service:
+    def rename_item(item_id: str, name: str):
+        repo = yield from need(ItemRepository)
+        item = repo.load_item(item_id)              # plain call
+        if item is None:
+            return (yield from throw(ItemNotFound(item_id)))
+        renamed = apply_rename(item, name)          # pure function: plain call
+        repo.save_item(renamed)                     # plain call
+        return renamed"""
+
 HEADER = """from __future__ import annotations
 import dataclasses, math, datetime
 from datetime import date, datetime as dt, timedelta
@@ -342,12 +358,14 @@ def attempt(prog: str, model: str, label: str) -> None:
               f"({tries[-1]['passed']} passed, {tries[-1]['failed']} failed)", flush=True)
         save(prog, f"{label}.json", res)
 
+    kinds = os.environ.get("DESIGNED_ONLY_KIND")
+    todo = [f for f in d["functions"] if not kinds or f["kind"] == kinds]
     if label == "ref" or model.startswith("qwen"):
-        for f in d["functions"]:      # in order: a service's callees exist before it is graded
+        for f in todo:      # in order: a service's callees exist before it is graded
             one(f)
     else:
         with ThreadPoolExecutor(6) as ex:
-            list(ex.map(one, d["functions"]))
+            list(ex.map(one, todo))
     ok, npass, nfail, out = run_tests(d, res["impl"], t["__acceptance__"])
     res["acceptance"] = {"ok": ok, "passed": npass, "failed": nfail, "out": out}
     print(f"{label}: {sum(r['ok'] for r in res['rows'].values())}/{len(d['functions'])} functions; "
@@ -384,6 +402,6 @@ if __name__ == "__main__":
         attempt(prog, STRONG, "ref")
     elif cmd == "work":
         model = sys.argv[3]
-        attempt(prog, model, model.replace(":", "_"))
+        attempt(prog, model, model.replace(":", "_") + ("_s2" if os.environ.get("DESIGNED_STYLE") == "2" else ""))
     elif cmd == "report":
         report(prog)

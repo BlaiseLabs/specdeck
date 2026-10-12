@@ -1,0 +1,84 @@
+{
+ "impl": {
+  "undo_last_action": "def undo_last_action(trip_id: str) -> Generator[object, object, Trip]:\n    trip_repo = yield from need(TripRepository)\n    trip = trip_repo.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    if not trip.actions:\n        return (yield from throw(EmptyHistoryError(trip_id)))\n\n    updated_trip = remove_last_action(trip)\n    trip_repo.save_trip(updated_trip)\n    return updated_trip\n",
+  "close_trip": "def close_trip(trip_id: str) -> Generator[object, object, Trip]:\n    trip_repo = yield from need(TripRepository)\n    trip = trip_repo.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    validation_error = validate_trip_configuration(trip)\n    if validation_error is not None:\n        return (yield from throw(ValidationError(validation_error)))\n\n    closed_trip = dataclasses.replace(trip, closed=True)\n    trip_repo.save_trip(closed_trip)\n    return closed_trip\n",
+  "record_payment": "def record_payment(trip_id: str, payment: Payment) -> Generator[object, object, Trip]:\n    trip_repo = yield from need(TripRepository)\n    trip = trip_repo.load_trip(trip_id)\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    validation_error = validate_trip_configuration(trip)\n    if validation_error is not None:\n        return (yield from throw(ValidationError(validation_error)))\n\n    validation_error = validate_payment(payment, trip)\n    if validation_error is not None:\n        return (yield from throw(ValidationError(validation_error)))\n\n    validation_error = validate_new_action(trip, PaymentAction(payment))\n    if validation_error is not None:\n        return (yield from throw(ValidationError(validation_error)))\n\n    updated_trip = append_action(trip, PaymentAction(payment))\n    trip_repo.save_trip(updated_trip)\n    return updated_trip\n",
+  "record_expense": "def record_expense(trip_id: str, expense: Expense) -> Generator[object, object, Trip]:\n    trip_repo = yield from need(TripRepository)\n    trip = trip_repo.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    if (message := validate_trip_configuration(trip)) is not None:\n        return (yield from throw(ValidationError(message)))\n\n    if (message := validate_expense(expense, trip)) is not None:\n        return (yield from throw(ValidationError(message)))\n\n    if (message := validate_new_action(trip, ExpenseAction(expense))) is not None:\n        return (yield from throw(ValidationError(message)))\n\n    updated_trip = append_action(trip, ExpenseAction(expense))\n    trip_repo.save_trip(updated_trip)\n\n    return updated_trip\n"
+ },
+ "rows": {
+  "undo_last_action": {
+   "kind": "service",
+   "first": true,
+   "ok": true,
+   "passed": 6,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def undo_last_action(trip_id: str) -> Generator[object, object, Trip]:\n    trip_repo = yield from need(TripRepository)\n    trip = trip_repo.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    if not trip.actions:\n        return (yield from throw(EmptyHistoryError(trip_id)))\n\n    updated_trip = remove_last_action(trip)\n    trip_repo.save_trip(updated_trip)\n    return updated_trip\n",
+     "ok": true,
+     "passed": 6,
+     "failed": 0,
+     "out": "......                                                                   [100%]\n6 passed in 0.11s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "close_trip": {
+   "kind": "service",
+   "first": true,
+   "ok": true,
+   "passed": 4,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def close_trip(trip_id: str) -> Generator[object, object, Trip]:\n    trip_repo = yield from need(TripRepository)\n    trip = trip_repo.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    validation_error = validate_trip_configuration(trip)\n    if validation_error is not None:\n        return (yield from throw(ValidationError(validation_error)))\n\n    closed_trip = dataclasses.replace(trip, closed=True)\n    trip_repo.save_trip(closed_trip)\n    return closed_trip\n",
+     "ok": true,
+     "passed": 4,
+     "failed": 0,
+     "out": "....                                                                     [100%]\n4 passed in 0.13s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "record_payment": {
+   "kind": "service",
+   "first": true,
+   "ok": true,
+   "passed": 7,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def record_payment(trip_id: str, payment: Payment) -> Generator[object, object, Trip]:\n    trip_repo = yield from need(TripRepository)\n    trip = trip_repo.load_trip(trip_id)\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    validation_error = validate_trip_configuration(trip)\n    if validation_error is not None:\n        return (yield from throw(ValidationError(validation_error)))\n\n    validation_error = validate_payment(payment, trip)\n    if validation_error is not None:\n        return (yield from throw(ValidationError(validation_error)))\n\n    validation_error = validate_new_action(trip, PaymentAction(payment))\n    if validation_error is not None:\n        return (yield from throw(ValidationError(validation_error)))\n\n    updated_trip = append_action(trip, PaymentAction(payment))\n    trip_repo.save_trip(updated_trip)\n    return updated_trip\n",
+     "ok": true,
+     "passed": 7,
+     "failed": 0,
+     "out": ".......                                                                  [100%]\n7 passed in 0.13s\n",
+     "out_tokens": null
+    }
+   ]
+  },
+  "record_expense": {
+   "kind": "service",
+   "first": true,
+   "ok": true,
+   "passed": 7,
+   "failed": 0,
+   "tries": [
+    {
+     "src": "def record_expense(trip_id: str, expense: Expense) -> Generator[object, object, Trip]:\n    trip_repo = yield from need(TripRepository)\n    trip = trip_repo.load_trip(trip_id)\n\n    if trip.closed:\n        return (yield from throw(ClosedTripError(trip_id)))\n\n    if (message := validate_trip_configuration(trip)) is not None:\n        return (yield from throw(ValidationError(message)))\n\n    if (message := validate_expense(expense, trip)) is not None:\n        return (yield from throw(ValidationError(message)))\n\n    if (message := validate_new_action(trip, ExpenseAction(expense))) is not None:\n        return (yield from throw(ValidationError(message)))\n\n    updated_trip = append_action(trip, ExpenseAction(expense))\n    trip_repo.save_trip(updated_trip)\n\n    return updated_trip\n",
+     "ok": true,
+     "passed": 7,
+     "failed": 0,
+     "out": ".......                                                                  [100%]\n7 passed in 0.13s\n",
+     "out_tokens": null
+    }
+   ]
+  }
+ },
+ "acceptance": {
+  "ok": false,
+  "passed": 0,
+  "failed": 6,
+  "out": "groups_for_minimum_deterministic_transfers\n    assert settle_up(balances) == (\napp/logic.py:55: in settle_up\n    raise NotImplementedError\nE   NotImplementedError\n________ test_undo_then_close_preserves_ledger_and_rejects_future_edits ________\ntest_it.py:250: in test_undo_then_close_preserves_ledger_and_rejects_future_edits\n    after_expense = execute(record_expense(\"trip-1\", expense), repository)\ntest_it.py:18: in execute\n    return run(supply(repository)(lambda: service)())  # fixed by hand: wrong stateless API\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:89: in decorator\n    ability_or_error = effect.send(value)\napp/logic.py:77: in record_expense\n    if (message := validate_trip_configuration(trip)) is not None:\napp/logic.py:11: in validate_trip_configuration\n    raise NotImplementedError\nE   NotImplementedError\n=========================== short test summary info ============================\nFAILED test_it.py::test_record_equal_usd_dinner_computes_balances_and_alice_statement\nFAILED test_it.py::test_eur_conversion_allocates_remainder_deterministically\nFAILED test_it.py::test_percentage_expense_and_settling_payment_leave_zero_balances\nFAILED test_it.py::test_invalid_expense_edits_raise_validation_errors_without_saving_changes\nFAILED test_it.py::test_settle_up_uses_zero_sum_groups_for_minimum_deterministic_transfers\nFAILED test_it.py::test_undo_then_close_preserves_ledger_and_rejects_future_edits\n6 failed in 0.40s\n"
+ }
+}

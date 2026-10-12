@@ -1,0 +1,5 @@
+qwen3_8b_s2  service grade_review                     first=False ok=True (5 passed, 0 failed)
+qwen3_8b_s2  service build_today_queue                first=True ok=True (4 passed, 0 failed)
+qwen3_8b_s2  service daily_summary                    first=False ok=False (2 passed, 2 failed)
+qwen3_8b_s2  service study_streak                     first=True ok=True (4 passed, 0 failed)
+qwen3_8b_s2: 3/20 functions; assembled from qwen3_8b_s2 only, acceptance 0 passed 6 failed

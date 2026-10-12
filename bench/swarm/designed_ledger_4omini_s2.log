@@ -1,0 +1,5 @@
+gpt-4o-mini_s2 service undo_last_action                 first=True ok=True (6 passed, 0 failed)
+gpt-4o-mini_s2 service close_trip                       first=True ok=True (4 passed, 0 failed)
+gpt-4o-mini_s2 service record_payment                   first=True ok=True (7 passed, 0 failed)
+gpt-4o-mini_s2 service record_expense                   first=True ok=True (7 passed, 0 failed)
+gpt-4o-mini_s2: 4/19 functions; assembled from gpt-4o-mini_s2 only, acceptance 0 passed 6 failed
