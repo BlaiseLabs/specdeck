@@ -1,13 +1,42 @@
 # specdeck
 
-**The spec is generated from the tests. It cannot drift, and it cannot lie.**
+**An executable requirements specification for pytest projects, aligned with
+ISO/IEC/IEEE 29148:2018.**
 
-A pytest plugin that turns an ordinary test suite into a *test-failure-DX* spec —
-`feature → groups → scenarios → Given/When/Then`, with a scenario dependency DAG
-and every scenario stamped with its real outcome. The YAML it writes renders in
-its own viewer, and `specdeck validate` checks it with zero warnings.
-It also writes a minimal sphinx-needs `needs.json`, so the same graph is reachable
-by requirements/traceability tooling and by coding agents.
+ISO/IEC/IEEE 29148:2018, *Requirements engineering*, is the standard that replaced
+IEEE 830 as the definition of a software requirements specification. It says what a
+requirement is (§5.2.4), what makes one well formed (§5.2.5–5.2.7), what it records
+about itself (§5.2.8), how it is verified (§6.5.2) and what a specification contains
+(§9.6). It assumes people keep the specification and the evidence in step by hand.
+
+specdeck keeps them in one place:
+
+| The standard | specdeck |
+|---|---|
+| Requirement statement, "shall" (§5.2.4) | `statement:` in `requirements.yaml` |
+| Attributes: identification, rationale, type, priority, owner, risk, difficulty (§5.2.8) | the same names in `requirements.yaml` |
+| Verification by test, inspection, analysis/simulation, demonstration (§6.5.2) | `verification:`; *test* is automated: tests link with `covers=` and their last run is the verification status |
+| Characteristics of a requirement and of a set (§5.2.5, §5.2.6), language to avoid (§5.2.7) | `specdeck validate`, each finding citing its clause |
+| Traceability (§6.6) | requirement → tests → status, both directions, in every run and in the run history |
+| Software requirements specification (§9.6) | `specdeck srs`, generated from the requirements and the last run |
+
+The tests are the evidence, the specification is generated from them on each run, so it
+reports which requirements are verified *now* and cannot drift. specdeck's own
+specification, written this way, is [SRS.md](SRS.md): 59 requirements, each traced to
+the tests that verify it.
+
+**What is claimed.** specdeck is *aligned with* 29148:2018, not fully conformant (§4.2
+also covers life-cycle processes a tool cannot carry out). The generated SRS targets
+*tailored conformance* (§4.5.2) to the content of §9.6 and declares its tailoring in the
+document. [docs/ISO-29148.md](docs/ISO-29148.md) maps each clause to what specdeck does.
+Clause numbers were checked against the published 2018 text; the descriptions here are
+our own words, not the standard's.
+
+Under the requirements sits the scenario spec: a pytest plugin turns an ordinary suite
+into `feature → groups → scenarios → Given/When/Then`, with a scenario dependency graph
+and every scenario stamped with its real outcome. The YAML renders in its own viewer,
+`specdeck validate` checks it with zero warnings, and a minimal sphinx-needs `needs.json`
+makes the same graph reachable by traceability tooling and by coding agents.
 
 ## Why this direction (and not Gherkin)
 
@@ -79,17 +108,21 @@ CLI: `--no-specdeck` (don't write), `--specdeck-out PATH`.
 A partial run (a file, a node id, `-k`, `-m`, `--lf`) does not rewrite the spec,
 so running one test never shrinks it to one scenario.
 
-## Requirements: what the tests should show
+## Requirements (ISO/IEC/IEEE 29148:2018)
 
-The generated spec says what the tests do. `requirements.yaml`, written by
-people, says what they *should* show: one sentence of intent per entry, plus
-concrete examples.
+The generated spec says what the tests do. `requirements.yaml`, written by people, says
+what they *should* show. Each entry is a requirement in the sense of 29148: one
+"shall" statement (§5.2.4) with its attributes (§5.2.8), and concrete examples that make
+it verifiable (§5.2.5).
 
 ```yaml
 requirements:
-  - id: pricing.bulk-tier
-    says: Orders of 100 units or more get 15% off; 10 or more get 5%.
-    why: Agreed with sales, 2026-09.     # optional
+  - id: pricing.bulk-tier                   # identification (§5.2.8.2)
+    statement: An order of 100 units or more shall get 15% off.
+    rationale: Agreed with sales, 2026-09.  # why it is necessary (§5.2.5)
+    type: functional                        # §5.2.8.3; places it in the SRS (§9.6.11–9.6.18)
+    priority: high                          # optional: priority, owner, risk, difficulty
+    verification: test                      # §6.5.2: test, inspection, analysis, simulation, demonstration
     examples:
       - given: {qty: 100}
         expect: 15
@@ -97,7 +130,13 @@ requirements:
         expect: 5
 ```
 
-Link tests to entries, and take expected values from the examples so they come
+`type` is one of `interface`, `functional`, `usability`, `performance`,
+`logical-database`, `design-constraint`, `standards-compliance`, `software-attribute`
+(the sections of §9.6.11–9.6.18), or `process` and `human-factors` (§5.2.8.3).
+`standard:` records the clause a requirement implements. The older keys `says` and `why`
+are still read as `statement` and `rationale`.
+
+Link tests to requirements, and take expected values from the examples so they come
 from the requirement rather than from running the code:
 
 ```python
@@ -112,20 +151,53 @@ def test_every_example(given, expected):      # one case per example
     assert bulk_discount(**given) == expected
 ```
 
-Using an example counts as covering its requirement. Each requirement is
-**met** (every covering scenario passes), **failing**, **blocked**, **not run**,
-or **untested** (nothing covers it). Every run writes
-`.specdeck/requirements.json`, prints `specdeck: requirements: 1 of 3 met, ...`,
-warns about links to ids that don't exist and about problems in the file, and
-tags scenarios `req:<id>` in the spec. The viewer leads with "requirements met"
-and has a Requirements tab showing each entry, its examples (and which ones a
-passing test used), and the scenarios behind it.
+Using an example counts as covering its requirement. Each requirement's verification
+status is **met** (every covering scenario passes), **failing**, **blocked**, **not
+run**, or **untested** (nothing covers it). Every run writes
+`.specdeck/requirements.json`, prints `specdeck: requirements: 1 of 3 met, ...`, warns
+about links to ids that don't exist and about problems in the file, and tags scenarios
+`req:<id>` in the spec. The viewer leads with "requirements met" and has a Requirements
+tab showing each entry, its examples (and which ones a passing test used), and the
+scenarios behind it.
 
-`example()` with inputs the requirement has no example for raises
-`RequirementError`, listing the examples it does have. An explicit scenario id
-on a parametrized test becomes one id per case (`tiers-qty-100`); depending on
-the id depends on every case. Config: `specdeck_requirements` (default
-`requirements.yaml`), `specdeck_requirements_out`.
+`example()` with inputs the requirement has no example for raises `RequirementError`,
+listing the examples it does have. An explicit scenario id on a parametrized test
+becomes one id per case (`tiers-qty-100`); depending on the id depends on every case.
+Config: `specdeck_requirements` (default `requirements.yaml`),
+`specdeck_requirements_out`.
+
+### Quality, checked against the standard
+
+`specdeck validate` checks each requirement and the set against what a tool can check of
+29148, and cites the clause in each finding:
+
+| Check | Clause |
+|---|---|
+| a binding requirement uses "shall"; positive, not "shall not"; active voice; not "shall be able to" | §5.2.4 |
+| one capability per requirement (one "shall"); a rationale is recorded; a test or other method verifies it | §5.2.5, §5.2.8.2, §6.5.2 |
+| no TBD/TBS/TBR; every test traces to a requirement; no links to requirements that do not exist | §5.2.6 |
+| no superlatives, subjective or ambiguous terms, vague pronouns, open-ended terms, comparatives, loopholes or totality terms | §5.2.7 |
+| attribute names, types and verification methods are the standard's | §5.2.8, §6.5.2 |
+
+The word lists for §5.2.7 are specdeck's; the categories are the standard's. Findings
+are warnings; `--strict` makes them errors. *Appropriate*, *feasible* and *correct*
+(§5.2.5) need judgement and are listed for review in the SRS rather than checked.
+
+### The specification
+
+```bash
+specdeck srs --out SRS.md
+```
+
+writes the software requirements specification with the content of §9.6, in the
+standard's order: the introduction (§9.6.1–9.6.9), the specified requirements grouped by
+type (§9.6.11–9.6.18) with their attributes and verification status, verification
+(§9.6.19) as a traceability matrix from requirement to tests to the last result, the
+quality findings, and supporting information (§9.6.20). Purpose, scope, users,
+limitations and the other sections only people can write come from an `srs:` block in
+`requirements.yaml`; a section left empty is marked *to be supplied (TBS)* rather than
+hidden, so an incomplete set shows (§5.2.6). See specdeck's own `requirements.yaml` for
+an example of the block.
 
 ## The live viewer
 
@@ -272,14 +344,14 @@ test exercises it is most of it, which is the honest answer.
 ### What a test is for
 
 ```bash
-specdeck context --task why --out WHY.md   # the requirements alone: says, why, and the tests linked to each
+specdeck context --task why --out WHY.md   # the requirements alone: statement, rationale, and the tests linked to each
 ```
 
 The reasons behind a test are not in the test. With comments and docs stripped from
 specdeck's own repo (`bench/purpose`), an agent asked why tests exist scored 10/20 from
 the tests alone and 14/20 with a prose requirements document. With the document's earlier
 version pasted in — requirement ids as tags, but not what they say or why — it scored 6/10.
-So the document now carries a **Requirements** section: each requirement's says, why and
+So the document now carries a **Requirements** section: each requirement's statement, rationale and
 status, the tests linked to it, and beside each test any other requirement it also covers.
 It is part of the default document; `--task why` sends it alone (about 2k tokens here) and
 scored 29/30 over three sessions, the full document on disk 27/30.
@@ -331,7 +403,8 @@ plus `--fail-on-failing` and `--fail-on-unmet`. Nothing fails until asked.
 
 ```bash
 specdeck serve                  # the viewer, on 127.0.0.1
-specdeck validate               # lint spec.yaml + requirements.yaml; non-zero on error
+specdeck validate               # spec.yaml + requirements.yaml, quality against 29148; non-zero on error
+specdeck srs --out SRS.md       # the software requirements specification (29148 §9.6)
 specdeck requirements           # the requirements report, --fail-on-unmet for CI
 specdeck trust proof.json       # met, or just passing? joins requirements with proofdeck's JSON
 specdeck report --proofdeck proof.json --out report.md   # Markdown for a PR comment
@@ -359,7 +432,8 @@ specdeck runs these on itself.
 
 ## Relation to the other projects
 
-specdeck stands alone: it generates the spec, validates it, and renders it.
+specdeck stands alone: it generates the spec and the requirements specification,
+validates them, and renders them.
 
 - **tapedeck** records real SDK traffic so tests replay ground truth instead of a
   guess. The first suite specified in specdeck.
