@@ -1,5 +1,9 @@
 """The adherence policy: how an agent is to treat the project's rules.
 
+One part of specdeck's adherence system: rules (typed requirements), checks (the tests linked to
+them), this policy (what keeping a rule means) and status (which rules hold in the last run,
+written into AGENTS.md by `specdeck agents`).
+
 The rules themselves are requirements (design constraints, standards compliance, process). The
 adherence policy is different: it says what keeping a rule means — that getting a rule's test to
 pass is not the same as keeping the rule, and what to do when a request conflicts with one.

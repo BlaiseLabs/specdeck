@@ -1,6 +1,6 @@
 # specdeck — software requirements specification
 
-**Revision:** generated 2026-10-13 16:55 UTC from commit 588e112 · **Prepared to:** ISO/IEC/IEEE 29148:2018, content of §9.6 (identification §9.2.1)
+**Revision:** generated 2026-10-13 17:25 UTC from commit 1f840a0 · **Prepared to:** ISO/IEC/IEEE 29148:2018, content of §9.6 (identification §9.2.1)
 
 ## Tailoring
 
@@ -358,7 +358,7 @@ The agent context shall come in named strategies, each stating its contents and 
 
 `specdeck agents` shall write the adherence policy above the rules, using specdeck's default clauses as changed by the `adherence:` block of requirements.yaml.
 
-- **Rationale:** What keeping a rule means is not in the rules. Measured (bench/rules_ab): agents under pressure got a rule's test to pass without keeping the rule until one sentence said that this breaks the rule. The wording is a project's choice, so it is data with a default, not text in the code.
+- **Rationale:** What keeping a rule means is not in the rules; it is the policy part of the adherence system (rules, checks, policy, status). Measured (bench/rules_ab): agents under pressure got a rule's test to pass without keeping the rule until the policy said that this breaks the rule. The wording is a project's choice, so it is data with a default, not text in the code.
 - **Type:** functional
 - **Verification method:** test
 - **Verification status:** met — verified by `tests/test_agents.py::test_the_adherence_policy_has_defaults_a_project_can_change`

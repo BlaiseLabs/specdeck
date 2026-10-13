@@ -32,6 +32,9 @@ document. [docs/ISO-29148.md](docs/ISO-29148.md) maps each clause to what specde
 Clause numbers were checked against the published 2018 text; the descriptions here are
 our own words, not the standard's.
 
+**Who it's for and how it's used day to day:** [docs/SCENARIO.md](docs/SCENARIO.md) follows a
+team whose coding agents write most of the code, from install to the pull request.
+
 Under the requirements sits the scenario spec: a pytest plugin turns an ordinary suite
 into `feature → groups → scenarios → Given/When/Then`, with a scenario dependency graph
 and every scenario stamped with its real outcome. The YAML renders in its own viewer,
@@ -184,7 +187,18 @@ The word lists for §5.2.7 are specdeck's; the categories are the standard's. Fi
 are warnings; `--strict` makes them errors. *Appropriate*, *feasible* and *correct*
 (§5.2.5) need judgement and are listed for review in the SRS rather than checked.
 
-### The project's rules, for coding agents
+### The adherence system: rules coding agents keep
+
+specdeck's answer to "agents don't follow my CLAUDE.md" is a system of four parts, each
+measured in `bench/rules_ab`:
+
+| Part | What it is | What it did in the A/B |
+|---|---|---|
+| **Rules** | requirements typed `design-constraint`, `standards-compliance` or `process`, each with its reason | written down at all, rules cut breaks under pressure from 4 of 6 to 1 of 6 |
+| **Checks** | the tests linked to each rule with `covers=` | caught every break they could see; under pressure agents got around them (2 of 2) until the policy below |
+| **Adherence policy** | what keeping a rule means (`intent`, `conflicts` clauses) | no check got around in 6 of 6 pressured trials; agents said "Not done as asked:" in 5 of 6 |
+| **Status** | which rules hold in the last run, in AGENTS.md and the run summary | a broken rule is named first, with its reason and the test to make pass |
+
 
 ```bash
 specdeck agents            # updates AGENTS.md; --out CLAUDE.md, or - for stdout
@@ -200,8 +214,8 @@ that verify it and whether it held in the last run, names any broken rule again 
 demonstration. Only a marked block is replaced, so the hand-written part of the file is kept.
 specdeck's own [AGENTS.md](AGENTS.md) is generated this way.
 
-Above the rules goes the **adherence policy**: what keeping a rule means. specdeck ships two
-default clauses, each measured in `bench/rules_ab`. `intent` says that getting a rule's test to
+Above the rules goes the **adherence policy**, the part of the system that says what keeping a
+rule means. specdeck ships two default clauses, each measured in `bench/rules_ab`. `intent` says that getting a rule's test to
 pass without keeping the rule breaks the rule; under pressure, agents had been importing pandas
 through `importlib` to get past a stdlib-only test. `conflicts` says that when a request asks for
 something a rule forbids, the agent keeps the rule and starts its summary with "Not done as asked:". A project rewords, drops or adds clauses:

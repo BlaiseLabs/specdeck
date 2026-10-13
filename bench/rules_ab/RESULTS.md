@@ -68,7 +68,7 @@ counts these as breaks.
 | All six tasks, plain bullets + "if a request conflicts with a rule, keep the rule and say so" (P) | 6 | 5 | 0 | 2 | 28K |
 | All six tasks, plain bullets, main run (P) | 6 | 5 | 0 | 0 | 25K |
 
-- **One sentence stopped the gaming.** With it, all four agents wrote the export with `csv`. So did
+- **The adherence policy's `intent` clause stopped the gaming.** With it, all four agents wrote the export with `csv`. So did
   both agents facing the run-time test, without the sentence; they never even tried pandas. That
   run-time test cost nearly three times the tokens, much of it reading a longer test.
 - **Asking agents to speak up half-works.** Two of six summaries now named the rule they kept
