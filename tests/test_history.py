@@ -15,7 +15,7 @@ def _status(board):
     return {s["id"]: s["status"] for s in board["scenarios"]}
 
 
-@scenario("history-records-a-run", tags=["history"])
+@scenario("history-records-a-run", tags=["history"], covers=["history.record"])
 def test_a_run_is_recorded_with_status_steps_and_source(pytester, record):
     """A recorded run keeps each scenario's outcome, its steps and where its test lives."""
     with given("a suite where a bug fails one scenario and blocks the two that depend on it"):
@@ -38,7 +38,7 @@ def test_a_run_is_recorded_with_status_steps_and_source(pytester, record):
         result.stdout.fnmatch_lines(["*specdeck: recorded run #1 for *"])
 
 
-@scenario("history-partial-run-updates-only-its-tests", tags=["history"], depends_on=["history-records-a-run"])
+@scenario("history-partial-run-updates-only-its-tests", tags=["history"], depends_on=["history-records-a-run"], covers=["history.partial-update"])
 def test_running_one_test_updates_it_without_forgetting_the_others(pytester, record):
     """Running a single test updates that scenario on the board and leaves the rest as they were."""
     with given("a full recorded run with one failure"):
@@ -62,7 +62,7 @@ def test_running_one_test_updates_it_without_forgetting_the_others(pytester, rec
         assert "id: invoice" in spec
 
 
-@scenario("history-full-run-drops-deleted-tests", tags=["history"], depends_on=["history-records-a-run"])
+@scenario("history-full-run-drops-deleted-tests", tags=["history"], depends_on=["history-records-a-run"], covers=["history.deletions"])
 def test_a_deleted_test_leaves_the_board_after_the_next_full_run(pytester, record):
     """A test deleted from the suite disappears from the board once the whole suite runs again."""
     with given("a recorded suite with an independent greeting scenario"):
@@ -76,7 +76,7 @@ def test_a_deleted_test_leaves_the_board_after_the_next_full_run(pytester, recor
         assert "greeting" not in _status(_board(hist))
 
 
-@scenario("history-deltas", tags=["history"], depends_on=["history-partial-run-updates-only-its-tests"])
+@scenario("history-deltas", tags=["history"], depends_on=["history-partial-run-updates-only-its-tests"], covers=["history.compare"])
 def test_each_run_reports_what_started_and_stopped_passing(pytester, record):
     """Each run lists the scenarios that started passing and the ones that regressed."""
     with given("a recorded failing run"):
@@ -95,7 +95,7 @@ def test_each_run_reports_what_started_and_stopped_passing(pytester, record):
         assert sorted(runs[3]["regressed"]) == ["invoice", "order-total", "parse-amount"]
 
 
-@scenario("history-dead-run-is-abandoned", tags=["history"])
+@scenario("history-dead-run-is-abandoned", tags=["history"], covers=["history.abandoned"])
 def test_a_run_whose_process_died_is_marked_abandoned(sdhome):
     """A run whose pytest process died mid-run is marked abandoned instead of 'running' forever."""
     from specdeck.history import History
@@ -114,7 +114,7 @@ def test_a_run_whose_process_died_is_marked_abandoned(sdhome):
         assert board["last_run"]["id"] == run
 
 
-@scenario("history-live-run-overlays-last-state", tags=["history", "live"])
+@scenario("history-live-run-overlays-last-state", tags=["history", "live"], covers=["history.live-overlay"])
 def test_a_run_in_progress_keeps_last_results_visible(sdhome):
     """While a run is going, scenarios not reached yet keep their last result, marked as queued."""
     from specdeck.history import History

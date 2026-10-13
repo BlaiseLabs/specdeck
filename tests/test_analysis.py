@@ -19,7 +19,7 @@ GRAPH = [
 ]
 
 
-@scenario("analysis-frontier", tags=["analysis"])
+@scenario("analysis-frontier", tags=["analysis"], covers=["analysis.root-causes"])
 def test_root_causes_are_failures_with_no_failing_prerequisite():
     """'Stuck at' lists only the root-cause failures, the biggest blocker first."""
     with given("two independent failures, one of which blocks a long chain"):
@@ -34,7 +34,7 @@ def test_root_causes_are_failures_with_no_failing_prerequisite():
         assert sorted(by["accept"]["blocked_by"]) == ["detect", "diff"]
 
 
-@scenario("analysis-failure-behind-a-failure", tags=["analysis"], depends_on=["analysis-frontier"])
+@scenario("analysis-failure-behind-a-failure", tags=["analysis"], depends_on=["analysis-frontier"], covers=["analysis.root-causes"])
 def test_a_failure_behind_another_failure_is_not_a_root_cause():
     """A failing scenario whose prerequisite also fails is a symptom, not a place to start."""
     with given("b fails, and it depends on a, which also fails"):
@@ -43,7 +43,7 @@ def test_a_failure_behind_another_failure_is_not_a_root_cause():
         assert analyze(scen)["frontier"] == ["a"]
 
 
-@scenario("analysis-critical", tags=["analysis"])
+@scenario("analysis-critical", tags=["analysis"], covers=["analysis.load-bearing"])
 def test_load_bearing_scenarios_are_ranked_by_everything_downstream():
     """'Load-bearing' ranks scenarios by how many others depend on them, directly or not."""
     with when("the graph is analysed"):
@@ -57,7 +57,7 @@ def test_load_bearing_scenarios_are_ranked_by_everything_downstream():
         assert "lonely" not in a["critical"]
 
 
-@scenario("analysis-goals", tags=["analysis"])
+@scenario("analysis-goals", tags=["analysis"], covers=["analysis.goals"])
 def test_goals_show_progress_over_everything_they_rely_on():
     """Each end of a branch is a goal, with progress over itself and all its prerequisites."""
     with when("the graph is analysed"):

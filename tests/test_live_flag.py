@@ -26,7 +26,7 @@ def port(sdhome):
         os.kill(info["pid"], signal.SIGTERM)
 
 
-@scenario("live-flag-starts-viewer", tags=["live"], depends_on=["history-records-a-run"])
+@scenario("live-flag-starts-viewer", tags=["live"], depends_on=["history-records-a-run"], covers=["viewer.live"])
 def test_live_flag_starts_a_viewer_and_prints_the_projects_page(pytester, port):
     """With no viewer running, --specdeck-live starts one in the background and prints the project's URL."""
     with given("no viewer on the port"):
@@ -39,7 +39,7 @@ def test_live_flag_starts_a_viewer_and_prints_the_projects_page(pytester, port):
         result.stdout.fnmatch_lines([f"specdeck live: http://127.0.0.1:{port}/p/*"])
 
 
-@scenario("live-flag-adds-a-route", tags=["live"], depends_on=["live-flag-starts-viewer"])
+@scenario("live-flag-adds-a-route", tags=["live"], depends_on=["live-flag-starts-viewer"], covers=["viewer.live"])
 def test_a_second_project_joins_the_running_viewer(pytester, port, tmp_path):
     """A second project's live run joins the viewer that's already running, under its own page."""
     with given("a viewer already started by one project"):
@@ -62,7 +62,7 @@ def test_a_second_project_joins_the_running_viewer(pytester, port, tmp_path):
         result.stdout.fnmatch_lines([f"specdeck live: http://127.0.0.1:{port}/p/other-project*"])
 
 
-@scenario("live-flag-off", tags=["live"])
+@scenario("live-flag-off", tags=["live"], covers=["history.opt-in"])
 def test_no_flag_means_no_recording(pytester, sdhome):
     """Without the flag or the config setting, nothing is recorded."""
     with when("the suite runs normally"):

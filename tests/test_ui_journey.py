@@ -45,6 +45,7 @@ def page(monkeypatch):
     "ui-journey",
     tags=["ui", "acceptance"],
     depends_on=["server-runs-tests-and-streams", "server-edits-a-test", "analysis-frontier"],
+    covers=["viewer.fix-loop"],
 )
 def test_developer_finds_the_blocker_fixes_it_and_watches_the_suite_go_green(pytester, record, viewer, page):
     """A developer opens the viewer, sees what's stuck and why, fixes the bug, re-runs from the browser, and edits a step.

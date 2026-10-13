@@ -20,7 +20,7 @@ def _wait(pred, timeout=30.0, step=0.1):
     raise AssertionError("timed out waiting")
 
 
-@scenario("server-serves-projects", tags=["server"], depends_on=["history-records-a-run"])
+@scenario("server-serves-projects", tags=["server"], depends_on=["history-records-a-run"], covers=["viewer.projects"])
 def test_every_recorded_project_gets_a_page(pytester, record, viewer):
     """Every project that recorded a run appears in the viewer, with its own page and board."""
     base, app = viewer
@@ -40,7 +40,7 @@ def test_every_recorded_project_gets_a_page(pytester, record, viewer):
         assert board["analysis"]["frontier"] == ["parse-amount"]
 
 
-@scenario("server-rejects-foreign-hosts-and-tokenless-writes", tags=["server", "security"])
+@scenario("server-rejects-foreign-hosts-and-tokenless-writes", tags=["server", "security"], covers=["viewer.local-only"])
 def test_writes_need_the_token_and_a_loopback_host(viewer):
     """Requests with a non-loopback Host are refused, and writes need the page's token."""
     base, app = viewer
@@ -70,7 +70,7 @@ def test_writes_need_the_token_and_a_loopback_host(viewer):
             s.close()
 
 
-@scenario("server-edits-a-test", tags=["server", "editing"], depends_on=["server-serves-projects", "edit-step-text"])
+@scenario("server-edits-a-test", tags=["server", "editing"], depends_on=["server-serves-projects", "edit-step-text"], covers=["edit.in-place"])
 def test_editing_through_the_viewer_rewrites_the_test_file(pytester, record, viewer):
     """The viewer's editor previews a diff, then writes the change into the test file."""
     base, app = viewer
@@ -93,7 +93,7 @@ def test_editing_through_the_viewer_rewrites_the_test_file(pytester, record, vie
         assert saved["model"]["steps"][0]["text"] == "the amounts 1 and 2 are added"
 
 
-@scenario("server-runs-tests-and-streams", tags=["server", "live"], depends_on=["server-serves-projects"])
+@scenario("server-runs-tests-and-streams", tags=["server", "live"], depends_on=["server-serves-projects"], covers=["viewer.runs-tests"])
 def test_a_run_started_from_the_viewer_streams_back_live(pytester, record, viewer):
     """'Run failing' starts pytest in the project; the stream announces changes and the board updates."""
     base, app = viewer

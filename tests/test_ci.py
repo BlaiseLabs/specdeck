@@ -66,7 +66,7 @@ def test_each_met_requirement_gets_a_verdict_from_proofdecks_evidence():
         assert [r["verdict"] for r in result["requirements"]][:2] == ["unproven", "mock-only"]
 
 
-@scenario("trust-join-nodeid-from-spec", group="ci", tags=["trust"], depends_on=["trust-join-verdicts"])
+@scenario("trust-join-nodeid-from-spec", group="ci", tags=["trust"], depends_on=["trust-join-verdicts"], covers=["trust.proven-not-passing"])
 def test_node_ids_fall_back_to_the_spec_when_the_report_predates_them():
     """A requirements report without node ids still joins, via the spec's logic lines."""
     with given("a report whose scenarios carry no nodeid, and the spec that names them"):
@@ -159,7 +159,7 @@ def test_the_report_exits_zero_unless_a_gate_is_asked_for():
         assert exit_code(green, fail_on_failing=True, fail_on_unmet=True, fail_on_untrusted=True) == 0
 
 
-@scenario("report-cli", group="ci", tags=["report", "cli"], depends_on=["report-pr-markdown", "trust-join-verdicts"])
+@scenario("report-cli", group="ci", tags=["report", "cli"], depends_on=["report-pr-markdown", "trust-join-verdicts"], covers=["report.pr-comment", "trust.proven-not-passing"])
 def test_the_commands_read_the_files_a_run_leaves_behind(tmp_path, capsys, monkeypatch):
     """`specdeck trust` and `specdeck report` work from .specdeck/ plus a proofdeck JSON file."""
     with given("a run's spec and requirements report, and proofdeck's JSON, on disk"):

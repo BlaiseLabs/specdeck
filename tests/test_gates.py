@@ -143,7 +143,7 @@ def test_parametrized_alias_survives_an_id_collision(pytester, run):
 
 
 @scenario("bug-requirements-without-terminal", group="gates", tags=["regression"],
-          depends_on=["gate-invalid-spec"])
+          depends_on=["gate-invalid-spec"], covers=["req.verification-status"])
 def test_requirements_report_is_written_without_a_terminal_reporter(pytester, run):
     """The report used to live inside `if terminalreporter`, so -p no:terminal dropped it."""
     with given("a suite with requirements and no terminal reporter"):

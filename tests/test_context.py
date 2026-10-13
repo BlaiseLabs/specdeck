@@ -118,7 +118,7 @@ def test_a_run_records_which_scenario_executes_which_function(pytester):
         assert all("(module level)" not in place for places in cov.values() for place in places)
 
 
-@scenario("tracing-is-off-by-default", group="context", tags=["coverage", "gate"], depends_on=["tracing-records-a-real-run"])
+@scenario("tracing-is-off-by-default", group="context", tags=["coverage", "gate"], depends_on=["tracing-records-a-real-run"], covers=["context.coverage-opt-in"])
 def test_nothing_is_recorded_unless_asked(pytester):
     """Tracing costs time, so a plain run neither records nor writes a map."""
     with given("a suite with one test"):
@@ -178,7 +178,7 @@ def test_the_document_connects_source_functions_to_the_scenarios_that_run_them()
         assert body.index("id: a") < body.index("name: A") < body.index("logic:")
 
 
-@scenario("context-cli", group="context", tags=["agents", "cli"], depends_on=["context-maps-code-to-scenarios"])
+@scenario("context-cli", group="context", tags=["agents", "cli"], depends_on=["context-maps-code-to-scenarios"], covers=["context.from-last-run", "cli.missing-input"])
 def test_the_command_builds_the_document_from_what_a_run_left_behind(tmp_path, capsys, monkeypatch):
     """`specdeck context` reads .specdeck/ and writes one file; a missing spec is exit 2."""
     with given("a spec and a coverage map on disk"):
@@ -204,7 +204,7 @@ def test_the_command_builds_the_document_from_what_a_run_left_behind(tmp_path, c
 
 
 @scenario("tracing-unavailable-is-not-fatal", group="context", tags=["coverage"],
-          depends_on=["tracing-records-a-real-run"])
+          depends_on=["tracing-records-a-real-run"], covers=["context.coverage-unavailable"])
 def test_a_recorder_that_cannot_start_stays_inert(monkeypatch):
     """When coverage.py is missing or already in use, recording is refused and the suite goes on."""
     from specdeck import tracing
@@ -230,7 +230,7 @@ def test_a_recorder_that_cannot_start_stays_inert(monkeypatch):
         assert rec.stop() == {}
 
 @scenario("tracing-says-when-it-cannot-record", group="context", tags=["coverage"],
-          depends_on=["tracing-unavailable-is-not-fatal"])
+          depends_on=["tracing-unavailable-is-not-fatal"], covers=["context.coverage-unavailable"])
 def test_a_run_that_cannot_record_coverage_says_so_instead_of_going_quiet(pytester, monkeypatch):
     """Asking for a map and silently getting none is the worst outcome: the document would
     just be missing its most useful half. Under another coverage session, say why."""

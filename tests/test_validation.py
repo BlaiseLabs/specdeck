@@ -115,7 +115,7 @@ def test_unparseable_yaml_reports_a_line():
         assert diags[0].line is not None
 
 
-@scenario("validate-requirements-file", group="validation", tags=["validator"], depends_on=["validate-clean"])
+@scenario("validate-requirements-file", group="validation", tags=["validator"], depends_on=["validate-clean"], covers=["req.file-validation"])
 def test_requirements_file_problems_surface_as_diagnostics(tmp_path):
     """Problems in requirements.yaml come back in the same shape as spec problems."""
     with given("a requirements file with a duplicate id"):
@@ -133,7 +133,7 @@ def test_requirements_file_problems_surface_as_diagnostics(tmp_path):
         assert any(d.code == "REQUIREMENT" for d in diags)
 
 
-@scenario("validate-missing-file", group="validation", tags=["validator"], depends_on=["validate-clean"])
+@scenario("validate-missing-file", group="validation", tags=["validator"], depends_on=["validate-clean"], covers=["cli.missing-input"])
 def test_missing_requirements_file_is_an_error(tmp_path):
     """Asking to validate a file that isn't there is an error, not a crash."""
     with when("a non-existent requirements file is validated"):
@@ -142,7 +142,7 @@ def test_missing_requirements_file_is_an_error(tmp_path):
         assert [d.code for d in diags] == ["NO_FILE"]
 
 
-@scenario("validate-unreadable-requirements", group="validation", tags=["validator"], depends_on=["validate-requirements-file"])
+@scenario("validate-unreadable-requirements", group="validation", tags=["validator"], depends_on=["validate-requirements-file"], covers=["req.file-validation"])
 def test_a_requirements_file_that_does_not_parse_is_an_error(tmp_path):
     """Bad indentation turned a 9-entry file into 'no requirements'; that must fail validation, not warn."""
     with given("a requirements file whose second entry is indented differently"):

@@ -11,7 +11,7 @@ from .test_ui_journey import page, text  # noqa: F401  (the browser fixture)
 playwright = pytest.importorskip("playwright.sync_api")
 
 
-@scenario("requirements-tab", tags=["ui", "requirements"], depends_on=["requirements-joined-with-tests", "ui-journey"])
+@scenario("requirements-tab", tags=["ui", "requirements"], depends_on=["requirements-joined-with-tests", "ui-journey"], covers=["viewer.requirements-tab"])
 def test_a_developer_sees_which_requirements_are_met_and_why(pytester, record, viewer, page):  # noqa: F811
     """The headline counts requirements met; the tab shows each one's status, its examples and the tests behind it."""
     base, _ = viewer

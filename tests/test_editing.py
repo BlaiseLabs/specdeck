@@ -42,7 +42,7 @@ def _fp(path, fn="test_pay"):
     return editing.load(path, fn)["fingerprint"]
 
 
-@scenario("edit-load-model", tags=["editing"])
+@scenario("edit-load-model", tags=["editing"], covers=["edit.form"])
 def test_the_editor_sees_what_can_be_edited(test_file):
     """The editor form shows each field, and marks computed text as read-only."""
     with when("the test is loaded for editing"):
@@ -57,7 +57,7 @@ def test_the_editor_sees_what_can_be_edited(test_file):
         assert [s["text_editable"] for s in m["steps"]] == [True, True, False]
 
 
-@scenario("edit-step-text", tags=["editing"], depends_on=["edit-load-model"])
+@scenario("edit-step-text", tags=["editing"], depends_on=["edit-load-model"], covers=["edit.in-place"])
 def test_editing_a_step_changes_only_that_string(test_file):
     """Editing a step rewrites that one string literal, keeping its quote style and the rest of the line."""
     with when("the Given text is edited on a line that also has a Japanese comment"):
@@ -73,7 +73,7 @@ def test_editing_a_step_changes_only_that_string(test_file):
         assert res["written"] and len(added) == 1
 
 
-@scenario("edit-expected-label", tags=["editing"], depends_on=["edit-step-text"])
+@scenario("edit-expected-label", tags=["editing"], depends_on=["edit-step-text"], covers=["edit.in-place"])
 def test_expected_labels_can_be_changed_added_and_removed(test_file):
     """Expected labels can be changed, added to a step, or removed."""
     with when("one label is removed and another is added"):
@@ -87,7 +87,7 @@ def test_expected_labels_can_be_changed_added_and_removed(test_file):
         assert 'with when("the customer pays"):' in text
 
 
-@scenario("edit-docstring", tags=["editing"], depends_on=["edit-load-model"])
+@scenario("edit-docstring", tags=["editing"], depends_on=["edit-load-model"], covers=["edit.in-place"])
 def test_title_and_details_rewrite_the_docstring(test_file):
     """Title and details are the docstring's first paragraph and the rest."""
     with when("both are edited"):
@@ -102,7 +102,7 @@ def test_title_and_details_rewrite_the_docstring(test_file):
         assert editing.load(test_file, "test_plain")["title"]["value"] == "It works."
 
 
-@scenario("edit-tags-and-dependencies", tags=["editing"], depends_on=["edit-load-model"])
+@scenario("edit-tags-and-dependencies", tags=["editing"], depends_on=["edit-load-model"], covers=["edit.in-place"])
 def test_tags_and_dependencies_edit_the_scenario_marker(test_file, pytester):
     """Tags and depends_on edit the @scenario marker; a plain test gets one, with its import, and still runs."""
     with when("tags change on the marked test and a dependency is added to the plain one"):
@@ -119,7 +119,7 @@ def test_tags_and_dependencies_edit_the_scenario_marker(test_file, pytester):
         result.assert_outcomes(passed=2)
 
 
-@scenario("edit-adds-import", tags=["editing"], depends_on=["edit-tags-and-dependencies"])
+@scenario("edit-adds-import", tags=["editing"], depends_on=["edit-tags-and-dependencies"], covers=["edit.in-place"])
 def test_adding_a_marker_adds_its_import_when_missing(tmp_path):
     """If the file doesn't import scenario yet, adding a marker adds the import too."""
     with given("a test file with no specdeck import"):
@@ -132,7 +132,7 @@ def test_adding_a_marker_adds_its_import_when_missing(tmp_path):
                                  '@scenario(tags=["smoke"])\ndef test_x():\n    assert os\n')
 
 
-@scenario("edit-refuses-stale-or-computed", tags=["editing", "safety"], depends_on=["edit-load-model"])
+@scenario("edit-refuses-stale-or-computed", tags=["editing", "safety"], depends_on=["edit-load-model"], covers=["edit.refuse-stale"])
 def test_stale_forms_and_computed_text_are_refused(test_file):
     """An edit made against an old version of the test, or to computed text, is refused and nothing is written."""
     with given("a fingerprint taken before someone else changed the test"):
@@ -149,7 +149,7 @@ def test_stale_forms_and_computed_text_are_refused(test_file):
             editing.apply(test_file, "test_pay", _fp(test_file), {"steps": [{"index": 2, "text": "x"}]})
 
 
-@scenario("edit-dry-run", tags=["editing", "safety"], depends_on=["edit-step-text"])
+@scenario("edit-dry-run", tags=["editing", "safety"], depends_on=["edit-step-text"], covers=["edit.review"])
 def test_review_shows_a_diff_without_writing(test_file):
     """'Review changes' returns the diff and writes nothing."""
     with when("an edit is previewed"):

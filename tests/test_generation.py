@@ -44,6 +44,7 @@ def test_unannotated_tests_become_scenarios_with_derived_metadata(pytester, run)
     assert two["name"] == "Two things"  # humanized function name when no docstring
 
 
+@scenario("generate-name-first-sentence", group="generation", covers=["spec.names"])
 def test_name_is_first_sentence_not_first_line(pytester, run):
     """A wrapped docstring must not produce a name that stops mid-sentence."""
     pytester.makepyfile(
@@ -102,6 +103,7 @@ def test_marker_overrides_and_runtime_steps(pytester, run):
     }
 
 
+@scenario("generate-failure-detail", group="generation", covers=["spec.failure-detail"])
 def test_failing_then_records_expected_observed_and_decision_context(pytester, run):
     pytester.makepyfile(
         test_gamma='''
@@ -192,6 +194,7 @@ def test_cycle_is_reported(pytester, run):
     assert "dependency cycle" in result.stdout.str()
 
 
+@scenario("generate-opt-out", group="generation", covers=["spec.opt-out"])
 def test_no_specdeck_flag_suppresses_output(pytester, run):
     pytester.makepyfile(test_none="def test_a(): pass")
     result, spec, needs = run("--no-specdeck")
@@ -317,6 +320,7 @@ def test_error_is_pinned_to_the_step_that_raised_and_later_steps_are_not_reached
     assert steps[2]["assertion"] == {"expected_label": "1 finding", "observed_label": "not reached"}
 
 
+@scenario("narrate-parametrized-step-text", group="generation", covers=["spec.step-text"])
 def test_parametrized_step_text_is_rendered_per_instance(pytester, run):
     """f-string step text is filled in from each parametrize value, even when the test was skipped."""
     pytester.makepyfile(

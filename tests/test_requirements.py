@@ -69,7 +69,7 @@ def _by_id(rep):
     return {r["id"]: r for r in rep["requirements"]}
 
 
-@scenario("requirements-joined-with-tests", tags=["requirements"])
+@scenario("requirements-joined-with-tests", tags=["requirements"], covers=["req.verification-status"])
 def test_each_requirement_gets_a_status_from_the_tests_that_cover_it(pytester, run):
     """Each requirement is met, failing or untested according to the tests that cover it."""
     with given("three requirements, a buggy tier function, and tests linked by covers= and by examples()"):
@@ -94,7 +94,7 @@ def test_each_requirement_gets_a_status_from_the_tests_that_cover_it(pytester, r
 
 
 @scenario("requirements-examples-as-expected-values", tags=["requirements"],
-          depends_on=["requirements-joined-with-tests"])
+          depends_on=["requirements-joined-with-tests"], covers=["req.examples"])
 def test_expected_values_come_from_the_requirement_and_are_tracked(pytester, run):
     """example() and examples() give tests their expected values from the file, and each use is recorded."""
     with given("the same suite"):
@@ -116,7 +116,7 @@ def test_expected_values_come_from_the_requirement_and_are_tracked(pytester, run
         assert step["assertion"]["expected_label"] == "110.0"
 
 
-@scenario("requirements-unknown-example", tags=["requirements"])
+@scenario("requirements-unknown-example", tags=["requirements"], covers=["req.unknown-example"])
 def test_asking_for_an_example_that_isnt_there_explains_what_is(pytester, run):
     """example() with inputs the requirement has no example for fails with the examples it does have."""
     with given("a test asking for an example that doesn't exist"):
@@ -135,7 +135,7 @@ def test_missing():
                                      "It has: qty=100; qty=99; qty=9.*"])
 
 
-@scenario("requirements-file-problems", tags=["requirements"])
+@scenario("requirements-file-problems", tags=["requirements"], covers=["req.malformed-entry"])
 def test_problems_in_the_file_are_reported_not_fatal(pytester, run):
     """A malformed entry is skipped with a warning; the rest of the file still works."""
     with given("a file with a duplicate id and an entry without a statement"):
@@ -156,7 +156,7 @@ requirements:
         assert rep["counts"]["met"] == 1 and rep["counts"]["total"] == 1
 
 
-@scenario("requirements-in-history", tags=["requirements", "history"], depends_on=["requirements-joined-with-tests"])
+@scenario("requirements-in-history", tags=["requirements", "history"], depends_on=["requirements-joined-with-tests"], covers=["history.record"])
 def test_the_viewer_shows_requirements_as_they_were_in_each_run(pytester, record):
     """Each recorded run keeps the requirements file as it was, so the board and old runs agree with their tests."""
     with given("a recorded run, then the refunds requirement is removed and the suite runs again"):
@@ -175,7 +175,7 @@ def test_the_viewer_shows_requirements_as_they_were_in_each_run(pytester, record
         assert tax["status"] == "met" and tax["examples_checked"] == 1
 
 
-@scenario("requirements-parametrized-ids", tags=["requirements"])
+@scenario("requirements-parametrized-ids", tags=["requirements"], covers=["spec.parametrized-ids", "spec.parametrized-deps"])
 def test_a_parametrized_scenario_gets_one_id_per_case(pytester, run):
     """A scenario id on a parametrized test becomes one id per case; depending on the id means every case."""
     with given("examples() on a test with an explicit id, and another test depending on that id"):

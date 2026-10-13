@@ -64,7 +64,7 @@ def test_partial_run_still_refuses_by_default(pytester, run):
         assert "--specdeck-merge" in result.stdout.str()
 
 
-@scenario("history-prune", group="maintenance", tags=["history"])
+@scenario("history-prune", group="maintenance", tags=["history"], covers=["history.prune"])
 def test_prune_keeps_the_newest_runs(tmp_path):
     """Runs and results were never pruned; prune bounds them per project."""
     with given("a project with five recorded runs"):
@@ -83,7 +83,7 @@ def test_prune_keeps_the_newest_runs(tmp_path):
     h.close()
 
 
-@scenario("history-forget", group="maintenance", tags=["history"], depends_on=["history-prune"])
+@scenario("history-forget", group="maintenance", tags=["history"], depends_on=["history-prune"], covers=["history.forget"])
 def test_forget_removes_a_project(tmp_path):
     """A project you no longer care about can be dropped entirely."""
     with given("a recorded project"):
@@ -98,7 +98,7 @@ def test_forget_removes_a_project(tmp_path):
     h.close()
 
 
-@scenario("history-compare", group="maintenance", tags=["history"], depends_on=["history-prune"])
+@scenario("history-compare", group="maintenance", tags=["history"], depends_on=["history-prune"], covers=["history.compare"])
 def test_compare_two_runs(tmp_path):
     """Comparing non-adjacent runs sorts scenarios into fixed, regressed, new and gone."""
     with given("two runs where one scenario was fixed, one regressed and one appeared"):
@@ -122,7 +122,7 @@ def test_compare_two_runs(tmp_path):
     h.close()
 
 
-@scenario("watch-detects-changes", group="maintenance", tags=["watch"])
+@scenario("watch-detects-changes", group="maintenance", tags=["watch"], covers=["watch.rerun-on-change"])
 def test_watch_snapshot_notices_edits(tmp_path):
     """Watch mode compares cheap stat() snapshots; no OS watcher, no dependency."""
     with given("a snapshot of a directory"):
@@ -141,7 +141,7 @@ def test_watch_snapshot_notices_edits(tmp_path):
         assert names == {"a.py", "b.py"}
 
 
-@scenario("watch-ignores-noise", group="maintenance", tags=["watch"], depends_on=["watch-detects-changes"])
+@scenario("watch-ignores-noise", group="maintenance", tags=["watch"], depends_on=["watch-detects-changes"], covers=["watch.rerun-on-change"])
 def test_watch_ignores_generated_directories(tmp_path):
     """specdeck's own output must not trigger a re-run loop."""
     with given("a .specdeck directory and a __pycache__ beside the source"):
@@ -155,7 +155,7 @@ def test_watch_ignores_generated_directories(tmp_path):
         assert not any(".specdeck" in p or "__pycache__" in p for p in snap)
 
 
-@scenario("watch-runs-once", group="maintenance", tags=["watch"], depends_on=["watch-detects-changes"])
+@scenario("watch-runs-once", group="maintenance", tags=["watch"], depends_on=["watch-detects-changes"], covers=["watch.rerun-on-change"])
 def test_watch_runs_the_suite_immediately(tmp_path):
     """Watch mode runs once up front rather than waiting for the first edit."""
     from specdeck.watch import watch

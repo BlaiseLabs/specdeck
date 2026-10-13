@@ -49,7 +49,7 @@ def big_suite(pytester, modules=36, per_module=10, seed=11):
     pytester.makepyfile(**files)
 
 
-@scenario("graph-large-suite", tags=["ui", "graph"], depends_on=["ui-journey"])
+@scenario("graph-large-suite", tags=["ui", "graph"], depends_on=["ui-journey"], covers=["viewer.readable-at-scale"])
 def test_a_large_suite_opens_on_a_feature_map_and_narrows_down(pytester, record, viewer, page):  # noqa: F811
     """A big suite opens on one node per feature; opening a feature, 'Problems' and 'Selected branch'
     each draw a small, readable picture, and zooming out turns nodes into status tiles.

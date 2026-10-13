@@ -1,104 +1,195 @@
-# What specdeck must be true of itself. Written by hand; the tests are the
-# evidence. `specdeck validate` lints this file; `specdeck requirements` reports
-# which entries are met.
+# specdeck's own requirements, in the form of ISO/IEC/IEEE 29148:2018: each a uniquely identified
+# statement (§5.2.4) with the attributes of §5.2.8 and a verification method (§6.5.2). Written by
+# hand; the tests are the evidence. `specdeck validate` checks this file against §5.2.4–5.2.7,
+# `specdeck requirements` reports which entries are met, `specdeck srs` writes the specification.
+
+# The sections of the specification only people can write (§9.6.2–9.6.9, §9.6.20).
+srs:
+  title: specdeck — software requirements specification
+  purpose: >-
+    specdeck makes a pytest suite its own requirements specification. Requirements are written
+    once, with their rationale; tests are linked to the requirements they verify; and the
+    specification is generated from every run, so it reports which requirements are verified now
+    and cannot drift from the tests.
+  scope: >-
+    specdeck is a pytest plugin and command-line tool. It generates the scenario spec from a test
+    run, reads and checks a requirements file, joins the two into verification status, writes
+    documents for people (the specification, a pull-request report) and for coding agents, and
+    serves a local viewer with run history. It does not run tests itself beyond invoking pytest,
+    and it does not carry out the life-cycle processes of ISO/IEC/IEEE 29148 Clause 6.
+  product_perspective: >-
+    specdeck runs inside pytest as a plugin and reads only what pytest and the project provide.
+    proofdeck, a separate tool, supplies the mutation evidence that `specdeck trust` joins with
+    the requirements to separate proven requirements from passing ones.
+  user_characteristics: >-
+    Python developers and QA engineers who write pytest suites, reviewers who read pull requests,
+    and coding agents that work in the repository. No knowledge of the standard is assumed; its
+    terms are used and cited where they apply.
+  limitations: >-
+    Verification by test is automated; inspection, analysis or simulation, and demonstration are
+    recorded as declared on each requirement, not carried out. The quality checks cover the
+    criteria of §5.2.4–5.2.7 a tool can check; appropriate, feasible and correct need review.
+  assumptions: >-
+    Python 3.10 or later and pytest. The viewer needs a local browser; coverage mapping needs
+    coverage.py.
+  apportioning: >-
+    specdeck owns the requirements, their traceability to tests, the generated documents and the
+    viewer. proofdeck owns mutation evidence: which tests notice a changed line.
+
 requirements:
+
+# --- the generated spec ------------------------------------------------------------------------
+
 - id: spec.generated
-  says: The spec is generated from the tests, so it cannot drift from them.
-  why: >-
-    Every other arrangement — a .feature file, a hand-written spec — needs someone
-    to keep two things in step, and nobody does. If the spec is output, there is
-    nothing to keep in step.
+  statement: The scenario spec shall be generated from the test suite on each run.
+  rationale: >-
+    Every other arrangement — a .feature file, a hand-written spec — needs someone to keep two
+    things in step, and nobody does. If the spec is output, there is nothing to keep in step.
+  type: functional
+  verification: test
 
 - id: spec.valid
-  says: A generated spec has no validation errors or warnings.
-  why: >-
-    A document that is merely usually well-formed cannot be a contract. specdeck
-    validates its own output rather than depending on another project to do it.
+  statement: A generated spec shall pass `specdeck validate` with no errors or warnings.
+  rationale: >-
+    A document that is merely usually well-formed cannot be a contract. specdeck validates its own
+    output rather than depending on another project to do it.
+  type: functional
+  verification: test
 
 - id: spec.narrates-unrun
-  says: Scenarios that were skipped or failed early still read as prose.
-  why: >-
-    A tests-first suite is mostly red. If the spec only narrated what executed, it
-    would be useless exactly when it is most wanted — before the code exists.
+  statement: A skipped or early-failing scenario shall still be narrated as prose in the spec.
+  rationale: >-
+    A tests-first suite is mostly red. If the spec only narrated what executed, the spec would be
+    useless exactly when a reader wants it — before the code exists.
+  type: functional
+  verification: test
 
 - id: spec.safe-yaml
-  says: Step text containing a colon never produces an unparseable spec.
-  why: >-
-    Unquoted `key: value` inside a scalar silently broke the hand-written specs
-    this replaces; two files were unloadable for months before anyone noticed.
+  statement: Step text containing a colon shall produce a spec that parses.
+  rationale: >-
+    Unquoted `key: value` inside a scalar silently broke the hand-written specs specdeck replaces;
+    two files were unloadable for months before anyone noticed.
+  type: software-attribute
+  verification: test
+
+- id: spec.names
+  statement: A scenario's name shall be the first sentence of its test's docstring.
+  rationale: >-
+    Docstrings are wrapped at a line length, not at a thought. A name cut at the first line stops
+    mid-sentence and reads as a mistake in every report that shows it.
+  type: functional
+  verification: test
+
+- id: spec.failure-detail
+  statement: A failing Then step shall record the expected value, the observed value and the decision context.
+  rationale: >-
+    A failure that says only "assert failed" sends the reader to the code. The expected and
+    observed values, with the decision the step was checking, say what went wrong in place.
+  type: functional
+  verification: test
+
+- id: spec.opt-out
+  statement: A run with `--no-specdeck` shall write no spec.
+  rationale: >-
+    Some runs are not meant to be recorded (a debugging loop, a CI job that only gates). Turning
+    the plugin off for one run has to leave the files as they were.
+  type: functional
+  verification: test
+
+- id: spec.parametrized-ids
+  statement: A scenario id on a parametrized test shall give one scenario per case.
+  rationale: >-
+    A parametrized test is several scenarios that share code. Giving the cases one id would merge
+    their outcomes, hiding a failing case behind a passing one.
+  type: functional
+  verification: test
+
+- id: spec.parametrized-deps
+  statement: A dependency on the id of a parametrized scenario shall be a dependency on each of its cases.
+  rationale: >-
+    Depending on a parametrized scenario means depending on what the scenario checks, in each
+    case. Waiting for one case only would report a dependant as runnable while a case it needs
+    fails.
+  type: functional
+  verification: test
+
+- id: spec.step-text
+  statement: Step text written as an f-string shall be filled in from each case's parameters, in skipped cases too.
+  rationale: >-
+    A parametrized scenario reads as one case per row only if each row says its own values. A
+    skipped case still needs its values filled in, or the narrated spec shows placeholders.
+  type: functional
+  verification: test
+
+# --- dependencies and analysis -----------------------------------------------------------------
 
 - id: deps.document-only
-  says: A dependency orders reading and reporting, never test execution.
-  why: >-
-    Tests that must run in order are an anti-pattern — they cannot be run alone or
-    in parallel, and they pass for the wrong reasons. The graph is for readers.
+  statement: A dependency shall order reading and reporting, and not test execution.
+  rationale: >-
+    Tests that must run in order are an anti-pattern: they cannot run alone or in parallel, and
+    they pass for the wrong reasons. The graph is for readers.
+  type: design-constraint
+  verification: test
 
 - id: deps.resolvable
-  says: Every depends_on in a generated spec names a scenario that exists.
-  why: >-
-    A dangling reference is an error in the format, and silently emitting one
-    makes the graph lie about what blocks what.
+  statement: Each depends_on in a generated spec shall name a scenario in that spec.
+  rationale: >-
+    A dangling reference is an error in the format, and silently emitting one makes the graph
+    misreport what blocks what.
+  type: functional
+  verification: test
+
+- id: analysis.root-causes
+  statement: The viewer shall list the root-cause failures, ordered by the number of scenarios each one blocks.
+  rationale: >-
+    A failing scenario whose prerequisite also fails is a symptom, not a place to start. Listing
+    the root causes, biggest blocker first, tells a developer what to fix first.
+  type: functional
+  verification: test
+
+- id: analysis.load-bearing
+  statement: The viewer shall rank scenarios by the number of scenarios that depend on each one, directly or transitively.
+  rationale: >-
+    A scenario many others depend on is where a regression costs the most. Ranking by dependants
+    shows where tests matter before anything fails.
+  type: functional
+  verification: test
+
+- id: analysis.goals
+  statement: The viewer shall show each goal, a scenario no other depends on, with progress over the goal and its prerequisites.
+  rationale: >-
+    The ends of the dependency graph are what the suite is for. Progress toward each one, counting
+    its prerequisites, is the honest measure of how close a feature is to done.
+  type: functional
+  verification: test
+
+# --- gates and runs ----------------------------------------------------------------------------
 
 - id: gate.optional
-  says: Adding specdeck to a suite never changes its exit code unless a gate is switched on.
-  why: >-
-    A tool that fails other people's builds on arrival gets uninstalled. Gates are
-    opt-in, by flag or config.
+  statement: Adding specdeck to a suite shall leave its exit code unchanged until a gate is switched on.
+  rationale: >-
+    A tool that fails other people's builds on arrival gets uninstalled. Gates are opt-in, by flag
+    or config.
+  type: design-constraint
+  verification: test
 
 - id: gate.enforceable
-  says: An unmet requirement or an unknown covers= id can fail the run.
-  why: >-
-    Traceability that can only warn is decorative. For the link to mean anything,
-    CI has to be able to refuse.
+  statement: A run with a gate switched on shall fail on an unmet requirement or an unknown covers= id.
+  rationale: >-
+    Traceability that can only warn is decorative. For the link to mean something, CI has to be
+    able to refuse.
+  type: functional
+  verification: test
 
 - id: run.partial-safe
-  says: A partial run never silently shrinks the spec.
-  why: >-
-    `-k` collects a subset; rewriting the spec from it would delete every scenario
-    that did not run. The default refuses, and --specdeck-merge updates in place.
-- id: trust.proven-not-passing
-  says: A met requirement whose covering tests ran a changed line without noticing it changed is reported as unproven, not as done.
-  why: Passing is not proving. proofdeck knows what a test noticed; specdeck knows what the test is for; only the join says both.
-- id: report.pr-comment
-  says: One run's result is one Markdown document a pull-request comment can carry, with fix-first, blocked, requirements and proof.
-- id: context.states-the-rule
-  says: The agent document states that a prerequisite only blocks a scenario that runs after it.
-  why: >-
-    Measured: without this sentence every reader, model or human, applies the obvious
-    rule — "anything upstream failed means blocked" — and sorts failures from blocked
-    at 40% exact instead of 100%. It costs about 100 tokens.
-- id: context.names-the-code
-  says: The agent document maps source functions to the scenarios that execute them.
-  why: >-
-    Measured: the spec alone could not say which tests a changed line affects (0.80 F1
-    against 0.93 for the raw test files, 25 real failures missed). With the map that
-    falls to 4 missed, for fewer tokens than the test files cost.
-- id: context.hubs-are-not-evidence
-  says: A function that most of the suite runs is reported as a count, not as a list of scenarios.
-  why: >-
-    Measured: the list for one such function (47 of 88 scenarios) made an agent name 87
-    tests as failing when the answer was none; the same agent without the map named 9. The
-    list is identical for every change in that function, so it is noise shaped like evidence.
-- id: context.scales-to-a-diff
-  says: The agent document can be written for the files a change touches, keeping unrelated scenarios in brief.
-  why: >-
-    On a large suite most scenarios are irrelevant to a given diff. Trimming them to id,
-    name, dependencies and node id cuts the document to roughly a third for a change in a
-    leaf module, while keeping the dependency graph whole.
-- id: context.states-the-why
-  says: The agent document carries each requirement's says and why, with the tests linked to it, and a profile that sends only that.
-  why: >-
-    What a test is for is not in the tests. With comments and docs stripped, an agent given
-    the spec without the requirements scored 6/10 on why tests exist: it saw requirement ids
-    as tags but never what they said or why, and the 23k-token document left no budget to
-    go and find requirements.yaml.
-- id: context.strategies
-  says: The agent context comes in named strategies, each stating what it carries and what that measured.
-  why: >-
-    No arrangement measured is best at both questions: the dependency rule that takes
-    root-cause sorting from 40% to 100% costs 'which tests break' accuracy, in the generated
-    document and in the raw test files alike. Choosing is unavoidable, so the choice is named
-    and its numbers published rather than buried.
+  statement: A partial run shall keep the scenarios outside the run in the spec.
+  rationale: >-
+    `-k` collects a subset; rewriting the spec from it would delete every scenario that did not
+    run. The default refuses, and --specdeck-merge updates in place.
+  type: software-attribute
+  verification: test
+
+# --- requirements ------------------------------------------------------------------------------
 
 - id: req.attributes
   statement: >-
@@ -113,6 +204,42 @@ requirements:
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §5.2.8
 
+- id: req.verification-status
+  statement: Each run shall report each requirement as met, failing, blocked, not run or untested from the tests that verify the requirement.
+  rationale: >-
+    A requirement is verified by objective evidence. The tests linked to a requirement are that
+    evidence, and their last outcome is the requirement's verification status — written on every
+    run, whatever pytest plugins are loaded.
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §6.5.2
+
+- id: req.examples
+  statement: A test shall take its expected value from a requirement's example through `example()`, with each use recorded.
+  rationale: >-
+    An expected value copied from what the code printed passes even when the code is wrong. Taken
+    from the requirement, the value comes from the need, and the record shows which examples were
+    checked. Examples make a requirement verifiable (§5.2.5).
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §5.2.5
+
+- id: req.unknown-example
+  statement: A call to `example()` with inputs the requirement has no example for shall fail with the examples the requirement has.
+  rationale: >-
+    A mistyped input would otherwise look like a missing value. Failing with the available
+    examples shows the reader what the requirement does specify.
+  type: functional
+  verification: test
+
+- id: req.malformed-entry
+  statement: A malformed requirements entry shall be reported and skipped, with the rest of the file used.
+  rationale: >-
+    One bad entry should not cost a team its whole traceability report. The problem is named, and
+    the other requirements are still verified.
+  type: software-attribute
+  verification: test
+
 - id: req.quality
   statement: >-
     `specdeck validate` shall report each requirement and requirement set that departs from the
@@ -126,15 +253,316 @@ requirements:
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §5.2.4–5.2.7
 
+- id: req.file-validation
+  statement: >-
+    `specdeck validate` shall report problems in the requirements file in the form of spec
+    problems, failing on a file that cannot be read.
+  rationale: >-
+    One command, one report shape, for the spec and the requirements. A file that cannot be read
+    is not a warning: bad indentation once turned a nine-entry file into "no requirements".
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §5.2.5
+
 - id: req.srs
   statement: >-
     `specdeck srs` shall produce the software requirements specification with the content of
     ISO/IEC/IEEE 29148:2018 §9.6, in the standard's order, verified from the last test run.
   rationale: >-
-    The standard defines what a software requirements specification contains. Generating it from
-    the requirements and the tests that verify them gives a document a reviewer or auditor
-    recognises, that reports which requirements are verified now, and that cannot drift. Sections
-    only people can write are marked to be supplied, so an incomplete set is visible (§5.2.6).
+    The standard defines what a software requirements specification contains. Generating the
+    specification from the requirements and the tests that verify them gives a document a reviewer
+    or auditor recognises, that reports which requirements are verified now, and that cannot drift.
+    Sections only people can write are marked to be supplied, so an incomplete set is visible.
   type: functional
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §9.6
+
+# --- proof and reports -------------------------------------------------------------------------
+
+- id: trust.proven-not-passing
+  statement: >-
+    A met requirement whose verifying tests ran a changed line without noticing a mutation of the
+    line shall be reported as unproven.
+  rationale: >-
+    Passing is not proving. proofdeck knows what a test noticed; specdeck knows what the test is
+    for; only the join says both.
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §6.5.2
+
+- id: report.pr-comment
+  statement: >-
+    Each run shall produce one Markdown report sized for a pull-request comment, with what to fix
+    first, what is blocked, the requirements and their proof.
+  rationale: >-
+    Reviewers decide in the pull request, not on a dashboard. The result has to arrive where the
+    decision is made, in one comment.
+  type: interface
+  verification: test
+
+# --- documents for coding agents ---------------------------------------------------------------
+
+- id: context.from-last-run
+  statement: "`specdeck context` shall build the agent document from the files the last run left in .specdeck/."
+  rationale: >-
+    The document has to describe the suite as the last run saw it. Reading what the run wrote
+    keeps the document and the run in step, and a missing spec is a usage error, not a crash.
+  type: functional
+  verification: test
+
+- id: cli.missing-input
+  statement: A command given an input file that does not exist shall exit with status 2 and name the file.
+  rationale: >-
+    A traceback for a mistyped path reads as a bug in the tool. Exit status 2 is the usage-error
+    convention scripts and CI already understand.
+  type: interface
+  verification: test
+
+- id: context.states-the-rule
+  statement: The agent document shall state that a prerequisite blocks only the scenarios that run after the prerequisite.
+  rationale: >-
+    Measured: without this sentence every reader, model or human, applies the obvious rule —
+    "anything upstream failed means blocked" — and sorts failures from blocked at 40% exact
+    instead of 100%. The sentence costs about 100 tokens.
+  type: functional
+  verification: test
+
+- id: context.names-the-code
+  statement: The agent document shall map each source function to the scenarios that execute the function.
+  rationale: >-
+    Measured: the spec alone could not say which tests a changed line affects (0.80 F1 against
+    0.93 for the raw test files, 25 real failures missed). With the map that falls to 4 missed,
+    for fewer tokens than the test files cost.
+  type: functional
+  verification: test
+
+- id: context.hubs-are-not-evidence
+  statement: A function run by the majority of the suite shall be reported as a count of scenarios rather than a list.
+  rationale: >-
+    Measured: the list for one such function (47 of 88 scenarios) made an agent name 87 tests as
+    failing when the answer was none; the same agent without the map named 9. The list is
+    identical for every change in that function, so the list is noise shaped like evidence.
+  type: functional
+  verification: test
+
+- id: context.scales-to-a-diff
+  statement: The agent document shall be writable for the files a change touches, with unrelated scenarios in brief.
+  rationale: >-
+    On a large suite the bulk of the scenarios are unrelated to a given diff. Trimming them to
+    id, name, dependencies and node id cuts the document to roughly a third for a change in a leaf
+    module, while keeping the dependency graph whole.
+  type: performance
+  verification: test
+
+- id: context.states-the-why
+  statement: The agent document shall carry each requirement's statement and rationale with the tests that verify the requirement.
+  rationale: >-
+    What a test is for is not in the tests. With comments and docs stripped, an agent given the
+    spec without the requirements scored 6/10 on why tests exist; with them, 29/30.
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §5.2.8
+
+- id: context.strategies
+  statement: The agent context shall come in named strategies, each stating its contents and its measured results.
+  rationale: >-
+    No arrangement measured is best at both questions: the dependency rule that takes root-cause
+    sorting from 40% to 100% costs 'which tests break' accuracy, in the generated document and in
+    the raw test files alike. Choosing is unavoidable, so the choice is named and its numbers
+    published rather than buried.
+  type: functional
+  verification: test
+
+- id: context.coverage-opt-in
+  statement: Coverage mapping shall run only when requested by flag or config.
+  rationale: >-
+    Tracing slows a run down. A plain run has to cost what pytest costs, so the map is recorded
+    only when someone asks for the map.
+  type: performance
+  verification: test
+
+- id: context.coverage-unavailable
+  statement: When coverage cannot be recorded, the run shall continue and report that the map is missing.
+  rationale: >-
+    Asking for a map and silently getting none is the worst outcome: the agent document would be
+    missing its most useful half with no sign of the gap. The tests still run.
+  type: software-attribute
+  verification: test
+
+# --- run history and the viewer ----------------------------------------------------------------
+
+- id: history.opt-in
+  statement: Runs shall be recorded only with the live flag or its config setting.
+  rationale: >-
+    History is written to the user's home directory. Recording without being asked would leave
+    files behind for people who never wanted the viewer.
+  type: design-constraint
+  verification: test
+
+- id: history.record
+  statement: >-
+    Each recorded run shall keep each scenario's outcome, its steps, the location of its test and
+    the requirements file as the file was at that run.
+  rationale: >-
+    The board and old runs have to agree with their tests. Keeping the requirements as they were
+    puts every requirement change under the same history as the tests that verify the requirement,
+    which is how the standard asks requirements to be managed: traced, with each change visible.
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §6.6.2
+
+- id: history.partial-update
+  statement: A run of part of the suite shall update only the scenarios that run touched.
+  rationale: >-
+    Running one test while fixing it should not wipe the rest of the board. Scenarios outside the
+    run keep their last result.
+  type: functional
+  verification: test
+
+- id: history.deletions
+  statement: A full run shall remove from the board the scenarios whose tests were deleted.
+  rationale: >-
+    A board that keeps deleted tests shows work that no longer exists. Only a full run can tell
+    deleted from unrun, so only a full run removes.
+  type: functional
+  verification: test
+
+- id: history.compare
+  statement: The viewer shall sort the scenarios of two runs into fixed, regressed, new and gone.
+  rationale: >-
+    The question after a change is what it fixed and what it broke. Comparing any two runs, not
+    only adjacent ones, answers that across a branch.
+  type: functional
+  verification: test
+
+- id: history.abandoned
+  statement: A run whose pytest process stopped before finishing shall be marked abandoned.
+  rationale: >-
+    A run left as "running" forever makes the board lie and blocks the next comparison. A dead
+    process is detected and named.
+  type: software-attribute
+  verification: test
+
+- id: history.live-overlay
+  statement: While a run is in progress, scenarios not reached yet shall show their last result, marked as queued.
+  rationale: >-
+    A board that blanks on each run loses the picture exactly when someone is watching the run.
+    Last results, marked queued, keep the picture until the new ones arrive.
+  type: usability
+  verification: test
+
+- id: history.prune
+  statement: "`specdeck history prune` shall keep a configured number of runs per project and delete the older ones."
+  rationale: >-
+    Runs and results accumulate on every recorded run. Without a bound the history database grows
+    until someone notices.
+  type: functional
+  verification: test
+
+- id: history.forget
+  statement: "`specdeck history forget` shall delete one project's recorded history."
+  rationale: >-
+    A project someone no longer works on should not stay in the viewer. Removing one project
+    leaves the others untouched.
+  type: functional
+  verification: test
+
+- id: watch.rerun-on-change
+  statement: Watch mode shall rerun the suite when a source or test file changes, ignoring specdeck's own output.
+  rationale: >-
+    Re-running by hand breaks the loop of edit and check. Reacting to specdeck's own output would
+    turn watch mode into an endless loop. Watch mode runs once at the start, then on each change.
+  type: functional
+  verification: test
+
+- id: viewer.live
+  statement: "`--specdeck-live` shall start the viewer when no viewer is running, or join the running viewer, and print the project's address."
+  rationale: >-
+    Seeing a run as it happens should take one flag. Several projects share one viewer, each on
+    its own page.
+  type: functional
+  verification: test
+
+- id: viewer.projects
+  statement: The viewer shall list each project that recorded a run, with its own page and board.
+  rationale: >-
+    One viewer serves the developer's projects. Each project is reachable from the list.
+  type: functional
+  verification: test
+
+- id: viewer.local-only
+  statement: The viewer shall refuse a request whose Host is not loopback, and a write without the page's token.
+  rationale: >-
+    The viewer can edit and run code. Refusing foreign hosts stops DNS rebinding; requiring the
+    page's token stops another site from posting to it.
+  type: software-attribute
+  verification: test
+
+- id: viewer.runs-tests
+  statement: The viewer shall start pytest for the project and update the board as results arrive.
+  rationale: >-
+    Fixing a failure and checking the fix should happen in one place. The board follows the run
+    as the run streams.
+  type: functional
+  verification: test
+
+- id: viewer.requirements-tab
+  statement: The viewer shall show each requirement's verification status, its examples and the tests that verify the requirement.
+  rationale: >-
+    The requirements are the reason the tests exist. Showing them with their evidence makes the
+    requirements, not the test list, the place to read the suite from.
+  type: usability
+  verification: test
+
+- id: viewer.readable-at-scale
+  statement: The viewer shall open on one node per feature, drawing one feature's scenarios on request.
+  rationale: >-
+    A graph of hundreds of scenarios at once is unreadable. Starting from features and opening one
+    at a time keeps each view small enough to read.
+  type: usability
+  verification: test
+
+- id: viewer.fix-loop
+  statement: >-
+    The viewer shall take a developer from a failing run to the root cause, a re-run and an edited
+    step without leaving the browser.
+  rationale: >-
+    The viewer earns its place only if the whole loop — see what is stuck, fix, re-run, adjust the
+    test — happens in one place.
+  type: usability
+  verification: test
+
+# --- editing tests from the viewer -------------------------------------------------------------
+
+- id: edit.in-place
+  statement: >-
+    The editor shall change a test's step text, expected labels, docstring, tags or dependencies by
+    rewriting only the edited source text.
+  rationale: >-
+    A test edited from the browser has to stay a test someone would have written by hand: same
+    quote style, same layout, the import added when a marker is added.
+  type: functional
+  verification: test
+
+- id: edit.form
+  statement: The editor shall show each editable field of a test and mark computed text as read-only.
+  rationale: >-
+    Step text built by code cannot be edited as text. Marking the step text read-only in the form
+    tells the developer before an edit is refused, not after.
+  type: usability
+  verification: test
+
+- id: edit.refuse-stale
+  statement: The editor shall write nothing for an edit made to an outdated version of the test or to computed text.
+  rationale: >-
+    Writing over a test that changed since it was loaded would lose someone's work; editing text
+    the code computes would edit something that is not in the file. Refusing writes nothing at all.
+  type: software-attribute
+  verification: test
+
+- id: edit.review
+  statement: The editor shall show the diff of an edit before writing the edit.
+  rationale: >-
+    Changing source code from a browser has to be reviewable first. The review writes nothing.
+  type: usability
+  verification: test
