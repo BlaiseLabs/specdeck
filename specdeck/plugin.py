@@ -824,7 +824,17 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
         if rep is not None:
             c = rep["counts"]
             bits = [f"{c['met']} of {c['total']} met"]
-            bits += [f"{c[k]} {k}" for k in ("failing", "blocked", "not-run", "untested") if c[k]]
+            for k in ("failing", "blocked", "not-run", "untested"):
+                ids = [r["id"] for r in rep["requirements"] if r["status"] == k]
+                if k == "untested":   # a declared non-test method (§6.5.2) is not a gap in the tests
+                    declared = [r for r in rep["requirements"] if r["status"] == k
+                                and any(m != "test" for m in r.get("verification") or [])]
+                    ids = [i for i in ids if i not in {r["id"] for r in declared}]
+                    if declared:
+                        bits.append(f"{len(declared)} verified another way")
+                if ids:
+                    named = f" ({', '.join(ids[:4])}{', …' if len(ids) > 4 else ''})" if k in ("failing", "blocked") else ""
+                    bits.append(f"{len(ids)} {k}{named}")
             tr.write_line(f"specdeck: requirements: {', '.join(bits)} + {rp.name}")
             for u in rep["unknown"]:
                 tr.write_line(f"specdeck: warning: {', '.join(u['scenarios'])} covers {u['id']!r}, "

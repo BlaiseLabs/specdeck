@@ -85,7 +85,7 @@ def test_each_requirement_gets_a_status_from_the_tests_that_cover_it(pytester, r
             ("failing", "met", "untested")
         assert rep["counts"] == {"met": 1, "failing": 1, "blocked": 0, "not-run": 0, "untested": 1, "total": 3}
     with and_("the terminal says so, and warns about the link to a requirement that doesn't exist"):
-        result.stdout.fnmatch_lines(["*specdeck: requirements: 1 of 3 met, 1 failing, 1 untested*",
+        result.stdout.fnmatch_lines(["*specdeck: requirements: 1 of 3 met, 1 failing (pricing.bulk-tier), 1 untested*",
                                      "*typo covers 'pricing.taxes', which isn't in the requirements file*"])
         assert rep["unknown"] == [{"id": "pricing.taxes", "scenarios": ["typo"]}]
     with and_("scenarios carry req: tags in the generated spec, which the viewer's validator accepts"):
@@ -255,3 +255,39 @@ requirements:
     with and_("the types are the §9.6 SRS sections and the methods are the four of §6.5.2"):
         assert "design-constraint" in TYPES and TYPES["design-constraint"].startswith("§9.6.16")
         assert set(VERIFICATION) == {"test", "analysis", "simulation", "demonstration", "inspection"}
+
+
+@scenario("requirements-summary-line", tags=["requirements"], depends_on=["requirements-joined-with-tests"],
+          covers=["req.summary"])
+def test_the_summary_names_what_is_failing(pytester, run):
+    """The one line a run prints names the failing requirements, so the reader (often an agent)
+    knows which rule broke without opening a report, and does not count a requirement verified
+    by inspection as a gap in the tests."""
+    with given("a failing requirement, one verified by inspection, and one with no test"):
+        pytester.makefile(".yaml", requirements="""\
+requirements:
+  - id: money.decimal
+    statement: Money shall be Decimal.
+    rationale: Rounding.
+  - id: brand.logo
+    statement: The receipt shall carry the logo.
+    rationale: Brand rules.
+    verification: inspection
+  - id: export.csv
+    statement: Orders shall export to CSV.
+    rationale: Accounts.
+""")
+        pytester.makepyfile(test_money="""\
+from specdeck import scenario
+
+@scenario("money", covers=["money.decimal"])
+def test_money():
+    assert isinstance(0.1, int)
+""")
+    with when("the suite runs"):
+        result, _, _ = run()
+    with then("the line names the failing requirement and counts the inspected one apart",
+              expected="0 of 3 met, 1 failing (money.decimal), 1 verified another way, 1 untested"):
+        result.stdout.fnmatch_lines(["*specdeck: requirements: 0 of 3 met, 1 failing (money.decimal), "
+                                     "1 verified another way, 1 untested*"])
+

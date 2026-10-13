@@ -214,6 +214,15 @@ requirements:
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §6.5.2
 
+- id: req.summary
+  statement: Each run shall print a one-line requirements summary naming the failing and blocked requirements.
+  rationale: >-
+    The summary is often all a person or an agent reads of a run. "1 failing" sends the reader to
+    a report to find out which; naming it says which rule broke where the reader already is. A
+    requirement verified by inspection or demonstration (§6.5.2) is counted apart, not as untested.
+  type: interface
+  verification: test
+
 - id: req.examples
   statement: A test shall take its expected value from a requirement's example through `example()`, with each use recorded.
   rationale: >-
