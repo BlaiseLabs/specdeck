@@ -33,16 +33,20 @@ It works in a scratch copy, so this directory is left as it is.
 | 18–26 s | Step 2: the rule's test | "Each rule has a test. Ordinary pytest, linked to the rule." |
 | 26–36 s | Step 3: `pytest`, `specdeck agents`, AGENTS.md | "One command writes the rules into AGENTS.md, with the test behind each and whether it held in the last run. Your hand-written part of the file stays." |
 | 36–44 s | Step 4: the agent's refund function | "An agent adds a refund, the quick way: float." |
-| 44–52 s | Step 5: the failing rule test | "The suite fails on the rule, not on the feature: the refund itself passes its test." |
+| 44–52 s | Step 5: the failing rule test | "The suite fails on the rule, not on the feature, and the summary names the rule that broke." |
 | 52–60 s | Step 6: AGENTS.md, broken rule first | "And AGENTS.md now opens with the broken rule, its reason, and the test to make pass — for the next agent session or the reviewer." |
 
 ## What it shows, and what it doesn't
 
-- It shows a broken rule being **caught** and **reported where the agent reads**. It does not
-  show that the file **prevents** the break. Whether it does was measured separately
-  (`bench/rules_ab`); see the results there before claiming it.
-- The rule tests are ordinary pytest. specdeck does not check rules by itself: someone writes the
-  test, as with any fitness function. What specdeck adds is the link (rule → reason → test →
-  status) and keeping the instructions file current from the last run.
+- It shows a broken rule being **caught**, named in the run's summary line and at the top of
+  AGENTS.md with its reason and the test to make pass.
+- It does not show **prevention**, and the A/B in `bench/rules_ab` says not to claim it for
+  specdeck. With terra, a teammate's nudge against a rule ("just use pandas") led to a break in
+  4 of 6 tasks with no rules written down and 1 of 6 with any rules file. Plain bullets did as
+  well as specdeck's generated file, which cost more tokens.
+- A rule test is only as good as its check. In that A/B, both agents that hit a rule test under
+  pressure got around it (`importlib.import_module("pandas")` past an import scan) rather than
+  keeping the rule. Check the rule's intent, not one way of writing the violation, and expect a
+  reviewer to still look.
 - An agent that never runs the tests still breaks the rule. CI running `pytest` is what makes it
   stick.
