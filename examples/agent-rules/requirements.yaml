@@ -1,0 +1,23 @@
+# The shop's "never" rules, kept as requirements: each with its reason and the test that checks it.
+# `specdeck agents` writes them into AGENTS.md with their status from the last test run.
+requirements:
+  - id: rules.decimal-money
+    statement: Money amounts shall be Decimal values, with no float anywhere in the shop package.
+    rationale: A float total once made a refund one cent short and the accounts would not reconcile.
+    type: design-constraint
+
+  - id: rules.utc-clock
+    statement: Timestamps shall come from shop.clock.now().
+    rationale: Naive local timestamps put orders on the wrong day for the overnight batch.
+    type: design-constraint
+
+  - id: rules.i18n
+    statement: Each user-facing message shall come from shop.i18n through t(), in each supported language.
+    rationale: Half the staff read Japanese; a message added in English only shows them a KeyError.
+    type: design-constraint
+
+  - id: done.tests-pass
+    statement: A change shall leave the whole test suite passing, rule tests included.
+    rationale: A rule test failing is the rule being broken, not a flaky test to skip.
+    type: process
+    verification: demonstration

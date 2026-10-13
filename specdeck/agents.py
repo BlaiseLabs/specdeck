@@ -62,6 +62,11 @@ def block(reqs: Requirements, report: Optional[dict]) -> str:
            "checked by the tests named under it; the status is from the last test run. Keep to every rule "
            "that holds. A broken rule is the first thing to fix, or to raise with a person if the rule "
            "itself looks wrong. Change a rule by editing `requirements.yaml`, never this block.", ""]
+    broken = [r for r in rows if r.get("type") in dict(RULES) and r.get("status") == "failing"]
+    names = ", ".join(f"`{r['id']}`" for r in broken)
+    if broken:   # first, where an agent reading from the top meets it before anything else
+        out += [f"**Broken in the last run:** {names} — fix {'this' if len(broken) == 1 else 'these'} "
+                "before anything else.", ""]
     any_rule = False
     for t, name in RULES:
         mine = [r for r in rows if r.get("type") == t]
@@ -76,10 +81,11 @@ def block(reqs: Requirements, report: Optional[dict]) -> str:
     if not any_rule:
         out += ["No rules yet. Add requirements with `type: design-constraint`, `standards-compliance` or "
                 "`process` to `requirements.yaml`, then run `specdeck agents` again.", ""]
-    broken = [r["id"] for r in rows if r.get("type") in dict(RULES) and r.get("status") == "failing"]
     out += ["### Before you finish", "",
-            "Run `pytest`, then `specdeck validate`, then `specdeck agents` to refresh this block."
-            + (f" Broken now: {', '.join(f'`{b}`' for b in broken)}." if broken else ""), "", END]
+            "Run `pytest`, then `specdeck validate`, then `specdeck agents` to refresh this block."]
+    if broken:
+        out += ["", f"Still broken from the last run: {names}."]
+    out += ["", END]
     return "\n".join(out)
 
 

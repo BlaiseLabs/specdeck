@@ -48,8 +48,9 @@ def test_the_rules_are_written_with_their_reasons_tests_and_status(tmp_path):
         assert "**Services shall exchange messages only through the queue.** (`arch.queue`)" in text
         assert "Why: Decided 2026-03" in text and "`tests/test_arch.py::test_queue`" in text
     with and_("a rule broken in the last run says so, and is named again before finishing",
-              expected="broken in the last run; Broken now: `arch.queue`"):
-        assert "**broken in the last run**" in text and "Broken now: `arch.queue`." in text
+              expected="named first, at its rule, and again before finishing"):
+        assert "**broken in the last run**" in text and "Still broken from the last run: `arch.queue`." in text
+        assert text.index("**Broken in the last run:** `arch.queue`") < text.index("### Design constraints")
     with and_("a rule verified another way tells the agent to check it by hand", expected="inspection"):
         assert "Verified by inspection, not by a test: check it yourself" in text
     with and_("functional requirements are not rules", expected="price.bulk absent"):
@@ -74,4 +75,4 @@ def test_only_the_generated_block_of_an_existing_file_is_replaced(tmp_path):
         assert text.startswith("# Agents\n\nUse uv, not pip. Run ruff.\n") and text.rstrip().endswith("Footer.")
     with and_("there is one block, and the block reflects the second run", expected="one BEGIN, no broken rule"):
         assert text.count(BEGIN) == 1 and text.count(END) == 1
-        assert "Broken now" not in text and "holds in the last run" in text
+        assert "Broken in the last run" not in text and "holds in the last run" in text
