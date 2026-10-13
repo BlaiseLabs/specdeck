@@ -1,0 +1,20 @@
+casetests_gpt-4o-mini  clamp_ease                     cases 5 kept 5 dropped 0 first_ok True
+casetests_gpt-4o-mini  overdue_priority               cases 5 kept 5 dropped 0 first_ok True
+casetests_gpt-4o-mini  learning_delay_days            cases 7 kept 7 dropped 0 first_ok True
+casetests_gpt-4o-mini  is_buried                      cases 4 kept 0 dropped 4 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  is_due_review                  cases 6 kept 0 dropped 6 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  is_due_new                     cases 7 kept 0 dropped 7 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  is_due_learning                cases 7 kept 6 dropped 1 first_ok False
+casetests_gpt-4o-mini  suspend_leech                  cases 5 kept 5 dropped 0 first_ok True
+casetests_gpt-4o-mini  schedule_review                cases 8 kept 8 dropped 0 first_ok True
+casetests_gpt-4o-mini  is_leech                       cases 6 kept 0 dropped 6 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  grade_card                     cases 4 kept 1 dropped 3 first_ok False
+casetests_gpt-4o-mini  select_study_queue             cases 6 kept 0 dropped 6 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  bury_siblings                  cases 5 kept 5 dropped 0 first_ok True
+casetests_gpt-4o-mini  current_streak                 cases 6 kept 6 dropped 0 first_ok True
+casetests_gpt-4o-mini  schedule_new_or_learning       cases 8 kept 0 dropped 8 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  summarise_day                  cases 5 kept 0 dropped 5 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  build_today_queue              cases 5 kept 0 dropped 5 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  daily_summary                  cases 5 kept 3 dropped 2 first_ok False
+casetests_gpt-4o-mini  grade_review                   cases 5 kept 0 dropped 5 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  study_streak                   cases 5 kept 0 dropped 5 first_ok False  UNUSABLE

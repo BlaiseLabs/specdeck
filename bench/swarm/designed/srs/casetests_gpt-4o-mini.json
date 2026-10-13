@@ -1,0 +1,350 @@
+{
+ "clamp_ease": {
+  "cases": 5,
+  "try0": {
+   "ok": true,
+   "out": ".....                                                                    [100%]\n5 passed in 0.09s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import clamp_ease\nimport pytest\n\ndef test_above_minimum_returns_input_unchanged():\n    result = clamp_ease(2.5)\n    assert result == 2.5\n\ndef test_below_minimum_clamps_to_minimum():\n    result = clamp_ease(1.0)\n    assert result == 1.3\n\ndef test_at_minimum_returns_minimum():\n    result = clamp_ease(1.3)\n    assert result == 1.3\n\ndef test_negative_value_clamps_to_minimum():\n    result = clamp_ease(-2.75)\n    assert result == 1.3\n\ndef test_preserves_unrounded_value_above_minimum():\n    result = clamp_ease(1.3000000000000003)\n    assert result == 1.3000000000000003\n",
+  "dropped": [],
+  "kept": 5,
+  "first_ok": true
+ },
+ "overdue_priority": {
+  "cases": 5,
+  "try0": {
+   "ok": true,
+   "out": ".....                                                                    [100%]\n5 passed in 0.09s\n"
+  },
+  "src": "import pytest\nfrom app.domain import Card, CardState\nfrom app.logic import overdue_priority\nfrom datetime import date\n\ndef test_overdue_example_two_days_interval_four():\n    card = Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 1, 8), lapses=0)\n    today = date(2026, 1, 10)\n    result = overdue_priority(card, today)\n    assert result == 0.5\n\ndef test_due_today_returns_zero():\n    card = Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 10), lapses=0)\n    today = date(2026, 1, 10)\n    result = overdue_priority(card, today)\n    assert result == 0.0\n\ndef test_future_due_date_returns_negative_priority():\n    card = Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=2, due_date=date(2026, 1, 11), lapses=0)\n    today = date(2026, 1, 10)\n    result = overdue_priority(card, today)\n    assert result == -0.5\n\ndef test_zero_interval_uses_one_as_denominator():\n    card = Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 7), lapses=0)\n    today = date(2026, 1, 10)\n    result = overdue_priority(card, today)\n    assert result == 3.0\n\ndef test_negative_interval_uses_one_as_denominator():\n    card = Card(id='c1', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=-4, due_date=date(2026, 1, 12), lapses=0)\n    today = date(2026, 1, 10)\n    result = overdue_priority(card, today)\n    assert result == -2.0\n",
+  "dropped": [],
+  "kept": 5,
+  "first_ok": true
+ },
+ "learning_delay_days": {
+  "cases": 7,
+  "try0": {
+   "ok": true,
+   "out": ".......                                                                  [100%]\n7 passed in 0.10s\n"
+  },
+  "src": "import pytest\nfrom app.domain import SchedulerSettings\nfrom app.logic import learning_delay_days\n\ndef test_returns_selected_step_for_good():\n    settings = SchedulerSettings(learning_steps_days=(1, 3))\n    step_index = 1\n    hard = False\n    expected = 3\n    result = learning_delay_days(settings, step_index, hard)\n    assert result == expected\n\ndef test_hard_uses_ceiling_of_one_point_five_times_delay():\n    settings = SchedulerSettings(learning_steps_days=(1, 3))\n    step_index = 0\n    hard = True\n    expected = 2\n    result = learning_delay_days(settings, step_index, hard)\n    assert result == expected\n\ndef test_empty_steps_falls_back_to_one_and_hard_is_two():\n    settings = SchedulerSettings(learning_steps_days=())\n    step_index = 9\n    hard = True\n    expected = 2\n    result = learning_delay_days(settings, step_index, hard)\n    assert result == expected\n\ndef test_negative_step_index_clamps_to_first_step():\n    settings = SchedulerSettings(learning_steps_days=(2, 5))\n    step_index = -1\n    hard = False\n    expected = 2\n    result = learning_delay_days(settings, step_index, hard)\n    assert result == expected\n\ndef test_oversized_step_index_clamps_to_last_step():\n    settings = SchedulerSettings(learning_steps_days=(2, 5))\n    step_index = 99\n    hard = False\n    expected = 5\n    result = learning_delay_days(settings, step_index, hard)\n    assert result == expected\n\ndef test_nonpositive_steps_are_replaced_with_one():\n    settings = SchedulerSettings(learning_steps_days=(0, -4, 3))\n    step_index = 1\n    hard = False\n    expected = 1\n    result = learning_delay_days(settings, step_index, hard)\n    assert result == expected\n\ndef test_hard_delay_never_below_one_after_step_normalization():\n    settings = SchedulerSettings(learning_steps_days=(0,))\n    step_index = 0\n    hard = True\n    expected = 2\n    result = learning_delay_days(settings, step_index, hard)\n    assert result == expected\n",
+  "dropped": [],
+  "kept": 7,
+  "first_ok": true
+ },
+ "is_buried": {
+  "cases": 4,
+  "try0": {
+   "ok": false,
+   "out": "inclusive _____________________\ntest_it.py:18: in test_buried_on_burial_date_inclusive\n    result = run(supply(is_buried)(card, date(2026, 2, 1)))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n______________________ test_not_buried_after_burial_date _______________________\ntest_it.py:24: in test_not_buried_after_burial_date\n    result = run(supply(is_buried)(card, date(2026, 2, 1)))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n____________________ test_buried_before_future_burial_date _____________________\ntest_it.py:30: in test_buried_before_future_burial_date\n    result = run(supply(is_buried)(card, date(2026, 2, 1)))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n=========================== short test summary info ============================\nFAILED test_it.py::test_not_buried_when_until_is_none - TypeError: Handler.__...\nFAILED test_it.py::test_buried_on_burial_date_inclusive - TypeError: Handler....\nFAILED test_it.py::test_not_buried_after_burial_date - TypeError: Handler.__c...\nFAILED test_it.py::test_buried_before_future_burial_date - TypeError: Handler...\n4 failed in 0.12s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "inclusive _____________________\ntest_it.py:18: in test_buried_on_burial_date_inclusive\n    result = run(supply(is_buried)(card, date(2026, 2, 1)))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n______________________ test_not_buried_after_burial_date _______________________\ntest_it.py:24: in test_not_buried_after_burial_date\n    result = run(supply(is_buried)(card, date(2026, 2, 1)))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n____________________ test_buried_before_future_burial_date _____________________\ntest_it.py:30: in test_buried_before_future_burial_date\n    result = run(supply(is_buried)(card, date(2026, 2, 1)))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n=========================== short test summary info ============================\nFAILED test_it.py::test_not_buried_when_until_is_none - TypeError: Handler.__...\nFAILED test_it.py::test_buried_on_burial_date_inclusive - TypeError: Handler....\nFAILED test_it.py::test_not_buried_after_burial_date - TypeError: Handler.__c...\nFAILED test_it.py::test_buried_before_future_burial_date - TypeError: Handler...\n4 failed in 0.12s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_buried_before_future_burial_date",
+   "test_buried_on_burial_date_inclusive",
+   "test_not_buried_after_burial_date",
+   "test_not_buried_when_until_is_none"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "is_due_review": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "syncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'bool' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_review_due_today - TypeError: 'bool' object is not an...\nFAILED test_it.py::test_review_due_tomorrow - TypeError: 'bool' object is not...\nFAILED test_it.py::test_learning_due_yesterday - TypeError: 'bool' object is ...\nFAILED test_it.py::test_review_overdue - TypeError: 'bool' object is not an i...\nFAILED test_it.py::test_review_due_but_buried_today - TypeError: 'bool' objec...\nFAILED test_it.py::test_review_due_after_burial_expired - TypeError: 'bool' o...\n6 failed in 0.38s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "syncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'bool' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_review_due_today - TypeError: 'bool' object is not an...\nFAILED test_it.py::test_review_due_tomorrow - TypeError: 'bool' object is not...\nFAILED test_it.py::test_learning_due_yesterday - TypeError: 'bool' object is ...\nFAILED test_it.py::test_review_overdue - TypeError: 'bool' object is not an i...\nFAILED test_it.py::test_review_due_but_buried_today - TypeError: 'bool' objec...\nFAILED test_it.py::test_review_due_after_burial_expired - TypeError: 'bool' o...\n6 failed in 0.39s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_learning_due_yesterday",
+   "test_review_due_after_burial_expired",
+   "test_review_due_but_buried_today",
+   "test_review_due_today",
+   "test_review_due_tomorrow",
+   "test_review_overdue"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "is_due_new": {
+  "cases": 7,
+  "try0": {
+   "ok": false,
+   "out": "ent: 'first'\n____________________ test_suspended_due_yesterday_unburied _____________________\ntest_it.py:57: in test_suspended_due_yesterday_unburied\n    result = run(supply()(is_due_new)(card, today))\nE   TypeError: supply() missing 1 required positional argument: 'first'\n_____________________ test_learning_due_yesterday_unburied _____________________\ntest_it.py:65: in test_learning_due_yesterday_unburied\n    result = run(supply()(is_due_new)(card, today))\nE   TypeError: supply() missing 1 required positional argument: 'first'\n=========================== short test summary info ============================\nFAILED test_it.py::test_new_due_today_unburied - TypeError: supply() missing ...\nFAILED test_it.py::test_new_due_tomorrow_unburied - TypeError: supply() missi...\nFAILED test_it.py::test_new_due_yesterday_unburied - TypeError: supply() miss...\nFAILED test_it.py::test_new_due_today_buried_until_today - TypeError: supply(...\nFAILED test_it.py::test_new_due_today_burial_expired_yesterday - TypeError: s...\nFAILED test_it.py::test_suspended_due_yesterday_unburied - TypeError: supply(...\nFAILED test_it.py::test_learning_due_yesterday_unburied - TypeError: supply()...\n7 failed in 0.14s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "ent: 'first'\n____________________ test_suspended_due_yesterday_unburied _____________________\ntest_it.py:57: in test_suspended_due_yesterday_unburied\n    result = run(supply()(is_due_new)(card, today))\nE   TypeError: supply() missing 1 required positional argument: 'first'\n_____________________ test_learning_due_yesterday_unburied _____________________\ntest_it.py:65: in test_learning_due_yesterday_unburied\n    result = run(supply()(is_due_new)(card, today))\nE   TypeError: supply() missing 1 required positional argument: 'first'\n=========================== short test summary info ============================\nFAILED test_it.py::test_new_due_today_unburied - TypeError: supply() missing ...\nFAILED test_it.py::test_new_due_tomorrow_unburied - TypeError: supply() missi...\nFAILED test_it.py::test_new_due_yesterday_unburied - TypeError: supply() miss...\nFAILED test_it.py::test_new_due_today_buried_until_today - TypeError: supply(...\nFAILED test_it.py::test_new_due_today_burial_expired_yesterday - TypeError: s...\nFAILED test_it.py::test_suspended_due_yesterday_unburied - TypeError: supply(...\nFAILED test_it.py::test_learning_due_yesterday_unburied - TypeError: supply()...\n7 failed in 0.14s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_learning_due_yesterday_unburied",
+   "test_new_due_today_burial_expired_yesterday",
+   "test_new_due_today_buried_until_today",
+   "test_new_due_today_unburied",
+   "test_new_due_tomorrow_unburied",
+   "test_new_due_yesterday_unburied",
+   "test_suspended_due_yesterday_unburied"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "is_due_learning": {
+  "cases": 7,
+  "try0": {
+   "ok": false,
+   "out": "test_learning_buried_after_today_and_due_is_due ________________\ntest_it.py:58: in test_learning_buried_after_today_and_due_is_due\n    result = run(supply(is_due_learning)(card, today))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n______________________ test_new_due_yesterday_is_not_due _______________________\ntest_it.py:66: in test_new_due_yesterday_is_not_due\n    result = run(supply(is_due_learning)(card, today))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n=========================== short test summary info ============================\nFAILED test_it.py::test_learning_due_yesterday_is_due - TypeError: Handler.__...\nFAILED test_it.py::test_buried_learning_due_yesterday_is_not_due - TypeError:...\nFAILED test_it.py::test_review_due_yesterday_is_not_due - TypeError: Handler....\nFAILED test_it.py::test_learning_due_today_is_due - TypeError: Handler.__call...\nFAILED test_it.py::test_learning_due_tomorrow_is_not_due - TypeError: Handler...\nFAILED test_it.py::test_learning_buried_after_today_and_due_is_due - TypeErro...\nFAILED test_it.py::test_new_due_yesterday_is_not_due - TypeError: Handler.__c...\n7 failed in 0.14s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": ".....F.                                                                  [100%]\n=================================== FAILURES ===================================\n_______________ test_learning_buried_after_today_and_due_is_due ________________\ntest_it.py:59: in test_learning_buried_after_today_and_due_is_due\n    assert result == True\nE   assert False == True\n=========================== short test summary info ============================\nFAILED test_it.py::test_learning_buried_after_today_and_due_is_due - assert F...\n1 failed, 6 passed in 0.12s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import is_due_learning\nimport pytest\nfrom stateless import run, supply\nfrom datetime import date\n\n\ndef test_learning_due_yesterday_is_due():\n    card = Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, \n                interval_days=0, due_date=date(2026, 10, 12), lapses=0)\n    today = date(2026, 10, 13)\n    result = is_due_learning(card, today)\n    assert result == True\n\n\ndef test_buried_learning_due_yesterday_is_not_due():\n    card = Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5,\n                interval_days=0, due_date=date(2026, 10, 12), lapses=0, \n                buried_until=date(2026, 10, 13))\n    today = date(2026, 10, 13)\n    result = is_due_learning(card, today)\n    assert result == False\n\n\ndef test_review_due_yesterday_is_not_due():\n    card = Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5,\n                interval_days=1, due_date=date(2026, 10, 12), lapses=0)\n    today = date(2026, 10, 13)\n    result = is_due_learning(card, today)\n    assert result == False\n\n\ndef test_learning_due_today_is_due():\n    card = Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5,\n                interval_days=0, due_date=date(2026, 10, 13), lapses=0)\n    today = date(2026, 10, 13)\n    result = is_due_learning(card, today)\n    assert result == True\n\n\ndef test_learning_due_tomorrow_is_not_due():\n    card = Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5,\n                interval_days=0, due_date=date(2026, 10, 14), lapses=0)\n    today = date(2026, 10, 13)\n    result = is_due_learning(card, today)\n    assert result == False\n\n\n\n\ndef test_new_due_yesterday_is_not_due():\n    card = Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5,\n                interval_days=0, due_date=date(2026, 10, 12), lapses=0)\n    today = date(2026, 10, 13)\n    result = is_due_learning(card, today)\n    assert result == False\n",
+  "dropped": [
+   "test_learning_buried_after_today_and_due_is_due"
+  ],
+  "kept": 6,
+  "first_ok": false
+ },
+ "suspend_leech": {
+  "cases": 5,
+  "try0": {
+   "ok": true,
+   "out": ".....                                                                    [100%]\n5 passed in 0.09s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import suspend_leech\nimport pytest\nfrom datetime import datetime as dt\n\n\n@pytest.fixture\ndef fake_repository():\n    return InMemoryCardRepository()\n\n\ndef test_suspends_review_card_at_threshold_preserving_all_other_fields(fake_repository):\n    card = Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, \n                interval_days=21, due_date=date(2026, 10, 20), lapses=8, \n                learning_step=3, relearning_interval_days=5, \n                buried_until=date(2026, 10, 15), \n                history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 30), \n                                     grade=Grade.AGAIN, seconds=42, \n                                     state_before=CardState.REVIEW),))\n    settings = SchedulerSettings(leech_threshold=8)\n    \n    result = suspend_leech(card, settings)\n    \n    expected = Card(id='c1', note_id='n1', state=CardState.SUSPENDED, ease=2.5, \n                    interval_days=21, due_date=date(2026, 10, 20), lapses=8, \n                    learning_step=3, relearning_interval_days=5, \n                    buried_until=date(2026, 10, 15), \n                    history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 30), \n                                         grade=Grade.AGAIN, seconds=42, \n                                         state_before=CardState.REVIEW),))\n    \n    assert result == expected\n\n\ndef test_returns_original_card_below_threshold(fake_repository):\n    card = Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.3, \n                interval_days=10, due_date=date(2026, 10, 14), lapses=7)\n    settings = SchedulerSettings(leech_threshold=8)\n    \n    result = suspend_leech(card, settings)\n    \n    assert result is card\n\n\ndef test_suspends_card_above_threshold(fake_repository):\n    card = Card(id='c3', note_id='n3', state=CardState.REVIEW, ease=1.3, \n                interval_days=1, due_date=date(2026, 10, 13), lapses=12)\n    settings = SchedulerSettings(leech_threshold=8)\n    \n    result = suspend_leech(card, settings)\n    \n    expected = Card(id='c3', note_id='n3', state=CardState.SUSPENDED, ease=1.3, \n                    interval_days=1, due_date=date(2026, 10, 13), lapses=12)\n    \n    assert result == expected\n\n\ndef test_suspends_non_review_card_when_lapses_reach_threshold(fake_repository):\n    card = Card(id='c4', note_id='n4', state=CardState.LEARNING, ease=2.0, \n                interval_days=0, due_date=date(2026, 10, 13), lapses=1, \n                learning_step=1)\n    settings = SchedulerSettings(leech_threshold=1)\n    \n    result = suspend_leech(card, settings)\n    \n    expected = Card(id='c4', note_id='n4', state=CardState.SUSPENDED, ease=2.0, \n                    interval_days=0, due_date=date(2026, 10, 13), lapses=1, \n                    learning_step=1)\n    \n    assert result == expected\n\n\ndef test_does_not_suspend_when_leech_threshold_is_disabled(fake_repository):\n    card = Card(id='c5', note_id='n5', state=CardState.REVIEW, ease=2.5, \n                interval_days=30, due_date=date(2026, 11, 12), lapses=99)\n    settings = SchedulerSettings(leech_threshold=0)\n    \n    result = suspend_leech(card, settings)\n    \n    assert result is card\n",
+  "dropped": [],
+  "kept": 5,
+  "first_ok": true
+ },
+ "schedule_review": {
+  "cases": 8,
+  "try0": {
+   "ok": true,
+   "out": "........                                                                 [100%]\n8 passed in 0.11s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import schedule_review\nimport pytest\nfrom datetime import datetime as dt\n\ndef test_good_example_preserves_unlisted_fields():\n    card = Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=2, learning_step=3, relearning_interval_days=6, buried_until=date(2026, 1, 20), history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 1, 2, 9, 0), grade=Grade.GOOD, seconds=12, state_before=CardState.REVIEW),))\n    grade = Grade.GOOD\n    today = date(2026, 1, 10)\n    settings = SchedulerSettings()\n    \n    expected_card = Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=25, due_date=date(2026, 2, 4), lapses=2, learning_step=3, relearning_interval_days=6, buried_until=date(2026, 1, 20), history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 1, 2, 9, 0), grade=Grade.GOOD, seconds=12, state_before=CardState.REVIEW),))\n    \n    result = schedule_review(card, grade, today, settings)\n    \n    assert result == expected_card\n\ndef test_hard_example():\n    card = Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=0, learning_step=2, relearning_interval_days=4)\n    grade = Grade.HARD\n    today = date(2026, 1, 10)\n    settings = SchedulerSettings()\n    \n    expected_card = Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.35, interval_days=12, due_date=date(2026, 1, 22), lapses=0, learning_step=2, relearning_interval_days=4, buried_until=None, history=())\n    \n    result = schedule_review(card, grade, today, settings)\n    \n    assert result == expected_card\n\ndef test_again_example_enters_relearning():\n    card = Card(id='c3', note_id='n3', state=CardState.REVIEW, ease=2.5, interval_days=6, due_date=date(2026, 1, 1), lapses=2, learning_step=9, relearning_interval_days=99, buried_until=date(2026, 1, 20), history=(ReviewEvent(card_id='c3', reviewed_at=dt(2026, 1, 2, 9, 0), grade=Grade.GOOD, seconds=8, state_before=CardState.REVIEW),))\n    grade = Grade.AGAIN\n    today = date(2026, 1, 10)\n    settings = SchedulerSettings()\n    \n    expected_card = Card(id='c3', note_id='n3', state=CardState.LEARNING, ease=2.3, interval_days=6, due_date=date(2026, 1, 11), lapses=3, learning_step=0, relearning_interval_days=6, buried_until=date(2026, 1, 20), history=(ReviewEvent(card_id='c3', reviewed_at=dt(2026, 1, 2, 9, 0), grade=Grade.GOOD, seconds=8, state_before=CardState.REVIEW),))\n    \n    result = schedule_review(card, grade, today, settings)\n    \n    assert result == expected_card\n\ndef test_easy_uses_updated_ease_for_interval():\n    card = Card(id='c4', note_id='n4', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=1)\n    grade = Grade.EASY\n    today = date(2026, 1, 10)\n    settings = SchedulerSettings()\n    \n    expected_card = Card(id='c4', note_id='n4', state=CardState.REVIEW, ease=2.65, interval_days=34, due_date=date(2026, 2, 13), lapses=1, learning_step=0, relearning_interval_days=0, buried_until=None, history=())\n    \n    result = schedule_review(card, grade, today, settings)\n    \n    assert result == expected_card\n\ndef test_good_uses_python_bankers_rounding():\n    card = Card(id='c5', note_id='n5', state=CardState.REVIEW, ease=2.5, interval_days=5, due_date=date(2026, 1, 1), lapses=0)\n    grade = Grade.GOOD\n    today = date(2026, 1, 10)\n    settings = SchedulerSettings()\n    \n    expected_card = Card(id='c5', note_id='n5', state=CardState.REVIEW, ease=2.5, interval_days=12, due_date=date(2026, 1, 22), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())\n    \n    result = schedule_review(card, grade, today, settings)\n    \n    assert result == expected_card\n\ndef test_hard_normalizes_nonpositive_old_interval_and_honors_minimum():\n    card = Card(id='c6', note_id='n6', state=CardState.REVIEW, ease=1.3, interval_days=0, due_date=date(2026, 1, 1), lapses=0)\n    grade = Grade.HARD\n    today = date(2026, 1, 10)\n    settings = SchedulerSettings(minimum_interval_days=5)\n    \n    expected_card = Card(id='c6', note_id='n6', state=CardState.REVIEW, ease=1.3, interval_days=5, due_date=date(2026, 1, 15), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())\n    \n    result = schedule_review(card, grade, today, settings)\n    \n    assert result == expected_card\n\ndef test_good_honors_minimum_interval():\n    card = Card(id='c7', note_id='n7', state=CardState.REVIEW, ease=1.3, interval_days=1, due_date=date(2026, 1, 1), lapses=0)\n    grade = Grade.GOOD\n    today = date(2026, 1, 10)\n    settings = SchedulerSettings(minimum_interval_days=4)\n    \n    expected_card = Card(id='c7', note_id='n7', state=CardState.REVIEW, ease=1.3, interval_days=4, due_date=date(2026, 1, 14), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())\n    \n    result = schedule_review(card, grade, today, settings)\n    \n    assert result == expected_card\n\ndef test_easy_clamps_updated_ease_to_minimum():\n    card = Card(id='c8', note_id='n8', state=CardState.REVIEW, ease=1.1, interval_days=1, due_date=date(2026, 1, 1), lapses=0)\n    grade = Grade.EASY\n    today = date(2026, 1, 10)\n    settings = SchedulerSettings()\n    \n    expected_card = Card(id='c8', note_id='n8', state=CardState.REVIEW, ease=1.3, interval_days=2, due_date=date(2026, 1, 12), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())\n    \n    result = schedule_review(card, grade, today, settings)\n    \n    assert result == expected_card\n",
+  "dropped": [],
+  "kept": 8,
+  "first_ok": true
+ },
+ "is_leech": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "ndler.__call__() takes 2 positional arguments but 3 were given\n__________________ test_negative_threshold_disables_detection __________________\ntest_it.py:47: in test_negative_threshold_disables_detection\n    result = run(supply(is_leech)(card, settings))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n______________ test_zero_lapses_meets_minimum_positive_threshold _______________\ntest_it.py:55: in test_zero_lapses_meets_minimum_positive_threshold\n    result = run(supply(is_leech)(card, settings))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n=========================== short test summary info ============================\nFAILED test_it.py::test_lapses_equal_threshold_is_leech - TypeError: Handler....\nFAILED test_it.py::test_lapses_below_positive_threshold_is_not_leech - TypeEr...\nFAILED test_it.py::test_lapses_above_positive_threshold_is_leech - TypeError:...\nFAILED test_it.py::test_zero_threshold_disables_detection_even_with_many_lapses\nFAILED test_it.py::test_negative_threshold_disables_detection - TypeError: Ha...\nFAILED test_it.py::test_zero_lapses_meets_minimum_positive_threshold - TypeEr...\n6 failed in 0.13s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "ndler.__call__() takes 2 positional arguments but 3 were given\n__________________ test_negative_threshold_disables_detection __________________\ntest_it.py:47: in test_negative_threshold_disables_detection\n    result = run(supply(is_leech)(card, settings))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n______________ test_zero_lapses_meets_minimum_positive_threshold _______________\ntest_it.py:55: in test_zero_lapses_meets_minimum_positive_threshold\n    result = run(supply(is_leech)(card, settings))\nE   TypeError: Handler.__call__() takes 2 positional arguments but 3 were given\n=========================== short test summary info ============================\nFAILED test_it.py::test_lapses_equal_threshold_is_leech - TypeError: Handler....\nFAILED test_it.py::test_lapses_below_positive_threshold_is_not_leech - TypeEr...\nFAILED test_it.py::test_lapses_above_positive_threshold_is_leech - TypeError:...\nFAILED test_it.py::test_zero_threshold_disables_detection_even_with_many_lapses\nFAILED test_it.py::test_negative_threshold_disables_detection - TypeError: Ha...\nFAILED test_it.py::test_zero_lapses_meets_minimum_positive_threshold - TypeEr...\n6 failed in 0.14s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_lapses_above_positive_threshold_is_leech",
+   "test_lapses_below_positive_threshold_is_not_leech",
+   "test_lapses_equal_threshold_is_leech",
+   "test_negative_threshold_disables_detection",
+   "test_zero_lapses_meets_minimum_positive_threshold",
+   "test_zero_threshold_disables_detection_even_with_many_lapses"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "grade_card": {
+  "cases": 4,
+  "try0": {
+   "ok": false,
+   "out": "================== FAILURES ===================================\n___ test_new_easy_schedules_then_appends_clamped_event_and_preserves_history ___\ntest_it.py:41: in test_new_easy_schedules_then_appends_clamped_event_and_preserves_history\n    with pytest.raises(AssertionError):\nE   Failed: DID NOT RAISE <class 'AssertionError'>\n_________ test_learning_hard_uses_learning_scheduler_and_appends_event _________\ntest_it.py:55: in test_learning_hard_uses_learning_scheduler_and_appends_event\n    with pytest.raises(AssertionError):\nE   Failed: DID NOT RAISE <class 'AssertionError'>\n______ test_review_again_at_leech_threshold_is_suspended_then_gets_event _______\ntest_it.py:71: in test_review_again_at_leech_threshold_is_suspended_then_gets_event\n    with pytest.raises(AssertionError):\nE   Failed: DID NOT RAISE <class 'AssertionError'>\n=========================== short test summary info ============================\nFAILED test_it.py::test_new_easy_schedules_then_appends_clamped_event_and_preserves_history\nFAILED test_it.py::test_learning_hard_uses_learning_scheduler_and_appends_event\nFAILED test_it.py::test_review_again_at_leech_threshold_is_suspended_then_gets_event\n3 failed, 1 passed in 0.12s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "learning_hard_uses_learning_scheduler_and_appends_event _________\ntest_it.py:117: in test_learning_hard_uses_learning_scheduler_and_appends_event\n    result = grade_card(card, grade, reviewed_at, seconds, settings)\napp/logic.py:267: in grade_card\n    return dataclasses.replace(scheduled, history=scheduled.history + (event,))\n/usr/local/lib/python3.13/dataclasses.py:1595: in replace\n    raise TypeError(\"replace() should be called on dataclass instances\")\nE   TypeError: replace() should be called on dataclass instances\n______ test_review_again_at_leech_threshold_is_suspended_then_gets_event _______\ntest_it.py:188: in test_review_again_at_leech_threshold_is_suspended_then_gets_event\n    schedule_review.assert_called_once_with(card, Grade.AGAIN, date(2026, 5, 10), settings)\nE   NameError: name 'schedule_review' is not defined\n=========================== short test summary info ============================\nFAILED test_it.py::test_new_easy_schedules_then_appends_clamped_event_and_preserves_history\nFAILED test_it.py::test_learning_hard_uses_learning_scheduler_and_appends_event\nFAILED test_it.py::test_review_again_at_leech_threshold_is_suspended_then_gets_event\n3 failed, 1 passed in 0.18s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import grade_card\nimport pytest\nfrom datetime import datetime\nfrom unittest.mock import patch\n\n@pytest.fixture\ndef settings():\n    return SchedulerSettings()\n\ndef test_suspended_good_is_identical_and_does_not_call_helpers(settings):\n    card = Card(\n        id='s1',\n        note_id='n1',\n        state=CardState.SUSPENDED,\n        ease=2.5,\n        interval_days=12,\n        due_date=date(2026, 5, 1),\n        lapses=3,\n        learning_step=1,\n        relearning_interval_days=2,\n        buried_until=date(2026, 5, 20),\n        history=(ReviewEvent('s1', datetime(2026, 5, 2, 8, 0), Grade.AGAIN, 10, CardState.REVIEW),)\n    )\n    \n    grade = Grade.GOOD\n    reviewed_at = datetime(2026, 5, 10, 9, 30)\n    seconds = -4\n\n    result = grade_card(card, grade, reviewed_at, seconds, settings)\n\n    assert result == card\n\n\n\n",
+  "dropped": [
+   "test_learning_hard_uses_learning_scheduler_and_appends_event",
+   "test_new_easy_schedules_then_appends_clamped_event_and_preserves_history",
+   "test_review_again_at_leech_threshold_is_suspended_then_gets_event"
+  ],
+  "kept": 1,
+  "first_ok": false
+ },
+ "select_study_queue": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "hon3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: select_study_queue() missing 2 required positional arguments: 'today' and 'settings'\n=========================== short test summary info ============================\nFAILED test_it.py::test_learning_sorted_and_ignores_zero_limits - TypeError: ...\nFAILED test_it.py::test_review_priority_limit_one - TypeError: select_study_q...\nFAILED test_it.py::test_review_ties_sort_by_due_date_then_id - TypeError: sel...\nFAILED test_it.py::test_new_same_due_date_sorts_by_id - TypeError: select_stu...\nFAILED test_it.py::test_negative_new_limit_yields_no_new_cards - TypeError: s...\nFAILED test_it.py::test_only_due_available_cards_are_included - TypeError: se...\n6 failed in 0.37s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "hon3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: select_study_queue() missing 2 required positional arguments: 'today' and 'settings'\n=========================== short test summary info ============================\nFAILED test_it.py::test_learning_sorted_and_ignores_zero_limits - TypeError: ...\nFAILED test_it.py::test_review_priority_limit_one - TypeError: select_study_q...\nFAILED test_it.py::test_review_ties_sort_by_due_date_then_id - TypeError: sel...\nFAILED test_it.py::test_new_same_due_date_sorts_by_id - TypeError: select_stu...\nFAILED test_it.py::test_negative_new_limit_yields_no_new_cards - TypeError: s...\nFAILED test_it.py::test_only_due_available_cards_are_included - TypeError: se...\n6 failed in 0.36s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_learning_sorted_and_ignores_zero_limits",
+   "test_negative_new_limit_yields_no_new_cards",
+   "test_new_same_due_date_sorts_by_id",
+   "test_only_due_available_cards_are_included",
+   "test_review_priority_limit_one",
+   "test_review_ties_sort_by_due_date_then_id"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "bury_siblings": {
+  "cases": 5,
+  "try0": {
+   "ok": true,
+   "out": ".....                                                                    [100%]\n5 passed in 0.09s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import bury_siblings\nimport pytest\nfrom datetime import date\n\n# Test case: buries_unburied_sibling_and_leaves_reviewed_other_note_and_suspended_unchanged\ndef test_buries_unburied_sibling_and_leaves_reviewed_other_note_and_suspended_unchanged():\n    cards = (\n        Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c2', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c3', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c4', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0)\n    )\n    reviewed_card_id = 'c1'\n    today = date(2026, 10, 13)\n    expected = (\n        Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c2', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, buried_until=date(2026, 10, 13)),\n        Card(id='c3', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c4', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0)\n    )\n    result = bury_siblings(cards, reviewed_card_id, today)\n    assert result == expected\n\n\n# Test case: retains_today_or_later_burial_and_replaces_earlier_burial\ndef test_retains_today_or_later_burial_and_replaces_earlier_burial():\n    cards = (\n        Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c2', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=5, due_date=date(2026, 10, 13), lapses=0, buried_until=date(2026, 10, 12)),\n        Card(id='c3', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=1, buried_until=date(2026, 10, 13)),\n        Card(id='c4', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, buried_until=date(2026, 10, 14))\n    )\n    reviewed_card_id = 'c1'\n    today = date(2026, 10, 13)\n    expected = (\n        Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c2', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=5, due_date=date(2026, 10, 13), lapses=0, buried_until=date(2026, 10, 13)),\n        Card(id='c3', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=1, buried_until=date(2026, 10, 13)),\n        Card(id='c4', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, buried_until=date(2026, 10, 14))\n    )\n    result = bury_siblings(cards, reviewed_card_id, today)\n    assert result == expected\n\n\n# Test case: unknown_reviewed_id_returns_original_tuple\ndef test_unknown_reviewed_id_returns_original_tuple():\n    cards = (\n        Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c2', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=3, due_date=date(2026, 10, 13), lapses=0)\n    )\n    reviewed_card_id = 'missing'\n    today = date(2026, 10, 13)\n    expected = cards  # Expecting the same original tuple object\n    result = bury_siblings(cards, reviewed_card_id, today)\n    assert result is expected\n\n\n# Test case: empty_cards_with_unknown_reviewed_id_returns_same_empty_tuple\ndef test_empty_cards_with_unknown_reviewed_id_returns_same_empty_tuple():\n    cards = ()\n    reviewed_card_id = 'missing'\n    today = date(2026, 10, 13)\n    expected = cards  # Expecting the same original tuple object\n    result = bury_siblings(cards, reviewed_card_id, today)\n    assert result is expected\n\n\n# Test case: uses_first_matching_reviewed_id_to_choose_note\ndef test_uses_first_matching_reviewed_id_to_choose_note():\n    cards = (\n        Card(id='reviewed', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='reviewed', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c3', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c4', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0)\n    )\n    reviewed_card_id = 'reviewed'\n    today = date(2026, 10, 13)\n    expected = (\n        Card(id='reviewed', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='reviewed', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0),\n        Card(id='c3', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, buried_until=date(2026, 10, 13)),\n        Card(id='c4', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0)\n    )\n    result = bury_siblings(cards, reviewed_card_id, today)\n    assert result == expected\n",
+  "dropped": [],
+  "kept": 5,
+  "first_ok": true
+ },
+ "current_streak": {
+  "cases": 6,
+  "try0": {
+   "ok": true,
+   "out": "......                                                                   [100%]\n6 passed in 0.11s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import current_streak\nimport pytest\nfrom datetime import datetime as dt, date\n\ndef test_empty_cards_returns_zero():\n    assert current_streak(cards=(), today=date(2026, 10, 13)) == 0\n\ndef test_yesterday_event_without_today_returns_zero():\n    cards = (\n        Card(\n            id='c1',\n            note_id='n1',\n            state=CardState.REVIEW,\n            ease=2.5,\n            interval_days=1,\n            due_date=date(2026, 10, 12),\n            lapses=0,\n            history=(\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 12, 23, 59),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n            ),\n        ),\n    )\n    assert current_streak(cards=cards, today=date(2026, 10, 13)) == 0\n\ndef test_today_and_yesterday_returns_two():\n    cards = (\n        Card(\n            id='c1',\n            note_id='n1',\n            state=CardState.REVIEW,\n            ease=2.5,\n            interval_days=1,\n            due_date=date(2026, 10, 13),\n            lapses=0,\n            history=(\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 13, 9, 0),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 12, 9, 0),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n            ),\n        ),\n    )\n    assert current_streak(cards=cards, today=date(2026, 10, 13)) == 2\n\ndef test_gap_after_today_returns_one():\n    cards = (\n        Card(\n            id='c1',\n            note_id='n1',\n            state=CardState.REVIEW,\n            ease=2.5,\n            interval_days=1,\n            due_date=date(2026, 10, 13),\n            lapses=0,\n            history=(\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 13, 0, 0),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 11, 23, 59),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n            ),\n        ),\n    )\n    assert current_streak(cards=cards, today=date(2026, 10, 13)) == 1\n\ndef test_multiple_events_on_same_day_count_once():\n    cards = (\n        Card(\n            id='c1',\n            note_id='n1',\n            state=CardState.REVIEW,\n            ease=2.5,\n            interval_days=1,\n            due_date=date(2026, 10, 13),\n            lapses=0,\n            history=(\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 13, 8, 0),\n                    grade=Grade.HARD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 13, 20, 0),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 12, 8, 0),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n            ),\n        ),\n    )\n    assert current_streak(cards=cards, today=date(2026, 10, 13)) == 2\n\ndef test_events_across_cards_form_long_consecutive_streak():\n    cards = (\n        Card(\n            id='c1',\n            note_id='n1',\n            state=CardState.REVIEW,\n            ease=2.5,\n            interval_days=1,\n            due_date=date(2026, 10, 13),\n            lapses=0,\n            history=(\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 13, 12, 0),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n                ReviewEvent(\n                    card_id='c1',\n                    reviewed_at=dt(2026, 10, 11, 12, 0),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.REVIEW\n                ),\n            ),\n        ),\n        Card(\n            id='c2',\n            note_id='n2',\n            state=CardState.NEW,\n            ease=2.5,\n            interval_days=0,\n            due_date=date(2026, 10, 12),\n            lapses=0,\n            history=(\n                ReviewEvent(\n                    card_id='c2',\n                    reviewed_at=dt(2026, 10, 12, 12, 0),\n                    grade=Grade.GOOD,\n                    seconds=10,\n                    state_before=CardState.NEW\n                ),\n            ),\n        ),\n    )\n    assert current_streak(cards=cards, today=date(2026, 10, 13)) == 3\n",
+  "dropped": [],
+  "kept": 6,
+  "first_ok": true
+ },
+ "schedule_new_or_learning": {
+  "cases": 8,
+  "try0": {
+   "ok": false,
+   "out": "ository' object is not callable\n_ test_learning_good_graduation_uses_positive_relearning_interval_but_respects_minimum _\ntest_it.py:123: in test_learning_good_graduation_uses_positive_relearning_interval_but_respects_minimum\n    result = run(supply(InMemoryCardRepository()(card))(schedule_new_or_learning)((card, grade, today, settings)))\nE   TypeError: 'InMemoryCardRepository' object is not callable\n=========================== short test summary info ============================\nFAILED test_it.py::test_new_good_starts_first_learning_step - TypeError: 'InM...\nFAILED test_it.py::test_learning_good_at_last_step_graduates_with_graduating_interval\nFAILED test_it.py::test_learning_again_resets_step_and_preserves_non_schedule_fields\nFAILED test_it.py::test_easy_graduates_with_one_day_minimum_and_clears_relearning_interval\nFAILED test_it.py::test_new_hard_behaves_as_again - TypeError: 'InMemoryCardR...\nFAILED test_it.py::test_learning_hard_clamps_oversized_step_before_requesting_hard_delay\nFAILED test_it.py::test_learning_good_advances_to_another_step - TypeError: '...\nFAILED test_it.py::test_learning_good_graduation_uses_positive_relearning_interval_but_respects_minimum\n8 failed in 0.18s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: schedule_new_or_learning() missing 3 required positional arguments: 'grade', 'today', and 'settings'\n=========================== short test summary info ============================\nFAILED test_it.py::test_new_good_starts_first_learning_step - TypeError: sche...\nFAILED test_it.py::test_learning_good_at_last_step_graduates_with_graduating_interval\nFAILED test_it.py::test_learning_again_resets_step_and_preserves_non_schedule_fields\nFAILED test_it.py::test_easy_graduates_with_one_day_minimum_and_clears_relearning_interval\nFAILED test_it.py::test_new_hard_behaves_as_again - TypeError: schedule_new_o...\nFAILED test_it.py::test_learning_hard_clamps_oversized_step_before_requesting_hard_delay\nFAILED test_it.py::test_learning_good_advances_to_another_step - TypeError: s...\nFAILED test_it.py::test_learning_good_graduation_uses_positive_relearning_interval_but_respects_minimum\n8 failed in 0.46s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_easy_graduates_with_one_day_minimum_and_clears_relearning_interval",
+   "test_learning_again_resets_step_and_preserves_non_schedule_fields",
+   "test_learning_good_advances_to_another_step",
+   "test_learning_good_at_last_step_graduates_with_graduating_interval",
+   "test_learning_good_graduation_uses_positive_relearning_interval_but_respects_minimum",
+   "test_learning_hard_clamps_oversized_step_before_requesting_hard_delay",
+   "test_new_good_starts_first_learning_step",
+   "test_new_hard_behaves_as_again"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "summarise_day": {
+  "cases": 5,
+  "try0": {
+   "ok": false,
+   "out": "effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: summarise_day() got an unexpected keyword argument 'args'. Did you mean 'cards'?\n=========================== short test summary info ============================\nFAILED test_it.py::test_spec_example_good_and_again - TypeError: summarise_da...\nFAILED test_it.py::test_no_events_empty_input - TypeError: summarise_day() go...\nFAILED test_it.py::test_events_on_other_dates_are_ignored - TypeError: summar...\nFAILED test_it.py::test_all_grades_counted_in_required_order - TypeError: sum...\nFAILED test_it.py::test_negative_seconds_are_clamped_and_events_are_not_deduplicated\n5 failed in 0.34s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'DailySummary' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_spec_example_good_and_again - TypeError: 'DailySummar...\nFAILED test_it.py::test_no_events_empty_input - TypeError: 'DailySummary' obj...\nFAILED test_it.py::test_events_on_other_dates_are_ignored - TypeError: 'Daily...\nFAILED test_it.py::test_all_grades_counted_in_required_order - TypeError: 'Da...\nFAILED test_it.py::test_negative_seconds_are_clamped_and_events_are_not_deduplicated\n5 failed in 0.33s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_all_grades_counted_in_required_order",
+   "test_events_on_other_dates_are_ignored",
+   "test_negative_seconds_are_clamped_and_events_are_not_deduplicated",
+   "test_no_events_empty_input",
+   "test_spec_example_good_and_again"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "build_today_queue": {
+  "cases": 5,
+  "try0": {
+   "ok": false,
+   "out": "id='learning', note_id='n1', state=<CardState.LEARNING: 'learning'>, ease=2.5, interval_days=1, due_date=datetime.date(2026, 10, 13), lapses=0, learning_step=1, relearning_interval_days=0, buried_until=None, history=()),), review_cards=(Card(id='review', note_id='n2', state=<CardState.REVIEW: 'review'>, ease=2.5, interval_days=20, due_date=datetime.date(2026, 10, 13), lapses=2, learning_step=0, relearning_interval_days=0, buried_until=None, history=()),), new_cards=(Card(id='new', note_id='n3', state=<CardState.NEW: 'new'>, ease=2.5, interval_days=0, due_date=datetime.date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()),))\n=========================== short test summary info ============================\nFAILED test_it.py::test_delegates_once_forwards_exact_arguments_and_does_not_mutate_repository\nFAILED test_it.py::test_one_due_review_matches_spec_example - AssertionError:...\nFAILED test_it.py::test_only_future_cards_matches_spec_example - assert <gene...\nFAILED test_it.py::test_empty_repository_returns_empty_queue - assert <genera...\nFAILED test_it.py::test_due_cards_are_returned_in_their_correct_queue_sections\n5 failed in 0.16s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "id='learning', note_id='n1', state=<CardState.LEARNING: 'learning'>, ease=2.5, interval_days=1, due_date=datetime.date(2026, 10, 13), lapses=0, learning_step=1, relearning_interval_days=0, buried_until=None, history=()),), review_cards=(Card(id='review', note_id='n2', state=<CardState.REVIEW: 'review'>, ease=2.5, interval_days=20, due_date=datetime.date(2026, 10, 13), lapses=2, learning_step=0, relearning_interval_days=0, buried_until=None, history=()),), new_cards=(Card(id='new', note_id='n3', state=<CardState.NEW: 'new'>, ease=2.5, interval_days=0, due_date=datetime.date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()),))\n=========================== short test summary info ============================\nFAILED test_it.py::test_delegates_once_forwards_exact_arguments_and_does_not_mutate_repository\nFAILED test_it.py::test_one_due_review_matches_spec_example - AssertionError:...\nFAILED test_it.py::test_only_future_cards_matches_spec_example - assert <gene...\nFAILED test_it.py::test_empty_repository_returns_empty_queue - assert <genera...\nFAILED test_it.py::test_due_cards_are_returned_in_their_correct_queue_sections\n5 failed in 0.13s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_delegates_once_forwards_exact_arguments_and_does_not_mutate_repository",
+   "test_due_cards_are_returned_in_their_correct_queue_sections",
+   "test_empty_repository_returns_empty_queue",
+   "test_one_due_review_matches_spec_example",
+   "test_only_future_cards_matches_spec_example"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "daily_summary": {
+  "cases": 5,
+  "try0": {
+   "ok": false,
+   "out": "site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: daily_summary() got an unexpected keyword argument 'args'\n=========================== short test summary info ============================\nFAILED test_it.py::test_one_good_event_on_requested_date - NameError: name 'C...\nFAILED test_it.py::test_event_only_on_another_date_is_zero_summary - TypeErro...\nFAILED test_it.py::test_empty_repository_is_zero_summary - TypeError: daily_s...\nFAILED test_it.py::test_all_grades_across_cards_and_out_of_day_history_are_aggregated\nFAILED test_it.py::test_multiple_events_for_one_card_count_as_multiple_reviews\n5 failed in 0.29s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "                                                       [100%]\n=================================== FAILURES ===================================\n____________________ test_one_good_event_on_requested_date _____________________\ntest_it.py:40: in test_one_good_event_on_requested_date\n    assert repo.list_calls == 1\nE   AttributeError: 'InMemoryCardRepository' object has no attribute 'list_calls'. Did you mean: 'list_cards'?\n______ test_all_grades_across_cards_and_out_of_day_history_are_aggregated ______\ntest_it.py:155: in test_all_grades_across_cards_and_out_of_day_history_are_aggregated\n    assert summary == expected\nE   AssertionError: assert DailySummary(...iewed_cards=4) == DailySummary(...iewed_cards=4)\nE     \nE     Omitting 4 identical items, use -vv to show\nE     Differing attributes:\nE     ['retention_rate']\nE     \nE     Drill down into differing attribute retention_rate:\nE       retention_rate: 0.5 != 0.75\n=========================== short test summary info ============================\nFAILED test_it.py::test_one_good_event_on_requested_date - AttributeError: 'I...\nFAILED test_it.py::test_all_grades_across_cards_and_out_of_day_history_are_aggregated\n2 failed, 3 passed in 0.13s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import daily_summary\nimport pytest\nfrom stateless import run, supply\nfrom datetime import datetime as dt, date\n\n\ndef test_event_only_on_another_date_is_zero_summary():\n    repo = InMemoryCardRepository(cards=(Card(\n        id='c1',\n        note_id='n1',\n        state=CardState.REVIEW,\n        ease=2.5,\n        interval_days=10,\n        due_date=date(2026, 10, 13),\n        lapses=0,\n        history=(ReviewEvent(\n            card_id='c1',\n            reviewed_at=dt(2026, 10, 12, 23, 59),\n            grade=Grade.GOOD,\n            seconds=42,\n            state_before=CardState.REVIEW),\n        ),\n    ),))\n    \n    summary = run(supply(repo)(daily_summary)(date(2026, 10, 13)))\n\n    expected = DailySummary(\n        study_date=date(2026, 10, 13),\n        grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 0), (Grade.GOOD, 0), (Grade.EASY, 0)),\n        retention_rate=0.0,\n        total_seconds=0,\n        reviewed_cards=0\n    )\n\n    assert summary == expected\n    assert repo.saved_cards == []\n\ndef test_empty_repository_is_zero_summary():\n    repo = InMemoryCardRepository(cards=())\n    \n    summary = run(supply(repo)(daily_summary)(date(2026, 10, 13)))\n\n    expected = DailySummary(\n        study_date=date(2026, 10, 13),\n        grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 0), (Grade.GOOD, 0), (Grade.EASY, 0)),\n        retention_rate=0.0,\n        total_seconds=0,\n        reviewed_cards=0\n    )\n\n    assert summary == expected\n    assert repo.saved_cards == []\n\n\ndef test_multiple_events_for_one_card_count_as_multiple_reviews():\n    repo = InMemoryCardRepository(cards=(Card(\n        id='c1',\n        note_id='n1',\n        state=CardState.REVIEW,\n        ease=2.5,\n        interval_days=10,\n        due_date=date(2026, 10, 13),\n        lapses=0,\n        history=(\n            ReviewEvent(\n                card_id='c1',\n                reviewed_at=dt(2026, 10, 13, 9, 0),\n                grade=Grade.GOOD,\n                seconds=7,\n                state_before=CardState.REVIEW),\n            ReviewEvent(\n                card_id='c1',\n                reviewed_at=dt(2026, 10, 13, 18, 0),\n                grade=Grade.GOOD,\n                seconds=10,\n                state_before=CardState.REVIEW),\n        ),\n    ),))\n    \n    summary = run(supply(repo)(daily_summary)(date(2026, 10, 13)))\n\n    expected = DailySummary(\n        study_date=date(2026, 10, 13),\n        grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 0), (Grade.GOOD, 2), (Grade.EASY, 0)),\n        retention_rate=1.0,\n        total_seconds=17,\n        reviewed_cards=2\n    )\n    \n    assert summary == expected\n    assert repo.saved_cards == []\n",
+  "dropped": [
+   "test_all_grades_across_cards_and_out_of_day_history_are_aggregated",
+   "test_one_good_event_on_requested_date"
+  ],
+  "kept": 3,
+  "first_ok": false
+ },
+ "grade_review": {
+  "cases": 5,
+  "try0": {
+   "ok": false,
+   "out": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_it.py __________________________\nImportError while importing test module '/tmp/dsw-kfv6tx0m/test_it.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.13/importlib/__init__.py:88: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\ntest_it.py:8: in <module>\n    from app.abilities import CardNotFound\nE   ImportError: cannot import name 'CardNotFound' from 'app.abilities' (/tmp/dsw-kfv6tx0m/app/abilities.py)\n=========================== short test summary info ============================\nERROR test_it.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.16s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "ote_id='n', state=<CardState.SUSPENDED: 'suspended'>, ease=2.5, interval_days=10, due_date=datetime.date(2026, 2, 1), lapses=3, learning_step=0, relearning_interval_days=0, buried_until=None, history=())\n____________ test_suspended_or_different_note_cards_are_not_buried _____________\ntest_it.py:104: in test_suspended_or_different_note_cards_are_not_buried\n    assert return_value == S\nE   AssertionError: assert <generator object grade_review at 0x7b8979412480> == Card(id='s', note_id='n', state=<CardState.SUSPENDED: 'suspended'>, ease=2.5, interval_days=10, due_date=datetime.date(2026, 2, 1), lapses=3, learning_step=0, relearning_interval_days=0, buried_until=None, history=())\n=========================== short test summary info ============================\nFAILED test_it.py::test_unknown_id_throws_card_not_found_without_saves - Fail...\nFAILED test_it.py::test_graded_card_is_saved_then_changed_same_note_sibling_is_saved\nFAILED test_it.py::test_does_not_resave_reviewed_card_or_unchanged_bury_results\nFAILED test_it.py::test_suspended_card_is_saved_unchanged_and_eligible_sibling_is_buried\nFAILED test_it.py::test_suspended_or_different_note_cards_are_not_buried - As...\n5 failed in 0.13s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_does_not_resave_reviewed_card_or_unchanged_bury_results",
+   "test_graded_card_is_saved_then_changed_same_note_sibling_is_saved",
+   "test_suspended_card_is_saved_unchanged_and_eligible_sibling_is_buried",
+   "test_suspended_or_different_note_cards_are_not_buried",
+   "test_unknown_id_throws_card_not_found_without_saves"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "study_streak": {
+  "cases": 5,
+  "try0": {
+   "ok": false,
+   "out": "__________________\ntest_it.py:208: in test_empty_repository_returns_zero\n    result = run(supply(repo)(study_streak)(args=(today,)))\nE   NameError: name 'run' is not defined\n_______ test_multiple_events_on_same_day_do_not_extend_three_day_streak ________\ntest_it.py:216: in test_multiple_events_on_same_day_do_not_extend_three_day_streak\n    result = run(supply(repo)(study_streak)(args=(today,)))\nE   NameError: name 'run' is not defined\n____________ test_future_event_does_not_extend_streak_ending_today _____________\ntest_it.py:224: in test_future_event_does_not_extend_streak_ending_today\n    result = run(supply(repo)(study_streak)(args=(today,)))\nE   NameError: name 'run' is not defined\n=========================== short test summary info ============================\nFAILED test_it.py::test_today_and_yesterday_events_returns_two - NameError: n...\nFAILED test_it.py::test_no_event_today_returns_zero - NameError: name 'run' i...\nFAILED test_it.py::test_empty_repository_returns_zero - NameError: name 'run'...\nFAILED test_it.py::test_multiple_events_on_same_day_do_not_extend_three_day_streak\nFAILED test_it.py::test_future_event_does_not_extend_streak_ending_today - Na...\n5 failed in 0.15s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "3/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: study_streak() got an unexpected keyword argument 'args'\n=========================== short test summary info ============================\nFAILED test_it.py::test_today_and_yesterday_events_returns_two - TypeError: s...\nFAILED test_it.py::test_no_event_today_returns_zero - TypeError: study_streak...\nFAILED test_it.py::test_empty_repository_returns_zero - TypeError: study_stre...\nFAILED test_it.py::test_multiple_events_on_same_day_do_not_extend_three_day_streak\nFAILED test_it.py::test_future_event_does_not_extend_streak_ending_today - Ty...\n5 failed in 0.35s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_empty_repository_returns_zero",
+   "test_future_event_does_not_extend_streak_ending_today",
+   "test_multiple_events_on_same_day_do_not_extend_three_day_streak",
+   "test_no_event_today_returns_zero",
+   "test_today_and_yesterday_events_returns_two"
+  ],
+  "kept": 0,
+  "first_ok": false
+ }
+}

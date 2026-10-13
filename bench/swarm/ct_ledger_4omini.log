@@ -1,0 +1,19 @@
+casetests_gpt-4o-mini  rate_for_currency              cases 6 kept 0 dropped 6 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  round_to_cents                 cases 6 kept 6 dropped 0 first_ok True
+casetests_gpt-4o-mini  validate_payment               cases 8 kept 0 dropped 8 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  split_source_amounts           cases 6 kept 0 dropped 6 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  validate_new_action            cases 5 kept 0 dropped 5 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  validate_trip_configuration    cases 8 kept 0 dropped 8 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  payment_deltas                 cases 4 kept 4 dropped 0 first_ok True
+casetests_gpt-4o-mini  settle_up                      cases 8 kept 8 dropped 0 first_ok True
+casetests_gpt-4o-mini  compute_balances               cases 5 kept 0 dropped 5 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  append_action                  cases 4 kept 4 dropped 0 first_ok True
+casetests_gpt-4o-mini  expense_deltas                 cases 4 kept 0 dropped 4 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  allocate_expense_base_cents    cases 6 kept 0 dropped 6 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  validate_expense               cases 8 kept 0 dropped 8 first_ok False  UNUSABLE
+casetests_gpt-4o-mini  member_statement               cases 6 kept 1 dropped 5 first_ok False
+casetests_gpt-4o-mini  close_trip                     cases 4 kept 4 dropped 0 first_ok False
+casetests_gpt-4o-mini  remove_last_action             cases 4 kept 1 dropped 3 first_ok False
+casetests_gpt-4o-mini  record_expense                 cases 6 kept 3 dropped 3 first_ok False
+casetests_gpt-4o-mini  undo_last_action               cases 6 kept 6 dropped 0 first_ok False
+casetests_gpt-4o-mini  record_payment                 cases 7 kept 7 dropped 0 first_ok False

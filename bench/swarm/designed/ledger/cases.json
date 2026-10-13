@@ -1,0 +1,595 @@
+{
+ "rate_for_currency": [
+  {
+   "name": "returns_rate_for_single_exact_match",
+   "given": "rate_for_currency(Trip('t','Trip','USD',(),(ExchangeRate('USD',Decimal('1')),ExchangeRate('EUR',Decimal('1.25'))),(),False),'EUR')",
+   "expect": "Decimal('1.25')"
+  },
+  {
+   "name": "returns_none_for_case_mismatched_currency",
+   "given": "rate_for_currency(Trip('t','Trip','USD',(),(ExchangeRate('USD',Decimal('1')),ExchangeRate('EUR',Decimal('1.25'))),(),False),'eur')",
+   "expect": "None"
+  },
+  {
+   "name": "returns_none_when_currency_is_absent",
+   "given": "rate_for_currency(Trip('t','Trip','USD',(),(ExchangeRate('USD',Decimal('1')),),(),False),'JPY')",
+   "expect": "None"
+  },
+  {
+   "name": "returns_none_for_duplicate_currency_rates",
+   "given": "rate_for_currency(Trip('t','Trip','USD',(),(ExchangeRate('USD',Decimal('1')),ExchangeRate('USD',Decimal('0.99'))),(),False),'USD')",
+   "expect": "None"
+  },
+  {
+   "name": "returns_zero_rate_without_positivity_validation",
+   "given": "rate_for_currency(Trip('t','Trip','USD',(),(ExchangeRate('JPY',Decimal('0')),),(),False),'JPY')",
+   "expect": "Decimal('0')"
+  },
+  {
+   "name": "returns_negative_rate_without_positivity_validation",
+   "given": "rate_for_currency(Trip('t','Trip','USD',(),(ExchangeRate('GBP',Decimal('-1.25')),),(),False),'GBP')",
+   "expect": "Decimal('-1.25')"
+  }
+ ],
+ "round_to_cents": [
+  {
+   "name": "truncates_fraction_below_half_cent",
+   "given": "Decimal('1.234')",
+   "expect": "123"
+  },
+  {
+   "name": "rounds_half_cent_up",
+   "given": "Decimal('1.235')",
+   "expect": "124"
+  },
+  {
+   "name": "rounds_smallest_half_cent_up",
+   "given": "Decimal('0.005')",
+   "expect": "1"
+  },
+  {
+   "name": "rounds_zero_to_zero",
+   "given": "Decimal('0')",
+   "expect": "0"
+  },
+  {
+   "name": "rounds_exact_cent_amount_unchanged",
+   "given": "Decimal('12.34')",
+   "expect": "1234"
+  },
+  {
+   "name": "rounds_large_fractional_amount_half_up",
+   "given": "Decimal('999999.995')",
+   "expect": "100000000"
+  }
+ ],
+ "validate_new_action": [
+  {
+   "name": "payment_id_duplicates_existing_expense_id",
+   "given": "Trip(trip_id='t', name='T', base_currency='USD', members=(), rates=(), actions=(ExpenseAction(Expense(expense_id='e1', payer_id='m1', amount=Decimal('1.00'), currency='USD', split_kind=SplitKind.EQUAL, entries=(), description='x', occurred_on=date(2024, 1, 1))),), closed=False), PaymentAction(Payment(payment_id='e1', from_member_id='m1', to_member_id='m2', amount_cents=100, note='x', occurred_on=date(2024, 1, 2)))",
+   "expect": "'duplicate action id'"
+  },
+  {
+   "name": "expense_id_distinct_from_existing_payment_id",
+   "given": "Trip(trip_id='t', name='T', base_currency='USD', members=(), rates=(), actions=(PaymentAction(Payment(payment_id='p1', from_member_id='m1', to_member_id='m2', amount_cents=100, note='x', occurred_on=date(2024, 1, 1))),), closed=False), ExpenseAction(Expense(expense_id='e2', payer_id='m1', amount=Decimal('1.00'), currency='USD', split_kind=SplitKind.EQUAL, entries=(), description='x', occurred_on=date(2024, 1, 2)))",
+   "expect": "None"
+  },
+  {
+   "name": "expense_id_duplicates_existing_expense_id",
+   "given": "Trip(trip_id='t', name='T', base_currency='USD', members=(), rates=(), actions=(ExpenseAction(Expense(expense_id='e1', payer_id='m1', amount=Decimal('1.00'), currency='USD', split_kind=SplitKind.EQUAL, entries=(), description='old', occurred_on=date(2024, 1, 1))),), closed=False), ExpenseAction(Expense(expense_id='e1', payer_id='m2', amount=Decimal('2.00'), currency='USD', split_kind=SplitKind.AMOUNTS, entries=(), description='new', occurred_on=date(2024, 1, 2)))",
+   "expect": "'duplicate action id'"
+  },
+  {
+   "name": "payment_id_duplicates_existing_payment_id",
+   "given": "Trip(trip_id='t', name='T', base_currency='USD', members=(), rates=(), actions=(PaymentAction(Payment(payment_id='p1', from_member_id='m1', to_member_id='m2', amount_cents=100, note='old', occurred_on=date(2024, 1, 1))),), closed=False), PaymentAction(Payment(payment_id='p1', from_member_id='m2', to_member_id='m1', amount_cents=200, note='new', occurred_on=date(2024, 1, 2)))",
+   "expect": "'duplicate action id'"
+  },
+  {
+   "name": "duplicate_in_later_existing_action_is_detected",
+   "given": "Trip(trip_id='t', name='T', base_currency='USD', members=(), rates=(), actions=(ExpenseAction(Expense(expense_id='e1', payer_id='m1', amount=Decimal('1.00'), currency='USD', split_kind=SplitKind.EQUAL, entries=(), description='first', occurred_on=date(2024, 1, 1))), PaymentAction(Payment(payment_id='p2', from_member_id='m1', to_member_id='m2', amount_cents=100, note='second', occurred_on=date(2024, 1, 2)))), closed=False), ExpenseAction(Expense(expense_id='p2', payer_id='m2', amount=Decimal('3.00'), currency='USD', split_kind=SplitKind.SHARES, entries=(), description='new', occurred_on=date(2024, 1, 3)))",
+   "expect": "'duplicate action id'"
+  }
+ ],
+ "split_source_amounts": [
+  {
+   "name": "amounts_returns_entries_unchanged_in_order",
+   "given": "Expense(expense_id='e1', payer_id='p', amount=Decimal('10'), currency='USD', split_kind=SplitKind.AMOUNTS, entries=(SplitEntry(member_id='b', value=Decimal('7')), SplitEntry(member_id='a', value=Decimal('3'))), description='x', occurred_on=date(2024, 1, 1))",
+   "expect": "(SplitEntry(member_id='b', value=Decimal('7')), SplitEntry(member_id='a', value=Decimal('3')))"
+  },
+  {
+   "name": "equal_split_spec_example",
+   "given": "Expense(expense_id='e2', payer_id='p', amount=Decimal('10'), currency='USD', split_kind=SplitKind.EQUAL, entries=(SplitEntry(member_id='a', value=Decimal('0')), SplitEntry(member_id='b', value=Decimal('0'))), description='x', occurred_on=date(2024, 1, 1))",
+   "expect": "(SplitEntry(member_id='a', value=Decimal('5')), SplitEntry(member_id='b', value=Decimal('5')))"
+  },
+  {
+   "name": "percentages_split_spec_example",
+   "given": "Expense(expense_id='e3', payer_id='p', amount=Decimal('12'), currency='USD', split_kind=SplitKind.PERCENTAGES, entries=(SplitEntry(member_id='a', value=Decimal('25')), SplitEntry(member_id='b', value=Decimal('75'))), description='x', occurred_on=date(2024, 1, 1))",
+   "expect": "(SplitEntry(member_id='a', value=Decimal('3')), SplitEntry(member_id='b', value=Decimal('9')))"
+  },
+  {
+   "name": "shares_split_spec_example",
+   "given": "Expense(expense_id='e4', payer_id='p', amount=Decimal('10'), currency='USD', split_kind=SplitKind.SHARES, entries=(SplitEntry(member_id='a', value=Decimal('1')), SplitEntry(member_id='b', value=Decimal('3'))), description='x', occurred_on=date(2024, 1, 1))",
+   "expect": "(SplitEntry(member_id='a', value=Decimal('2.5')), SplitEntry(member_id='b', value=Decimal('7.5')))"
+  },
+  {
+   "name": "equal_uses_local_decimal_precision_50_for_repeating_division",
+   "given": "Expense(expense_id='e5', payer_id='p', amount=Decimal('1'), currency='USD', split_kind=SplitKind.EQUAL, entries=(SplitEntry(member_id='z', value=Decimal('0')), SplitEntry(member_id='y', value=Decimal('0')), SplitEntry(member_id='x', value=Decimal('0'))), description='x', occurred_on=date(2024, 1, 1))",
+   "expect": "(SplitEntry(member_id='z', value=Decimal('0.33333333333333333333333333333333333333333333333333')), SplitEntry(member_id='y', value=Decimal('0.33333333333333333333333333333333333333333333333333')), SplitEntry(member_id='x', value=Decimal('0.33333333333333333333333333333333333333333333333333')))"
+  },
+  {
+   "name": "shares_single_entry_receives_entire_amount",
+   "given": "Expense(expense_id='e6', payer_id='p', amount=Decimal('19.99'), currency='USD', split_kind=SplitKind.SHARES, entries=(SplitEntry(member_id='only', value=Decimal('7')),), description='x', occurred_on=date(2024, 1, 1))",
+   "expect": "(SplitEntry(member_id='only', value=Decimal('19.99')),)"
+  }
+ ],
+ "payment_deltas": [
+  {
+   "name": "payer_to_receiver_250",
+   "given": "payment_deltas(Payment(payment_id='p1', from_member_id='a', to_member_id='b', amount_cents=250, note='dinner', occurred_on=date(2026, 1, 1)))",
+   "expect": "{'a': 250, 'b': -250}"
+  },
+  {
+   "name": "reverse_direction_one_cent",
+   "given": "payment_deltas(Payment(payment_id='p2', from_member_id='b', to_member_id='a', amount_cents=1, note='', occurred_on=date(2026, 1, 2)))",
+   "expect": "{'b': 1, 'a': -1}"
+  },
+  {
+   "name": "zero_cent_payment_preserves_both_ids",
+   "given": "payment_deltas(Payment(payment_id='p3', from_member_id='payer', to_member_id='receiver', amount_cents=0, note='zero', occurred_on=date(2026, 1, 3)))",
+   "expect": "{'payer': 0, 'receiver': 0}"
+  },
+  {
+   "name": "large_amount_and_unrelated_fields_do_not_affect_deltas",
+   "given": "payment_deltas(Payment(payment_id='payment-99', from_member_id='member-x', to_member_id='member-y', amount_cents=987654321, note='anything', occurred_on=date(2025, 12, 31)))",
+   "expect": "{'member-x': 987654321, 'member-y': -987654321}"
+  }
+ ],
+ "validate_payment": [
+  {
+   "name": "valid_payment_example",
+   "given": "payment=Payment(\"p1\", \"a\", \"b\", 125, \"settle\", date(2026, 1, 1)); trip=Trip(\"t1\", \"Trip\", \"USD\", (Member(\"a\", \"Alice\"), Member(\"b\", \"Bob\")), (), (), False)",
+   "expect": "None"
+  },
+  {
+   "name": "same_member_example",
+   "given": "payment=Payment(\"p1\", \"a\", \"a\", 1, \"settle\", date(2026, 1, 1)); trip=Trip(\"t1\", \"Trip\", \"USD\", (Member(\"a\", \"Alice\"), Member(\"b\", \"Bob\")), (), (), False)",
+   "expect": "\"payment members must differ\""
+  },
+  {
+   "name": "zero_amount_example",
+   "given": "payment=Payment(\"p1\", \"a\", \"b\", 0, \"settle\", date(2026, 1, 1)); trip=Trip(\"t1\", \"Trip\", \"USD\", (Member(\"a\", \"Alice\"), Member(\"b\", \"Bob\")), (), (), False)",
+   "expect": "\"invalid payment amount\""
+  },
+  {
+   "name": "empty_payment_id",
+   "given": "payment=Payment(\"\", \"a\", \"b\", 1, \"settle\", date(2026, 1, 1)); trip=Trip(\"t1\", \"Trip\", \"USD\", (Member(\"a\", \"Alice\"), Member(\"b\", \"Bob\")), (), (), False)",
+   "expect": "\"invalid payment identity\""
+  },
+  {
+   "name": "empty_note",
+   "given": "payment=Payment(\"p1\", \"a\", \"b\", 1, \"\", date(2026, 1, 1)); trip=Trip(\"t1\", \"Trip\", \"USD\", (Member(\"a\", \"Alice\"), Member(\"b\", \"Bob\")), (), (), False)",
+   "expect": "\"invalid payment identity\""
+  },
+  {
+   "name": "unknown_recipient_member",
+   "given": "payment=Payment(\"p1\", \"a\", \"missing\", 1, \"settle\", date(2026, 1, 1)); trip=Trip(\"t1\", \"Trip\", \"USD\", (Member(\"a\", \"Alice\"), Member(\"b\", \"Bob\")), (), (), False)",
+   "expect": "\"unknown payment member\""
+  },
+  {
+   "name": "boolean_amount_is_not_int",
+   "given": "payment=Payment(\"p1\", \"a\", \"b\", True, \"settle\", date(2026, 1, 1)); trip=Trip(\"t1\", \"Trip\", \"USD\", (Member(\"a\", \"Alice\"), Member(\"b\", \"Bob\")), (), (), False)",
+   "expect": "\"invalid payment amount\""
+  },
+  {
+   "name": "decimal_amount_is_not_int",
+   "given": "payment=Payment(\"p1\", \"a\", \"b\", Decimal(\"1\"), \"settle\", date(2026, 1, 1)); trip=Trip(\"t1\", \"Trip\", \"USD\", (Member(\"a\", \"Alice\"), Member(\"b\", \"Bob\")), (), (), False)",
+   "expect": "\"invalid payment amount\""
+  }
+ ],
+ "validate_trip_configuration": [
+  {
+   "name": "valid_spec_example",
+   "given": "Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')),), (), False)",
+   "expect": "None"
+  },
+  {
+   "name": "invalid_trip_identity_required_fields",
+   "given": "(Trip('', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')),), (), False), Trip('t', '', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')),), (), False), Trip('t', 'Trip', '', (Member('a', 'A'),), (ExchangeRate('', Decimal('1')),), (), False))",
+   "expect": "('invalid trip identity', 'invalid trip identity', 'invalid trip identity')"
+  },
+  {
+   "name": "no_members",
+   "given": "Trip('t', 'Trip', 'USD', (), (ExchangeRate('USD', Decimal('1')),), (), False)",
+   "expect": "'no members'"
+  },
+  {
+   "name": "duplicate_or_empty_member_id",
+   "given": "(Trip('t', 'Trip', 'USD', (Member('a', 'A'), Member('a', 'B')), (ExchangeRate('USD', Decimal('1')),), (), False), Trip('t', 'Trip', 'USD', (Member('', 'A'),), (ExchangeRate('USD', Decimal('1')),), (), False))",
+   "expect": "('duplicate or empty member id', 'duplicate or empty member id')"
+  },
+  {
+   "name": "duplicate_rate_currency",
+   "given": "Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')), ExchangeRate('EUR', Decimal('1.1')), ExchangeRate('EUR', Decimal('1.2'))), (), False)",
+   "expect": "'duplicate rate currency'"
+  },
+  {
+   "name": "invalid_exchange_rate_nonpositive_or_nonfinite",
+   "given": "(Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')), ExchangeRate('EUR', Decimal('0'))), (), False), Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')), ExchangeRate('EUR', Decimal('NaN'))), (), False))",
+   "expect": "('invalid exchange rate', 'invalid exchange rate')"
+  },
+  {
+   "name": "base_rate_missing_or_not_one",
+   "given": "(Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('EUR', Decimal('1.1')),), (), False), Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1.01')),), (), False))",
+   "expect": "('missing base rate', 'base rate must be 1')"
+  },
+  {
+   "name": "duplicate_or_empty_action_id_across_action_kinds",
+   "given": "(Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')),), (ExpenseAction(Expense('', 'a', Decimal('10'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('10')),), 'Lunch', date(2026, 1, 1))),), False), Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')),), (ExpenseAction(Expense('x', 'a', Decimal('10'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('10')),), 'Lunch', date(2026, 1, 1))), PaymentAction(Payment('x', 'a', 'a', 100, 'Refund', date(2026, 1, 2)))), False))",
+   "expect": "('duplicate or empty action id', 'duplicate or empty action id')"
+  }
+ ],
+ "validate_expense": [
+  {
+   "name": "valid_equal_example_and_shares_no_total_rule",
+   "given": "trip = Trip('t','T','USD',(Member('a','A'),Member('b','B')),(ExchangeRate('USD',Decimal('1')),),(),False); calls = (Expense('e1','a',Decimal('10'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),SplitEntry('b',Decimal('1'))),'d',date(2026,1,1)), Expense('e2','a',Decimal('10'),'USD',SplitKind.SHARES,(SplitEntry('a',Decimal('2')),SplitEntry('b',Decimal('7'))),'d',date(2026,1,1)))",
+   "expect": "(None, None)"
+  },
+  {
+   "name": "identity_and_unknown_payer",
+   "given": "trip = Trip('t','T','USD',(Member('a','A'),Member('b','B')),(ExchangeRate('USD',Decimal('1')),),(),False); calls = (Expense('','a',Decimal('1'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),),'d',date(2026,1,1)), Expense('e','a',Decimal('1'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),),'',date(2026,1,1)), Expense('e','z',Decimal('1'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),),'d',date(2026,1,1)))",
+   "expect": "('invalid expense identity', 'invalid expense identity', 'unknown payer')"
+  },
+  {
+   "name": "invalid_amount_nonpositive_and_nonfinite",
+   "given": "trip = Trip('t','T','USD',(Member('a','A'),),(ExchangeRate('USD',Decimal('1')),),(),False); calls = (Expense('e1','a',Decimal('0'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),),'d',date(2026,1,1)), Expense('e2','a',Decimal('NaN'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),),'d',date(2026,1,1)), Expense('e3','a',Decimal('Infinity'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),),'d',date(2026,1,1)))",
+   "expect": "('invalid amount', 'invalid amount', 'invalid amount')"
+  },
+  {
+   "name": "unknown_currency_missing_or_nonpositive_rate",
+   "given": "missing_rate_trip = Trip('t','T','USD',(Member('a','A'),),(ExchangeRate('USD',Decimal('1')),),(),False); zero_rate_trip = Trip('t','T','USD',(Member('a','A'),),(ExchangeRate('USD',Decimal('0')),),(),False); calls = ((Expense('e1','a',Decimal('1'),'EUR',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),),'d',date(2026,1,1)),missing_rate_trip), (Expense('e2','a',Decimal('1'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),),'d',date(2026,1,1)),zero_rate_trip))",
+   "expect": "('unknown currency', 'unknown currency')"
+  },
+  {
+   "name": "invalid_split_member_structure",
+   "given": "trip = Trip('t','T','USD',(Member('a','A'),Member('b','B')),(ExchangeRate('USD',Decimal('1')),),(),False); calls = (Expense('e1','a',Decimal('1'),'USD',SplitKind.EQUAL,(),'d',date(2026,1,1)), Expense('e2','a',Decimal('1'),'USD',SplitKind.EQUAL,(SplitEntry('',Decimal('1')),),'d',date(2026,1,1)), Expense('e3','a',Decimal('2'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('1')),SplitEntry('a',Decimal('1'))),'d',date(2026,1,1)))",
+   "expect": "('invalid split members', 'invalid split members', 'invalid split members')"
+  },
+  {
+   "name": "unknown_split_member",
+   "given": "trip = Trip('t','T','USD',(Member('a','A'),),(ExchangeRate('USD',Decimal('1')),),(),False); expense = Expense('e','a',Decimal('1'),'USD',SplitKind.EQUAL,(SplitEntry('z',Decimal('1')),),'d',date(2026,1,1))",
+   "expect": "'unknown split member'"
+  },
+  {
+   "name": "invalid_split_value_nonpositive_and_nonfinite",
+   "given": "trip = Trip('t','T','USD',(Member('a','A'),),(ExchangeRate('USD',Decimal('1')),),(),False); calls = (Expense('e1','a',Decimal('1'),'USD',SplitKind.SHARES,(SplitEntry('a',Decimal('0')),),'d',date(2026,1,1)), Expense('e2','a',Decimal('1'),'USD',SplitKind.SHARES,(SplitEntry('a',Decimal('NaN')),),'d',date(2026,1,1)), Expense('e3','a',Decimal('1'),'USD',SplitKind.SHARES,(SplitEntry('a',Decimal('Infinity')),),'d',date(2026,1,1)))",
+   "expect": "('invalid split value', 'invalid split value', 'invalid split value')"
+  },
+  {
+   "name": "split_kind_total_rules",
+   "given": "trip = Trip('t','T','USD',(Member('a','A'),Member('b','B')),(ExchangeRate('USD',Decimal('1')),),(),False); calls = (Expense('e1','a',Decimal('2'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('2')),),'d',date(2026,1,1)), Expense('e2','a',Decimal('10'),'USD',SplitKind.AMOUNTS,(SplitEntry('a',Decimal('3')),SplitEntry('b',Decimal('6'))),'d',date(2026,1,1)), Expense('e3','a',Decimal('10'),'USD',SplitKind.PERCENTAGES,(SplitEntry('a',Decimal('50')),SplitEntry('b',Decimal('49'))),'d',date(2026,1,1)))",
+   "expect": "('equal entries must be 1', 'amount split does not total expense', 'percentage split does not total 100')"
+  }
+ ],
+ "allocate_expense_base_cents": [
+  {
+   "name": "equal_usd_even_split_spec_example",
+   "given": "expense=Expense('e1','a',Decimal('10.00'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('0')),SplitEntry('b',Decimal('0'))),'',date(2026,1,1)); trip=Trip('t','', 'USD',(Member('a','A'),Member('b','B')),(ExchangeRate('USD',Decimal('1')),),(),False)",
+   "expect": "(Allocation('a',500), Allocation('b',500))"
+  },
+  {
+   "name": "equal_eur_single_remainder_spec_example",
+   "given": "expense=Expense('e2','a',Decimal('1.00'),'EUR',SplitKind.EQUAL,(SplitEntry('a',Decimal('0')),SplitEntry('b',Decimal('0'))),'',date(2026,1,1)); trip=Trip('t','', 'USD',(Member('a','A'),Member('b','B')),(ExchangeRate('EUR',Decimal('1.01')),),(),False)",
+   "expect": "(Allocation('a',51), Allocation('b',50))"
+  },
+  {
+   "name": "shares_tie_uses_member_id_not_entry_order_spec_example",
+   "given": "expense=Expense('e3','a',Decimal('1.00'),'EUR',SplitKind.SHARES,(SplitEntry('b',Decimal('1')),SplitEntry('a',Decimal('1'))),'',date(2026,1,1)); trip=Trip('t','', 'USD',(Member('a','A'),Member('b','B')),(ExchangeRate('EUR',Decimal('1.01')),),(),False)",
+   "expect": "(Allocation('b',50), Allocation('a',51))"
+  },
+  {
+   "name": "amounts_largest_fractional_remainder_gets_cent",
+   "given": "expense=Expense('e4','a',Decimal('10.00'),'EUR',SplitKind.AMOUNTS,(SplitEntry('b',Decimal('6.67')),SplitEntry('a',Decimal('3.33'))),'',date(2026,1,1)); trip=Trip('t','', 'USD',(Member('a','A'),Member('b','B')),(ExchangeRate('EUR',Decimal('1.01')),),(),False)",
+   "expect": "(Allocation('b',674), Allocation('a',336))"
+  },
+  {
+   "name": "percentages_total_half_up_and_tied_remainder",
+   "given": "expense=Expense('e5','a',Decimal('1.00'),'EUR',SplitKind.PERCENTAGES,(SplitEntry('b',Decimal('50')),SplitEntry('a',Decimal('50'))),'',date(2026,1,1)); trip=Trip('t','', 'USD',(Member('a','A'),Member('b','B')),(ExchangeRate('EUR',Decimal('1.005')),),(),False)",
+   "expect": "(Allocation('b',50), Allocation('a',51))"
+  },
+  {
+   "name": "equal_three_way_two_remaining_cents_follow_member_id_and_preserve_entry_order",
+   "given": "expense=Expense('e6','a',Decimal('1.00'),'EUR',SplitKind.EQUAL,(SplitEntry('c',Decimal('0')),SplitEntry('b',Decimal('0')),SplitEntry('a',Decimal('0'))),'',date(2026,1,1)); trip=Trip('t','', 'USD',(Member('a','A'),Member('b','B'),Member('c','C')),(ExchangeRate('EUR',Decimal('1.01')),),(),False)",
+   "expect": "(Allocation('c',33), Allocation('b',34), Allocation('a',34))"
+  }
+ ],
+ "expense_deltas": [
+  {
+   "name": "payer_and_one_other_split",
+   "given": "expense=Expense(expense_id='e1', payer_id='a', amount=Decimal('1.00'), currency='USD', split_kind=SplitKind.AMOUNTS, entries=(SplitEntry(member_id='a', value=Decimal('0.50')), SplitEntry(member_id='b', value=Decimal('0.50'))), description='d', occurred_on=date(2026, 1, 1)); trip=Trip(trip_id='t', name='t', base_currency='USD', members=(Member(member_id='a', name='A'), Member(member_id='b', name='B')), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),), actions=(), closed=False)",
+   "expect": "{'a': 50, 'b': -50}"
+  },
+  {
+   "name": "payer_is_only_allocated_member_keeps_zero_delta",
+   "given": "expense=Expense(expense_id='e2', payer_id='a', amount=Decimal('1.00'), currency='USD', split_kind=SplitKind.AMOUNTS, entries=(SplitEntry(member_id='a', value=Decimal('1.00')),), description='d', occurred_on=date(2026, 1, 1)); trip=Trip(trip_id='t', name='t', base_currency='USD', members=(Member(member_id='a', name='A'),), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),), actions=(), closed=False)",
+   "expect": "{'a': 0}"
+  },
+  {
+   "name": "payer_owes_part_of_odd_cent_expense",
+   "given": "expense=Expense(expense_id='e3', payer_id='b', amount=Decimal('1.01'), currency='USD', split_kind=SplitKind.AMOUNTS, entries=(SplitEntry(member_id='a', value=Decimal('0.51')), SplitEntry(member_id='b', value=Decimal('0.50'))), description='d', occurred_on=date(2026, 1, 1)); trip=Trip(trip_id='t', name='t', base_currency='USD', members=(Member(member_id='a', name='A'), Member(member_id='b', name='B')), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),), actions=(), closed=False)",
+   "expect": "{'b': 51, 'a': -51}"
+  },
+  {
+   "name": "payer_not_among_recipients_with_exact_currency_conversion",
+   "given": "expense=Expense(expense_id='e4', payer_id='c', amount=Decimal('10.00'), currency='EUR', split_kind=SplitKind.AMOUNTS, entries=(SplitEntry(member_id='a', value=Decimal('4.00')), SplitEntry(member_id='b', value=Decimal('6.00'))), description='d', occurred_on=date(2026, 1, 1)); trip=Trip(trip_id='t', name='t', base_currency='USD', members=(Member(member_id='a', name='A'), Member(member_id='b', name='B'), Member(member_id='c', name='C')), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')), ExchangeRate(currency='EUR', base_per_unit=Decimal('1.25'))), actions=(), closed=False)",
+   "expect": "{'c': 1250, 'a': -500, 'b': -750}"
+  }
+ ],
+ "remove_last_action": [
+  {
+   "name": "removes_last_payment_from_mixed_history",
+   "given": "Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='A'), Member(member_id='m2', name='B')), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),), actions=(ExpenseAction(Expense(expense_id='e1', payer_id='m1', amount=Decimal('10.00'), currency='USD', split_kind=SplitKind.EQUAL, entries=(), description='Lunch', occurred_on=date(2026, 1, 2))), PaymentAction(Payment(payment_id='p1', from_member_id='m2', to_member_id='m1', amount_cents=500, note='Payback', occurred_on=date(2026, 1, 3)))), closed=False)",
+   "expect": "Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='A'), Member(member_id='m2', name='B')), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),), actions=(ExpenseAction(Expense(expense_id='e1', payer_id='m1', amount=Decimal('10.00'), currency='USD', split_kind=SplitKind.EQUAL, entries=(), description='Lunch', occurred_on=date(2026, 1, 2))),), closed=False)"
+  },
+  {
+   "name": "removes_only_action_leaving_empty_history",
+   "given": "Trip(trip_id='t2', name='Solo', base_currency='EUR', members=(), rates=(), actions=(ExpenseAction(Expense(expense_id='e1', payer_id='m1', amount=Decimal('1.25'), currency='EUR', split_kind=SplitKind.AMOUNTS, entries=(SplitEntry(member_id='m1', value=Decimal('1.25')),), description='Coffee', occurred_on=date(2026, 2, 3))),), closed=False)",
+   "expect": "Trip(trip_id='t2', name='Solo', base_currency='EUR', members=(), rates=(), actions=(), closed=False)"
+  },
+  {
+   "name": "preserves_closed_and_all_non_action_fields",
+   "given": "Trip(trip_id='t3', name='Closed trip', base_currency='GBP', members=(Member(member_id='m1', name='A'),), rates=(ExchangeRate(currency='GBP', base_per_unit=Decimal('1.17')),), actions=(PaymentAction(Payment(payment_id='p1', from_member_id='m1', to_member_id='m2', amount_cents=99, note='x', occurred_on=date(2026, 4, 5))),), closed=True)",
+   "expect": "Trip(trip_id='t3', name='Closed trip', base_currency='GBP', members=(Member(member_id='m1', name='A'),), rates=(ExchangeRate(currency='GBP', base_per_unit=Decimal('1.17')),), actions=(), closed=True)"
+  },
+  {
+   "name": "empty_history_raises_exact_value_error",
+   "given": "Trip(trip_id='t4', name='Empty', base_currency='USD', members=(), rates=(), actions=(), closed=False)",
+   "expect": "raises ValueError('empty history')"
+  }
+ ],
+ "append_action": [
+  {
+   "name": "appends_expense_to_empty_actions",
+   "given": "trip=Trip('t1', 'Trip', 'USD', (), (), (), False); action=ExpenseAction(Expense('e1', 'm1', Decimal('12.34'), 'USD', SplitKind.EQUAL, (), 'Lunch', date(2026, 1, 2)))",
+   "expect": "Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('12.34'), 'USD', SplitKind.EQUAL, (), 'Lunch', date(2026, 1, 2))),), False); original trip.actions == ()"
+  },
+  {
+   "name": "preserves_existing_action_order_when_appending_expense",
+   "given": "p1=Payment('p1', 'm2', 'm1', 500, 'settle', date(2026, 1, 1)); e2=Expense('e2', 'm1', Decimal('7.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('m1', Decimal('3.50')), SplitEntry('m2', Decimal('3.50'))), 'Coffee', date(2026, 1, 2)); trip=Trip('t1', 'Trip', 'USD', (), (), (PaymentAction(p1),), False); action=ExpenseAction(e2)",
+   "expect": "Trip('t1', 'Trip', 'USD', (), (), (PaymentAction(Payment('p1', 'm2', 'm1', 500, 'settle', date(2026, 1, 1))), ExpenseAction(Expense('e2', 'm1', Decimal('7.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('m1', Decimal('3.50')), SplitEntry('m2', Decimal('3.50'))), 'Coffee', date(2026, 1, 2)))), False); original trip.actions == (PaymentAction(p1),)"
+  },
+  {
+   "name": "appends_payment_after_existing_expense_and_payment",
+   "given": "e1=Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'Dinner', date(2026, 1, 1)); p1=Payment('p1', 'm2', 'm1', 250, 'part', date(2026, 1, 2)); p2=Payment('p2', 'm3', 'm1', 375, '', date(2026, 1, 3)); trip=Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(e1), PaymentAction(p1)), False); action=PaymentAction(p2)",
+   "expect": "Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'Dinner', date(2026, 1, 1))), PaymentAction(Payment('p1', 'm2', 'm1', 250, 'part', date(2026, 1, 2))), PaymentAction(Payment('p2', 'm3', 'm1', 375, '', date(2026, 1, 3)))), False); original trip.actions == (ExpenseAction(e1), PaymentAction(p1))"
+  },
+  {
+   "name": "returns_equal_but_distinct_trip_without_mutating_action",
+   "given": "action=PaymentAction(Payment('p1', 'm1', 'm2', 0, '', date(2026, 1, 1))); trip=Trip('t1', 'Trip', 'USD', (Member('m1', 'A'), Member('m2', 'B')), (ExchangeRate('EUR', Decimal('1.2')),), (), False)",
+   "expect": "result == Trip('t1', 'Trip', 'USD', (Member('m1', 'A'), Member('m2', 'B')), (ExchangeRate('EUR', Decimal('1.2')),), (PaymentAction(Payment('p1', 'm1', 'm2', 0, '', date(2026, 1, 1))),), False); result is not trip; result.actions[-1] is action; trip.actions == ()"
+  }
+ ],
+ "compute_balances": [
+  {
+   "name": "no_actions_returns_zero_for_every_member",
+   "given": "Trip(trip_id='t0', name='T', base_currency='USD', members=(Member('a', 'A'), Member('b', 'B')), rates=(), actions=(), closed=False)",
+   "expect": "{'a': 0, 'b': 0}"
+  },
+  {
+   "name": "equal_expense_produces_spec_example_balances",
+   "given": "Trip(trip_id='t1', name='T', base_currency='USD', members=(Member('a', 'A'), Member('b', 'B')), rates=(), actions=(ExpenseAction(Expense(expense_id='e1', payer_id='a', amount=Decimal('1.00'), currency='USD', split_kind=SplitKind.EQUAL, entries=(SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), description='lunch', occurred_on=date(2026, 1, 1))),), closed=False)",
+   "expect": "{'a': 50, 'b': -50}"
+  },
+  {
+   "name": "expense_then_repaying_payment_settles_spec_example",
+   "given": "Trip(trip_id='t2', name='T', base_currency='USD', members=(Member('a', 'A'), Member('b', 'B')), rates=(), actions=(ExpenseAction(Expense(expense_id='e1', payer_id='a', amount=Decimal('1.00'), currency='USD', split_kind=SplitKind.EQUAL, entries=(SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), description='lunch', occurred_on=date(2026, 1, 1))), PaymentAction(Payment(payment_id='p1', from_member_id='b', to_member_id='a', amount_cents=50, note='repayment', occurred_on=date(2026, 1, 2)))), closed=False)",
+   "expect": "{'a': 0, 'b': 0}"
+  },
+  {
+   "name": "payment_only_updates_sender_and_receiver_and_keeps_unaffected_member",
+   "given": "Trip(trip_id='t3', name='T', base_currency='USD', members=(Member('a', 'A'), Member('b', 'B'), Member('c', 'C')), rates=(), actions=(PaymentAction(Payment(payment_id='p1', from_member_id='a', to_member_id='b', amount_cents=17, note='repayment', occurred_on=date(2026, 1, 1))),), closed=False)",
+   "expect": "{'a': 17, 'b': -17, 'c': 0}"
+  },
+  {
+   "name": "trip_with_no_members_returns_empty_balances",
+   "given": "Trip(trip_id='t4', name='T', base_currency='USD', members=(), rates=(), actions=(), closed=False)",
+   "expect": "{}"
+  }
+ ],
+ "close_trip": [
+  {
+   "name": "closes_valid_open_trip_and_saves_replacement",
+   "given": "TripRepository=InMemoryTripRepository((Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='Ann'),), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),), actions=(), closed=False),))",
+   "expect": "returns Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='Ann'),), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),), actions=(), closed=True); TripRepository.trips == {'t1': Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='Ann'),), rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),), actions=(), closed=True)}"
+  },
+  {
+   "name": "already_closed_raises_before_validation_or_save",
+   "given": "TripRepository=InMemoryTripRepository((Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='Ann'),), rates=(), actions=(), closed=True),))",
+   "expect": "raises ClosedTripError('t1'); TripRepository.trips == {'t1': Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='Ann'),), rates=(), actions=(), closed=True)}"
+  },
+  {
+   "name": "missing_base_rate_raises_validation_error_without_save",
+   "given": "TripRepository=InMemoryTripRepository((Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='Ann'),), rates=(ExchangeRate(currency='EUR', base_per_unit=Decimal('1.08')),), actions=(), closed=False),))",
+   "expect": "raises ValidationError('missing base rate'); TripRepository.trips == {'t1': Trip(trip_id='t1', name='Trip', base_currency='USD', members=(Member(member_id='m1', name='Ann'),), rates=(ExchangeRate(currency='EUR', base_per_unit=Decimal('1.08')),), actions=(), closed=False)}"
+  },
+  {
+   "name": "missing_trip_propagates_not_found_and_does_not_save",
+   "given": "TripRepository=InMemoryTripRepository(())",
+   "expect": "raises TripNotFoundError('t1'); TripRepository.trips == {}"
+  }
+ ],
+ "settle_up": [
+  {
+   "name": "two_member_example",
+   "given": "settle_up({'a': -50, 'b': 50})",
+   "expect": "(Transfer('a', 'b', 50),)"
+  },
+  {
+   "name": "three_member_example",
+   "given": "settle_up({'a': -30, 'b': -20, 'c': 50})",
+   "expect": "(Transfer('a', 'c', 30), Transfer('b', 'c', 20))"
+  },
+  {
+   "name": "disjoint_groups_example",
+   "given": "settle_up({'a': -5, 'b': 5, 'c': -7, 'd': 7})",
+   "expect": "(Transfer('a', 'b', 5), Transfer('c', 'd', 7))"
+  },
+  {
+   "name": "all_zero_balances_ignored",
+   "given": "settle_up({'a': 0, 'b': 0})",
+   "expect": "()"
+  },
+  {
+   "name": "unbalanced_raises",
+   "given": "settle_up({'a': -1, 'b': 2})",
+   "expect": "raises ValueError('unbalanced')"
+  },
+  {
+   "name": "more_than_twelve_nonzero_members_raises",
+   "given": "settle_up({'a': -6, 'b': -1, 'c': -1, 'd': -1, 'e': -1, 'f': -1, 'g': -1, 'h': 2, 'i': 2, 'j': 2, 'k': 2, 'l': 2, 'm': 2})",
+   "expect": "raises ValueError('too many members')"
+  },
+  {
+   "name": "lexicographically_smallest_maximum_partition",
+   "given": "settle_up({'a': -1, 'b': -1, 'c': 1, 'd': 1})",
+   "expect": "(Transfer('a', 'c', 1), Transfer('b', 'd', 1))"
+  },
+  {
+   "name": "lexicographic_pairing_and_final_sort",
+   "given": "settle_up({'a': 2, 'z': -2, 'b': -5, 'd': -3, 'e': 4, 'f': 4})",
+   "expect": "(Transfer('b', 'e', 4), Transfer('b', 'f', 1), Transfer('d', 'f', 3), Transfer('z', 'a', 2))"
+  }
+ ],
+ "undo_last_action": [
+  {
+   "name": "undo_saves_trip_without_final_payment",
+   "given": "repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))), PaymentAction(Payment('p1', 'm2', 'm1', 500, 'payback', date(2026, 1, 3)))), False),))",
+   "expect": "returns Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))),), False); repo.trips == {'t1': Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))),), False)}"
+  },
+  {
+   "name": "undo_only_action_saves_empty_history",
+   "given": "repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (PaymentAction(Payment('p1', 'm1', 'm2', 123, 'coffee', date(2026, 1, 2))),), False),))",
+   "expect": "returns Trip('t1', 'Trip', 'USD', (), (), (), False); repo.trips == {'t1': Trip('t1', 'Trip', 'USD', (), (), (), False)}"
+  },
+  {
+   "name": "undo_open_empty_trip_raises_empty_history",
+   "given": "repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (), False),))",
+   "expect": "raises EmptyHistoryError('t1'); repo.trips == {'t1': Trip('t1', 'Trip', 'USD', (), (), (), False)}"
+  },
+  {
+   "name": "undo_closed_trip_with_action_raises_closed_trip",
+   "given": "repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))),), True),))",
+   "expect": "raises ClosedTripError('t1'); repo.trips == {'t1': Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))),), True)}"
+  },
+  {
+   "name": "undo_closed_empty_trip_prioritizes_closed_error",
+   "given": "repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (), True),))",
+   "expect": "raises ClosedTripError('t1'); repo.trips == {'t1': Trip('t1', 'Trip', 'USD', (), (), (), True)}"
+  },
+  {
+   "name": "undo_missing_trip_propagates_not_found",
+   "given": "repo = InMemoryTripRepository(())",
+   "expect": "raises TripNotFoundError('t1'); repo.trips == {}"
+  }
+ ],
+ "record_expense": [
+  {
+   "name": "saves_and_returns_appended_expense",
+   "given": "e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), 'lunch', date(2026, 1, 2)); t = Trip('t1', 'Trip', 'USD', (Member('a', 'Ann'), Member('b', 'Bob')), (ExchangeRate('USD', Decimal('1')),), (), False); repo = InMemoryTripRepository((t,))",
+   "expect": "returns Trip('t1', 'Trip', 'USD', (Member('a', 'Ann'), Member('b', 'Bob')), (ExchangeRate('USD', Decimal('1')),), (ExpenseAction(e1),), False); afterwards repo.trips == {'t1': returned_trip}"
+  },
+  {
+   "name": "closed_trip_raises_before_validation_or_save",
+   "given": "e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), 'lunch', date(2026, 1, 2)); t = Trip('t1', 'Trip', 'USD', (Member('a', 'Ann'), Member('b', 'Bob')), (ExchangeRate('USD', Decimal('1')),), (), True); repo = InMemoryTripRepository((t,))",
+   "expect": "raises ClosedTripError('t1'); afterwards repo.trips == {'t1': t}"
+  },
+  {
+   "name": "configuration_error_is_returned_before_expense_validation",
+   "given": "e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), 'lunch', date(2026, 1, 2)); t = Trip('t1', 'Trip', 'USD', (Member('a', 'Ann'), Member('b', 'Bob')), (ExchangeRate('USD', Decimal('1')),), (), False); repo = InMemoryTripRepository((t,)); monkeypatch logic.validate_trip_configuration to lambda trip: 'bad configuration'",
+   "expect": "raises ValidationError('bad configuration'); afterwards repo.trips == {'t1': t}"
+  },
+  {
+   "name": "amount_split_not_totaling_expense_raises",
+   "given": "e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('a', Decimal('4.00')), SplitEntry('b', Decimal('5.00'))), 'lunch', date(2026, 1, 2)); t = Trip('t1', 'Trip', 'USD', (Member('a', 'Ann'), Member('b', 'Bob')), (ExchangeRate('USD', Decimal('1')),), (), False); repo = InMemoryTripRepository((t,))",
+   "expect": "raises ValidationError('amount split does not total expense'); afterwards repo.trips == {'t1': t}"
+  },
+  {
+   "name": "duplicate_expense_id_raises_without_saving",
+   "given": "e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), 'lunch', date(2026, 1, 2)); t = Trip('t1', 'Trip', 'USD', (Member('a', 'Ann'), Member('b', 'Bob')), (ExchangeRate('USD', Decimal('1')),), (ExpenseAction(e1),), False); repo = InMemoryTripRepository((t,))",
+   "expect": "raises ValidationError('duplicate action id'); afterwards repo.trips == {'t1': t}"
+  },
+  {
+   "name": "missing_trip_propagates_repository_error",
+   "given": "e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), 'lunch', date(2026, 1, 2)); repo = InMemoryTripRepository(())",
+   "expect": "raises TripNotFoundError('t1'); afterwards repo.trips == {}"
+  }
+ ],
+ "record_payment": [
+  {
+   "name": "records_valid_payment",
+   "given": "repo=InMemoryTripRepository((Trip('t1','Trip','USD',(Member('a','Alice'),Member('b','Bob')),(ExchangeRate('USD',Decimal('1')),),(),False),)); payment=Payment('p1','a','b',50,'settle',date(2026,1,2))",
+   "expect": "returns Trip('t1','Trip','USD',(Member('a','Alice'),Member('b','Bob')),(ExchangeRate('USD',Decimal('1')),),(PaymentAction(Payment('p1','a','b',50,'settle',date(2026,1,2))),),False); repo.trips == {'t1': returned_trip}"
+  },
+  {
+   "name": "missing_trip_propagates_repository_error",
+   "given": "repo=InMemoryTripRepository(()); payment=Payment('p1','a','b',50,'settle',date(2026,1,2))",
+   "expect": "raises TripNotFoundError('missing') when record_payment('missing',payment) is run; repo.trips == {}"
+  },
+  {
+   "name": "closed_trip_wins_over_invalid_payment",
+   "given": "T=Trip('t1','Trip','USD',(Member('a','Alice'),Member('b','Bob')),(ExchangeRate('USD',Decimal('1')),),(),True); repo=InMemoryTripRepository((T,)); payment=Payment('p1','a','b',0,'settle',date(2026,1,2))",
+   "expect": "raises ClosedTripError('t1'); repo.trips == {'t1': T}"
+  },
+  {
+   "name": "configuration_failure_precedes_payment_validation",
+   "given": "T=Trip('t1','Trip','USD',(Member('a','Alice'),Member('b','Bob')),(ExchangeRate('USD',Decimal('1')),),(),False); repo=InMemoryTripRepository((T,)); monkeypatch logic.validate_trip_configuration to lambda trip: 'bad configuration'; payment=Payment('p1','a','b',0,'settle',date(2026,1,2))",
+   "expect": "raises ValidationError('bad configuration'); repo.trips == {'t1': T}"
+  },
+  {
+   "name": "zero_amount_precedes_duplicate_id_check",
+   "given": "old=Payment('p0','a','b',1,'old',date(2026,1,1)); T=Trip('t1','Trip','USD',(Member('a','Alice'),Member('b','Bob')),(ExchangeRate('USD',Decimal('1')),),(PaymentAction(old),),False); repo=InMemoryTripRepository((T,)); payment=Payment('p0','a','b',0,'settle',date(2026,1,2))",
+   "expect": "raises ValidationError('invalid payment amount'); repo.trips == {'t1': T}"
+  },
+  {
+   "name": "payment_id_cannot_reuse_payment_action_id",
+   "given": "old=Payment('p1','a','b',1,'old',date(2026,1,1)); T=Trip('t1','Trip','USD',(Member('a','Alice'),Member('b','Bob')),(ExchangeRate('USD',Decimal('1')),),(PaymentAction(old),),False); repo=InMemoryTripRepository((T,)); payment=Payment('p1','a','b',50,'settle',date(2026,1,2))",
+   "expect": "raises ValidationError('duplicate action id'); repo.trips == {'t1': T}"
+  },
+  {
+   "name": "payment_id_cannot_reuse_expense_action_id",
+   "given": "old=Expense('p1','a',Decimal('1'),'USD',SplitKind.EQUAL,(SplitEntry('a',Decimal('0')),SplitEntry('b',Decimal('0'))),'old',date(2026,1,1)); T=Trip('t1','Trip','USD',(Member('a','Alice'),Member('b','Bob')),(ExchangeRate('USD',Decimal('1')),),(ExpenseAction(old),),False); repo=InMemoryTripRepository((T,)); payment=Payment('p1','a','b',50,'settle',date(2026,1,2))",
+   "expect": "raises ValidationError('duplicate action id'); repo.trips == {'t1': T}"
+  }
+ ],
+ "member_statement": [
+  {
+   "name": "unknown_member_raises",
+   "given": "Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')),), (), False), 'missing'",
+   "expect": "raises ValueError('unknown member')"
+  },
+  {
+   "name": "payer_statement_for_expense_and_outgoing_payment_uses_balance_formula",
+   "given": "Trip('t', 'Trip', 'USD', (Member('a', 'A'), Member('b', 'B')), (ExchangeRate('USD', Decimal('1')),), (ExpenseAction(Expense('e1', 'a', Decimal('1.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('a', Decimal('0.50')), SplitEntry('b', Decimal('0.50'))), 'dinner', date(2026, 1, 2))), PaymentAction(Payment('p1', 'a', 'b', 50, 'settle', date(2026, 1, 3)))), False), 'a'",
+   "expect": "Statement('a', 100, 50, 50, 0, 100, (StatementLine('e1', 'expense', 'dinner', 100, 50, 0, 0), StatementLine('p1', 'payment', 'settle', 0, 0, 50, 0)))"
+  },
+  {
+   "name": "recipient_statement_for_expense_and_incoming_payment_uses_balance_formula",
+   "given": "Trip('t', 'Trip', 'USD', (Member('a', 'A'), Member('b', 'B')), (ExchangeRate('USD', Decimal('1')),), (ExpenseAction(Expense('e1', 'a', Decimal('1.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('a', Decimal('0.50')), SplitEntry('b', Decimal('0.50'))), 'dinner', date(2026, 1, 2))), PaymentAction(Payment('p1', 'a', 'b', 50, 'settle', date(2026, 1, 3)))), False), 'b'",
+   "expect": "Statement('b', 0, 50, 0, 50, -100, (StatementLine('e1', 'expense', 'dinner', 0, 50, 0, 0), StatementLine('p1', 'payment', 'settle', 0, 0, 0, 50)))"
+  },
+  {
+   "name": "keeps_related_lines_in_action_order_and_omits_unrelated_actions",
+   "given": "Trip('t', 'Trip', 'USD', (Member('a', 'A'), Member('b', 'B'), Member('c', 'C')), (ExchangeRate('USD', Decimal('1')), ExchangeRate('EUR', Decimal('1.25'))), (ExpenseAction(Expense('e1', 'a', Decimal('8.00'), 'EUR', SplitKind.AMOUNTS, (SplitEntry('b', Decimal('8.00')),), 'hotel', date(2026, 1, 2))), PaymentAction(Payment('p1', 'b', 'a', 200, 'repay', date(2026, 1, 3))), ExpenseAction(Expense('e2', 'b', Decimal('3.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('a', Decimal('3.00')),), 'taxi', date(2026, 1, 4))), PaymentAction(Payment('p2', 'c', 'a', 100, 'unrelated', date(2026, 1, 5)))), False), 'b'",
+   "expect": "Statement('b', 300, 1000, 200, 0, -500, (StatementLine('e1', 'expense', 'hotel', 0, 1000, 0, 0), StatementLine('p1', 'payment', 'repay', 0, 0, 200, 0), StatementLine('e2', 'expense', 'taxi', 300, 0, 0, 0)))"
+  },
+  {
+   "name": "keeps_zero_line_for_zero_allocation_participant",
+   "given": "Trip('t', 'Trip', 'USD', (Member('a', 'A'), Member('b', 'B'), Member('c', 'C')), (ExchangeRate('USD', Decimal('1')),), (ExpenseAction(Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('a', Decimal('10.00')), SplitEntry('b', Decimal('0.00'))), 'gift', date(2026, 1, 2))), PaymentAction(Payment('p1', 'c', 'a', 100, 'unrelated', date(2026, 1, 3)))), False), 'b'",
+   "expect": "Statement('b', 0, 0, 0, 0, 0, (StatementLine('e1', 'expense', 'gift', 0, 0, 0, 0),))"
+  },
+  {
+   "name": "empty_history_returns_zero_statement",
+   "given": "Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')),), (), False), 'a'",
+   "expect": "Statement('a', 0, 0, 0, 0, 0, ())"
+  }
+ ]
+}

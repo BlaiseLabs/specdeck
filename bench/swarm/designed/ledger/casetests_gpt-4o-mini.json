@@ -1,0 +1,350 @@
+{
+ "rate_for_currency": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "  TypeError: 'InMemoryTripRepository' object is not callable\n_________________ test_rate_for_currency[trip4-JPY-expected4] __________________\ntest_it.py:20: in test_rate_for_currency\n    result = run(supply(InMemoryTripRepository()(trip))(rate_for_currency)(trip, currency))\nE   TypeError: 'InMemoryTripRepository' object is not callable\n_________________ test_rate_for_currency[trip5-GBP-expected5] __________________\ntest_it.py:20: in test_rate_for_currency\n    result = run(supply(InMemoryTripRepository()(trip))(rate_for_currency)(trip, currency))\nE   TypeError: 'InMemoryTripRepository' object is not callable\n=========================== short test summary info ============================\nFAILED test_it.py::test_rate_for_currency[trip0-EUR-expected0] - TypeError: '...\nFAILED test_it.py::test_rate_for_currency[trip1-eur-None] - TypeError: 'InMem...\nFAILED test_it.py::test_rate_for_currency[trip2-JPY-None] - TypeError: 'InMem...\nFAILED test_it.py::test_rate_for_currency[trip3-USD-None] - TypeError: 'InMem...\nFAILED test_it.py::test_rate_for_currency[trip4-JPY-expected4] - TypeError: '...\nFAILED test_it.py::test_rate_for_currency[trip5-GBP-expected5] - TypeError: '...\n6 failed in 0.15s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": ".run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'decimal.Decimal' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_returns_rate_for_single_exact_match - TypeError: 'dec...\nFAILED test_it.py::test_returns_none_for_case_mismatched_currency - TypeError...\nFAILED test_it.py::test_returns_none_when_currency_is_absent - TypeError: 'No...\nFAILED test_it.py::test_returns_none_for_duplicate_currency_rates - TypeError...\nFAILED test_it.py::test_returns_zero_rate_without_positivity_validation - Typ...\nFAILED test_it.py::test_returns_negative_rate_without_positivity_validation\n6 failed in 0.38s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_returns_negative_rate_without_positivity_validation",
+   "test_returns_none_for_case_mismatched_currency",
+   "test_returns_none_for_duplicate_currency_rates",
+   "test_returns_none_when_currency_is_absent",
+   "test_returns_rate_for_single_exact_match",
+   "test_returns_zero_rate_without_positivity_validation"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "round_to_cents": {
+  "cases": 6,
+  "try0": {
+   "ok": true,
+   "out": "......                                                                   [100%]\n6 passed in 0.13s\n"
+  },
+  "src": "import pytest\nfrom app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import round_to_cents\nfrom decimal import Decimal\n\ndef test_truncates_fraction_below_half_cent():\n    result = round_to_cents(Decimal('1.234'))\n    assert result == 123\n\ndef test_rounds_half_cent_up():\n    result = round_to_cents(Decimal('1.235'))\n    assert result == 124\n\ndef test_rounds_smallest_half_cent_up():\n    result = round_to_cents(Decimal('0.005'))\n    assert result == 1\n\ndef test_rounds_zero_to_zero():\n    result = round_to_cents(Decimal('0'))\n    assert result == 0\n\ndef test_rounds_exact_cent_amount_unchanged():\n    result = round_to_cents(Decimal('12.34'))\n    assert result == 1234\n\ndef test_rounds_large_fractional_amount_half_up():\n    result = round_to_cents(Decimal('999999.995'))\n    assert result == 100000000\n",
+  "dropped": [],
+  "kept": 6,
+  "first_ok": true
+ },
+ "validate_payment": {
+  "cases": 8,
+  "try0": {
+   "ok": false,
+   "out": ".run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: validate_payment() missing 1 required positional argument: 'trip'\n=========================== short test summary info ============================\nFAILED test_it.py::test_validate_payment[payment0-trip0-None] - TypeError: va...\nFAILED test_it.py::test_validate_payment[payment1-trip1-payment members must differ]\nFAILED test_it.py::test_validate_payment[payment2-trip2-invalid payment amount]\nFAILED test_it.py::test_validate_payment[payment3-trip3-invalid payment identity]\nFAILED test_it.py::test_validate_payment[payment4-trip4-invalid payment identity]\nFAILED test_it.py::test_validate_payment[payment5-trip5-unknown payment member]\nFAILED test_it.py::test_validate_payment[payment6-trip6-invalid payment amount]\nFAILED test_it.py::test_validate_payment[payment7-trip7-invalid payment amount]\n8 failed in 0.53s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "op.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: validate_payment() missing 1 required positional argument: 'trip'\n=========================== short test summary info ============================\nFAILED test_it.py::test_valid_payment_example - TypeError: validate_payment()...\nFAILED test_it.py::test_same_member_example - TypeError: validate_payment() m...\nFAILED test_it.py::test_zero_amount_example - TypeError: validate_payment() m...\nFAILED test_it.py::test_empty_payment_id - TypeError: validate_payment() miss...\nFAILED test_it.py::test_empty_note - TypeError: validate_payment() missing 1 ...\nFAILED test_it.py::test_unknown_recipient_member - TypeError: validate_paymen...\nFAILED test_it.py::test_boolean_amount_is_not_int - TypeError: validate_payme...\nFAILED test_it.py::test_decimal_amount_is_not_int - TypeError: validate_payme...\n8 failed in 0.52s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_boolean_amount_is_not_int",
+   "test_decimal_amount_is_not_int",
+   "test_empty_note",
+   "test_empty_payment_id",
+   "test_same_member_example",
+   "test_unknown_recipient_member",
+   "test_valid_payment_example",
+   "test_zero_amount_example"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "split_source_amounts": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "split_source_amounts))\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\nE   TypeError: 'function' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_amounts_returns_entries_unchanged_in_order - TypeErro...\nFAILED test_it.py::test_equal_split_spec_example - TypeError: 'function' obje...\nFAILED test_it.py::test_percentages_split_spec_example - TypeError: 'function...\nFAILED test_it.py::test_shares_split_spec_example - TypeError: 'function' obj...\nFAILED test_it.py::test_equal_uses_local_decimal_precision_50_for_repeating_division\nFAILED test_it.py::test_shares_single_entry_receives_entire_amount - TypeErro...\n6 failed in 0.40s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "split_source_amounts))\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\nE   TypeError: 'function' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_amounts_returns_entries_unchanged_in_order - TypeErro...\nFAILED test_it.py::test_equal_split_spec_example - TypeError: 'function' obje...\nFAILED test_it.py::test_percentages_split_spec_example - TypeError: 'function...\nFAILED test_it.py::test_shares_split_spec_example - TypeError: 'function' obj...\nFAILED test_it.py::test_equal_uses_local_decimal_precision_50_for_repeating_division\nFAILED test_it.py::test_shares_single_entry_receives_entire_amount - TypeErro...\n6 failed in 0.42s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_amounts_returns_entries_unchanged_in_order",
+   "test_equal_split_spec_example",
+   "test_equal_uses_local_decimal_precision_50_for_repeating_division",
+   "test_percentages_split_spec_example",
+   "test_shares_single_entry_receives_entire_amount",
+   "test_shares_split_spec_example"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "validate_new_action": {
+  "cases": 5,
+  "try0": {
+   "ok": false,
+   "out": "de/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'str' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_payment_id_duplicates_existing_expense_id - TypeError...\nFAILED test_it.py::test_expense_id_distinct_from_existing_payment_id - TypeEr...\nFAILED test_it.py::test_expense_id_duplicates_existing_expense_id - TypeError...\nFAILED test_it.py::test_payment_id_duplicates_existing_payment_id - TypeError...\nFAILED test_it.py::test_duplicate_in_later_existing_action_is_detected - Type...\n5 failed in 0.40s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "ges/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: validate_new_action() missing 1 required positional argument: 'action'\n=========================== short test summary info ============================\nFAILED test_it.py::test_payment_id_duplicates_existing_expense_id - TypeError...\nFAILED test_it.py::test_expense_id_distinct_from_existing_payment_id - TypeEr...\nFAILED test_it.py::test_expense_id_duplicates_existing_expense_id - TypeError...\nFAILED test_it.py::test_payment_id_duplicates_existing_payment_id - TypeError...\nFAILED test_it.py::test_duplicate_in_later_existing_action_is_detected - Type...\n5 failed in 0.36s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_duplicate_in_later_existing_action_is_detected",
+   "test_expense_id_distinct_from_existing_payment_id",
+   "test_expense_id_duplicates_existing_expense_id",
+   "test_payment_id_duplicates_existing_expense_id",
+   "test_payment_id_duplicates_existing_payment_id"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "validate_trip_configuration": {
+  "cases": 8,
+  "try0": {
+   "ok": false,
+   "out": "ntil_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: validate_trip_configuration() takes 1 positional argument but 2 were given\n=========================== short test summary info ============================\nFAILED test_it.py::test_valid_spec_example - TypeError: 'NoneType' object is ...\nFAILED test_it.py::test_invalid_trip_identity_required_fields - TypeError: va...\nFAILED test_it.py::test_no_members - TypeError: 'str' object is not an iterator\nFAILED test_it.py::test_duplicate_or_empty_member_id - TypeError: validate_tr...\nFAILED test_it.py::test_duplicate_rate_currency - TypeError: 'str' object is ...\nFAILED test_it.py::test_invalid_exchange_rate_nonpositive_or_nonfinite - Type...\nFAILED test_it.py::test_base_rate_missing_or_not_one - TypeError: validate_tr...\nFAILED test_it.py::test_duplicate_or_empty_action_id_across_action_kinds - Ty...\n8 failed in 0.49s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "ntil_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: validate_trip_configuration() takes 1 positional argument but 2 were given\n=========================== short test summary info ============================\nFAILED test_it.py::test_valid_spec_example - TypeError: 'NoneType' object is ...\nFAILED test_it.py::test_invalid_trip_identity_required_fields - TypeError: va...\nFAILED test_it.py::test_no_members - TypeError: 'str' object is not an iterator\nFAILED test_it.py::test_duplicate_or_empty_member_id - TypeError: validate_tr...\nFAILED test_it.py::test_duplicate_rate_currency - TypeError: 'str' object is ...\nFAILED test_it.py::test_invalid_exchange_rate_nonpositive_or_nonfinite - Type...\nFAILED test_it.py::test_base_rate_missing_or_not_one - TypeError: validate_tr...\nFAILED test_it.py::test_duplicate_or_empty_action_id_across_action_kinds - Ty...\n8 failed in 0.47s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_base_rate_missing_or_not_one",
+   "test_duplicate_or_empty_action_id_across_action_kinds",
+   "test_duplicate_or_empty_member_id",
+   "test_duplicate_rate_currency",
+   "test_invalid_exchange_rate_nonpositive_or_nonfinite",
+   "test_invalid_trip_identity_required_fields",
+   "test_no_members",
+   "test_valid_spec_example"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "payment_deltas": {
+  "cases": 4,
+  "try0": {
+   "ok": true,
+   "out": "....                                                                     [100%]\n4 passed in 0.10s\n"
+  },
+  "src": "import pytest\nfrom app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import payment_deltas\nfrom datetime import date\n\n\ndef test_payer_to_receiver_250():\n    result = payment_deltas(Payment(payment_id='p1', from_member_id='a', to_member_id='b', amount_cents=250, note='dinner', occurred_on=date(2026, 1, 1)))\n    expected = {'a': 250, 'b': -250}\n    assert result == expected\n\n\ndef test_reverse_direction_one_cent():\n    result = payment_deltas(Payment(payment_id='p2', from_member_id='b', to_member_id='a', amount_cents=1, note='', occurred_on=date(2026, 1, 2)))\n    expected = {'b': 1, 'a': -1}\n    assert result == expected\n\n\ndef test_zero_cent_payment_preserves_both_ids():\n    result = payment_deltas(Payment(payment_id='p3', from_member_id='payer', to_member_id='receiver', amount_cents=0, note='zero', occurred_on=date(2026, 1, 3)))\n    expected = {'payer': 0, 'receiver': 0}\n    assert result == expected\n\n\ndef test_large_amount_and_unrelated_fields_do_not_affect_deltas():\n    result = payment_deltas(Payment(payment_id='payment-99', from_member_id='member-x', to_member_id='member-y', amount_cents=987654321, note='anything', occurred_on=date(2025, 12, 31)))\n    expected = {'member-x': 987654321, 'member-y': -987654321}\n    assert result == expected\n",
+  "dropped": [],
+  "kept": 4,
+  "first_ok": true
+ },
+ "settle_up": {
+  "cases": 8,
+  "try0": {
+   "ok": true,
+   "out": "........                                                                 [100%]\n8 passed in 0.11s\n"
+  },
+  "src": "import pytest\nfrom app.domain import Transfer\nfrom app.logic import settle_up\n\ndef test_two_member_example():\n    result = settle_up({'a': -50, 'b': 50})\n    expected = (Transfer('a', 'b', 50),)\n    assert result == expected\n\ndef test_three_member_example():\n    result = settle_up({'a': -30, 'b': -20, 'c': 50})\n    expected = (Transfer('a', 'c', 30), Transfer('b', 'c', 20))\n    assert result == expected\n\ndef test_disjoint_groups_example():\n    result = settle_up({'a': -5, 'b': 5, 'c': -7, 'd': 7})\n    expected = (Transfer('a', 'b', 5), Transfer('c', 'd', 7))\n    assert result == expected\n\ndef test_all_zero_balances_ignored():\n    result = settle_up({'a': 0, 'b': 0})\n    expected = ()\n    assert result == expected\n\ndef test_unbalanced_raises():\n    with pytest.raises(ValueError, match='unbalanced'):\n        settle_up({'a': -1, 'b': 2})\n\ndef test_more_than_twelve_nonzero_members_raises():\n    with pytest.raises(ValueError, match='too many members'):\n        settle_up({'a': -6, 'b': -1, 'c': -1, 'd': -1, 'e': -1, 'f': -1, 'g': -1, 'h': 2, 'i': 2, 'j': 2, 'k': 2, 'l': 2, 'm': 2})\n\ndef test_lexicographically_smallest_maximum_partition():\n    result = settle_up({'a': -1, 'b': -1, 'c': 1, 'd': 1})\n    expected = (Transfer('a', 'c', 1), Transfer('b', 'd', 1))\n    assert result == expected\n\ndef test_lexicographic_pairing_and_final_sort():\n    result = settle_up({'a': 2, 'z': -2, 'b': -5, 'd': -3, 'e': 4, 'f': 4})\n    expected = (Transfer('b', 'e', 4), Transfer('b', 'f', 1), Transfer('d', 'f', 3), Transfer('z', 'a', 2))\n    assert result == expected\n",
+  "dropped": [],
+  "kept": 8,
+  "first_ok": true
+ },
+ "compute_balances": {
+  "cases": 5,
+  "try0": {
+   "ok": false,
+   "out": "s/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: compute_balances() got an unexpected keyword argument 'args'\n=========================== short test summary info ============================\nFAILED test_it.py::test_no_actions_returns_zero_for_every_member - TypeError:...\nFAILED test_it.py::test_equal_expense_produces_spec_example_balances - TypeEr...\nFAILED test_it.py::test_expense_then_repaying_payment_settles_spec_example - ...\nFAILED test_it.py::test_payment_only_updates_sender_and_receiver_and_keeps_unaffected_member\nFAILED test_it.py::test_trip_with_no_members_returns_empty_balances - TypeErr...\n5 failed in 0.37s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "teless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: compute_balances() missing 1 required positional argument: 'trip'\n=========================== short test summary info ============================\nFAILED test_it.py::test_no_actions_returns_zero_for_every_member - TypeError:...\nFAILED test_it.py::test_equal_expense_produces_spec_example_balances - TypeEr...\nFAILED test_it.py::test_expense_then_repaying_payment_settles_spec_example - ...\nFAILED test_it.py::test_payment_only_updates_sender_and_receiver_and_keeps_unaffected_member\nFAILED test_it.py::test_trip_with_no_members_returns_empty_balances - TypeErr...\n5 failed in 0.40s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_equal_expense_produces_spec_example_balances",
+   "test_expense_then_repaying_payment_settles_spec_example",
+   "test_no_actions_returns_zero_for_every_member",
+   "test_payment_only_updates_sender_and_receiver_and_keeps_unaffected_member",
+   "test_trip_with_no_members_returns_empty_balances"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "append_action": {
+  "cases": 4,
+  "try0": {
+   "ok": true,
+   "out": "....                                                                     [100%]\n4 passed in 0.11s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import append_action\nimport pytest\nfrom datetime import date\nfrom decimal import Decimal\n\ndef test_appends_expense_to_empty_actions():\n    trip = Trip('t1', 'Trip', 'USD', (), (), (), False)\n    action = ExpenseAction(Expense('e1', 'm1', Decimal('12.34'), 'USD', SplitKind.EQUAL, (), 'Lunch', date(2026, 1, 2)))\n    expected = Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('12.34'), 'USD', SplitKind.EQUAL, (), 'Lunch', date(2026, 1, 2))),), False)\n    \n    result = append_action(trip, action)\n    \n    assert result == expected\n    assert trip.actions == ()\n\ndef test_preserves_existing_action_order_when_appending_expense():\n    p1 = Payment('p1', 'm2', 'm1', 500, 'settle', date(2026, 1, 1))\n    e2 = Expense('e2', 'm1', Decimal('7.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('m1', Decimal('3.50')), SplitEntry('m2', Decimal('3.50'))), 'Coffee', date(2026, 1, 2))\n    trip = Trip('t1', 'Trip', 'USD', (), (), (PaymentAction(p1),), False)\n    action = ExpenseAction(e2)\n    expected = Trip('t1', 'Trip', 'USD', (), (), (PaymentAction(Payment('p1', 'm2', 'm1', 500, 'settle', date(2026, 1, 1))), ExpenseAction(Expense('e2', 'm1', Decimal('7.00'), 'USD', SplitKind.AMOUNTS, (SplitEntry('m1', Decimal('3.50')), SplitEntry('m2', Decimal('3.50'))), 'Coffee', date(2026, 1, 2)))), False)\n    \n    result = append_action(trip, action)\n\n    assert result == expected\n    assert trip.actions == (PaymentAction(p1),)\n\ndef test_appends_payment_after_existing_expense_and_payment():\n    e1 = Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'Dinner', date(2026, 1, 1))\n    p1 = Payment('p1', 'm2', 'm1', 250, 'part', date(2026, 1, 2))\n    p2 = Payment('p2', 'm3', 'm1', 375, '', date(2026, 1, 3))\n    trip = Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(e1), PaymentAction(p1)), False)\n    action = PaymentAction(p2)\n    expected = Trip('t1', 'Trip', 'USD', (), (), (ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'Dinner', date(2026, 1, 1))), PaymentAction(Payment('p1', 'm2', 'm1', 250, 'part', date(2026, 1, 2))), PaymentAction(Payment('p2', 'm3', 'm1', 375, '', date(2026, 1, 3)))), False)\n    \n    result = append_action(trip, action)\n\n    assert result == expected\n    assert trip.actions == (ExpenseAction(e1), PaymentAction(p1))\n\ndef test_returns_equal_but_distinct_trip_without_mutating_action():\n    action = PaymentAction(Payment('p1', 'm1', 'm2', 0, '', date(2026, 1, 1)))\n    trip = Trip('t1', 'Trip', 'USD', (Member('m1', 'A'), Member('m2', 'B')), (ExchangeRate('EUR', Decimal('1.2')),), (), False)\n    expected = Trip('t1', 'Trip', 'USD', (Member('m1', 'A'), Member('m2', 'B')), (ExchangeRate('EUR', Decimal('1.2')),), (PaymentAction(Payment('p1', 'm1', 'm2', 0, '', date(2026, 1, 1))),), False)\n    \n    result = append_action(trip, action)\n\n    assert result == expected\n    assert result is not trip\n    assert result.actions[-1] is action\n    assert trip.actions == ()\n",
+  "dropped": [],
+  "kept": 4,
+  "first_ok": true
+ },
+ "expense_deltas": {
+  "cases": 4,
+  "try0": {
+   "ok": false,
+   "out": " result = run(supply(InMemoryTripRepository((trip,))(expense_deltas)(args=(expense, trip))))\nE   TypeError: 'InMemoryTripRepository' object is not callable\n___________________ test_payer_owes_part_of_odd_cent_expense ___________________\ntest_it.py:56: in test_payer_owes_part_of_odd_cent_expense\n    result = run(supply(InMemoryTripRepository((trip,))(expense_deltas)(args=(expense, trip))))\nE   TypeError: 'InMemoryTripRepository' object is not callable\n________ test_payer_not_among_recipients_with_exact_currency_conversion ________\ntest_it.py:75: in test_payer_not_among_recipients_with_exact_currency_conversion\n    result = run(supply(InMemoryTripRepository((trip,))(expense_deltas)(args=(expense, trip))))\nE   TypeError: 'InMemoryTripRepository' object is not callable\n=========================== short test summary info ============================\nFAILED test_it.py::test_payer_and_one_other_split - TypeError: 'InMemoryTripR...\nFAILED test_it.py::test_payer_is_only_allocated_member_keeps_zero_delta - Typ...\nFAILED test_it.py::test_payer_owes_part_of_odd_cent_expense - TypeError: 'InM...\nFAILED test_it.py::test_payer_not_among_recipients_with_exact_currency_conversion\n4 failed in 0.13s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "rip,)))(expense_deltas)(args=(expense, trip)))\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: expense_deltas() got an unexpected keyword argument 'args'\n=========================== short test summary info ============================\nFAILED test_it.py::test_payer_and_one_other_split - TypeError: expense_deltas...\nFAILED test_it.py::test_payer_is_only_allocated_member_keeps_zero_delta - Typ...\nFAILED test_it.py::test_payer_owes_part_of_odd_cent_expense - TypeError: expe...\nFAILED test_it.py::test_payer_not_among_recipients_with_exact_currency_conversion\n4 failed in 0.31s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_payer_and_one_other_split",
+   "test_payer_is_only_allocated_member_keeps_zero_delta",
+   "test_payer_not_among_recipients_with_exact_currency_conversion",
+   "test_payer_owes_part_of_odd_cent_expense"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "allocate_expense_base_cents": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "ncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: allocate_expense_base_cents() missing 1 required positional argument: 'trip'\n=========================== short test summary info ============================\nFAILED test_it.py::test_equal_usd_even_split_spec_example - TypeError: alloca...\nFAILED test_it.py::test_equal_eur_single_remainder_spec_example - TypeError: ...\nFAILED test_it.py::test_shares_tie_uses_member_id_not_entry_order_spec_example\nFAILED test_it.py::test_amounts_largest_fractional_remainder_gets_cent - Type...\nFAILED test_it.py::test_percentages_total_half_up_and_tied_remainder - TypeEr...\nFAILED test_it.py::test_equal_three_way_two_remaining_cents_follow_member_id_and_preserve_entry_order\n6 failed in 0.42s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'tuple' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_equal_usd_even_split_spec_example - TypeError: 'tuple...\nFAILED test_it.py::test_equal_eur_single_remainder_spec_example - TypeError: ...\nFAILED test_it.py::test_shares_tie_uses_member_id_not_entry_order_spec_example\nFAILED test_it.py::test_amounts_largest_fractional_remainder_gets_cent - Type...\nFAILED test_it.py::test_percentages_total_half_up_and_tied_remainder - TypeEr...\nFAILED test_it.py::test_equal_three_way_two_remaining_cents_follow_member_id_and_preserve_entry_order\n6 failed in 0.41s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_amounts_largest_fractional_remainder_gets_cent",
+   "test_equal_eur_single_remainder_spec_example",
+   "test_equal_three_way_two_remaining_cents_follow_member_id_and_preserve_entry_order",
+   "test_equal_usd_even_split_spec_example",
+   "test_percentages_total_half_up_and_tied_remainder",
+   "test_shares_tie_uses_member_id_not_entry_order_spec_example"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "validate_expense": {
+  "cases": 8,
+  "try0": {
+   "ok": false,
+   "out": "op.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: validate_expense() missing 1 required positional argument: 'trip'\n=========================== short test summary info ============================\nFAILED test_it.py::test_valid_equal_example_and_shares_no_total_rule - TypeEr...\nFAILED test_it.py::test_identity_and_unknown_payer - TypeError: validate_expe...\nFAILED test_it.py::test_invalid_amount_nonpositive_and_nonfinite - TypeError:...\nFAILED test_it.py::test_unknown_currency_missing_or_nonpositive_rate - TypeEr...\nFAILED test_it.py::test_invalid_split_member_structure - TypeError: validate_...\nFAILED test_it.py::test_unknown_split_member - TypeError: validate_expense() ...\nFAILED test_it.py::test_invalid_split_value_nonpositive_and_nonfinite - TypeE...\nFAILED test_it.py::test_split_kind_total_rules - TypeError: validate_expense(...\n8 failed in 0.53s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "op.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: validate_expense() missing 1 required positional argument: 'trip'\n=========================== short test summary info ============================\nFAILED test_it.py::test_valid_equal_example_and_shares_no_total_rule - TypeEr...\nFAILED test_it.py::test_identity_and_unknown_payer - TypeError: validate_expe...\nFAILED test_it.py::test_invalid_amount_nonpositive_and_nonfinite - TypeError:...\nFAILED test_it.py::test_unknown_currency_missing_or_nonpositive_rate - TypeEr...\nFAILED test_it.py::test_invalid_split_member_structure - TypeError: validate_...\nFAILED test_it.py::test_unknown_split_member - TypeError: validate_expense() ...\nFAILED test_it.py::test_invalid_split_value_nonpositive_and_nonfinite - TypeE...\nFAILED test_it.py::test_split_kind_total_rules - TypeError: validate_expense(...\n8 failed in 0.46s\n"
+  },
+  "src": null,
+  "dropped": [
+   "test_identity_and_unknown_payer",
+   "test_invalid_amount_nonpositive_and_nonfinite",
+   "test_invalid_split_member_structure",
+   "test_invalid_split_value_nonpositive_and_nonfinite",
+   "test_split_kind_total_rules",
+   "test_unknown_currency_missing_or_nonpositive_rate",
+   "test_unknown_split_member",
+   "test_valid_equal_example_and_shares_no_total_rule"
+  ],
+  "kept": 0,
+  "first_ok": false
+ },
+ "member_statement": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "ct.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'Statement' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_payer_statement_for_expense_and_outgoing_payment_uses_balance_formula\nFAILED test_it.py::test_recipient_statement_for_expense_and_incoming_payment_uses_balance_formula\nFAILED test_it.py::test_keeps_related_lines_in_action_order_and_omits_unrelated_actions\nFAILED test_it.py::test_keeps_zero_line_for_zero_allocation_participant - Typ...\nFAILED test_it.py::test_empty_history_returns_zero_statement - TypeError: 'St...\n5 failed, 1 passed in 0.36s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "ct.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'Statement' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_payer_statement_for_expense_and_outgoing_payment_uses_balance_formula\nFAILED test_it.py::test_recipient_statement_for_expense_and_incoming_payment_uses_balance_formula\nFAILED test_it.py::test_keeps_related_lines_in_action_order_and_omits_unrelated_actions\nFAILED test_it.py::test_keeps_zero_line_for_zero_allocation_participant - Typ...\nFAILED test_it.py::test_empty_history_returns_zero_statement - TypeError: 'St...\n5 failed, 1 passed in 0.35s\n"
+  },
+  "src": "import pytest\nfrom app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import member_statement\nfrom stateless import run, supply\nfrom datetime import date\n\ndef test_unknown_member_raises():\n    trip = Trip('t', 'Trip', 'USD', (Member('a', 'A'),), (ExchangeRate('USD', Decimal('1')),), (), False)\n    with pytest.raises(ValueError, match='unknown member'):\n        run(supply(InMemoryTripRepository((trip,)))(member_statement)(trip, 'missing'))\n\n\n\n\n\n",
+  "dropped": [
+   "test_empty_history_returns_zero_statement",
+   "test_keeps_related_lines_in_action_order_and_omits_unrelated_actions",
+   "test_keeps_zero_line_for_zero_allocation_participant",
+   "test_payer_statement_for_expense_and_outgoing_payment_uses_balance_formula",
+   "test_recipient_statement_for_expense_and_incoming_payment_uses_balance_formula"
+  ],
+  "kept": 1,
+  "first_ok": false
+ },
+ "close_trip": {
+  "cases": 4,
+  "try0": {
+   "ok": false,
+   "out": "save\n    run(supply(repository)(close_trip)(args=('t1',)))\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: close_trip() got an unexpected keyword argument 'args'\n=========================== short test summary info ============================\nFAILED test_it.py::test_closes_valid_open_trip_and_saves_replacement - TypeEr...\nFAILED test_it.py::test_already_closed_raises_before_validation_or_save - Typ...\nFAILED test_it.py::test_missing_base_rate_raises_validation_error_without_save\nFAILED test_it.py::test_missing_trip_propagates_not_found_and_does_not_save\n4 failed in 0.30s\n"
+  },
+  "try1": {
+   "ok": true,
+   "out": "....                                                                     [100%]\n4 passed in 0.10s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import close_trip\nimport pytest\nfrom stateless import run, supply\nfrom datetime import date\nfrom decimal import Decimal\n\ndef test_closes_valid_open_trip_and_saves_replacement():\n    repository = InMemoryTripRepository((\n        Trip(\n            trip_id='t1',\n            name='Trip',\n            base_currency='USD',\n            members=(Member(member_id='m1', name='Ann'),),\n            rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),),\n            actions=(),\n            closed=False\n        ),\n    ))\n\n    trip = run(supply(repository)(close_trip)('t1'))\n\n    assert trip == Trip(\n        trip_id='t1',\n        name='Trip',\n        base_currency='USD',\n        members=(Member(member_id='m1', name='Ann'),),\n        rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),),\n        actions=(),\n        closed=True\n    )\n    assert repository.trips == {\n        't1': Trip(\n            trip_id='t1',\n            name='Trip',\n            base_currency='USD',\n            members=(Member(member_id='m1', name='Ann'),),\n            rates=(ExchangeRate(currency='USD', base_per_unit=Decimal('1')),),\n            actions=(),\n            closed=True\n        )\n    }\n\n\ndef test_already_closed_raises_before_validation_or_save():\n    repository = InMemoryTripRepository((\n        Trip(\n            trip_id='t1',\n            name='Trip',\n            base_currency='USD',\n            members=(Member(member_id='m1', name='Ann'),),\n            rates=(),\n            actions=(),\n            closed=True\n        ),\n    ))\n\n    with pytest.raises(ClosedTripError, match='t1'):\n        run(supply(repository)(close_trip)('t1'))\n\n    assert repository.trips == {\n        't1': Trip(\n            trip_id='t1',\n            name='Trip',\n            base_currency='USD',\n            members=(Member(member_id='m1', name='Ann'),),\n            rates=(),\n            actions=(),\n            closed=True\n        )\n    }\n\n\ndef test_missing_base_rate_raises_validation_error_without_save():\n    repository = InMemoryTripRepository((\n        Trip(\n            trip_id='t1',\n            name='Trip',\n            base_currency='USD',\n            members=(Member(member_id='m1', name='Ann'),),\n            rates=(ExchangeRate(currency='EUR', base_per_unit=Decimal('1.08')),),\n            actions=(),\n            closed=False\n        ),\n    ))\n\n    with pytest.raises(ValidationError, match='missing base rate'):\n        run(supply(repository)(close_trip)('t1'))\n\n    assert repository.trips == {\n        't1': Trip(\n            trip_id='t1',\n            name='Trip',\n            base_currency='USD',\n            members=(Member(member_id='m1', name='Ann'),),\n            rates=(ExchangeRate(currency='EUR', base_per_unit=Decimal('1.08')),),\n            actions=(),\n            closed=False\n        )\n    }\n\n\ndef test_missing_trip_propagates_not_found_and_does_not_save():\n    repository = InMemoryTripRepository(())\n\n    with pytest.raises(TripNotFoundError, match='t1'):\n        run(supply(repository)(close_trip)('t1'))\n\n    assert repository.trips == {}\n",
+  "dropped": [],
+  "kept": 4,
+  "first_ok": false
+ },
+ "remove_last_action": {
+  "cases": 4,
+  "try0": {
+   "ok": false,
+   "out": "__________\ntest_it.py:72: in test_preserves_closed_and_all_non_action_fields\n    run(supply(fake_trip_repository)(remove_last_action)(trip))\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'Trip' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_removes_last_payment_from_mixed_history - TypeError: ...\nFAILED test_it.py::test_removes_only_action_leaving_empty_history - TypeError...\nFAILED test_it.py::test_preserves_closed_and_all_non_action_fields - TypeErro...\n3 failed, 1 passed in 0.26s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "t_it.py:84: in test_preserves_closed_and_all_non_action_fields\n    result_trip = run(supply(fake_trip_repository)(remove_last_action)(trip))\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:82: in run\n    return asyncio.run(run_async(effect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:77: in decorator\n    ability_or_error = next(effect)\nE   TypeError: 'Trip' object is not an iterator\n=========================== short test summary info ============================\nFAILED test_it.py::test_removes_last_payment_from_mixed_history - TypeError: ...\nFAILED test_it.py::test_removes_only_action_leaving_empty_history - TypeError...\nFAILED test_it.py::test_preserves_closed_and_all_non_action_fields - TypeErro...\n3 failed, 1 passed in 0.24s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import remove_last_action\nimport pytest\nfrom stateless import run, supply\n\n@pytest.fixture\ndef fake_trip_repository():\n    return InMemoryTripRepository()\n\n\n\n\ndef test_empty_history_raises_exact_value_error(fake_trip_repository):\n    trip = Trip(\n        trip_id='t4',\n        name='Empty',\n        base_currency='USD',\n        members=(),\n        rates=(),\n        actions=(),\n        closed=False\n    )\n    \n    with pytest.raises(ValueError, match='empty history'):\n        run(supply(fake_trip_repository)(remove_last_action)(trip))\n",
+  "dropped": [
+   "test_preserves_closed_and_all_non_action_fields",
+   "test_removes_last_payment_from_mixed_history",
+   "test_removes_only_action_leaving_empty_history"
+  ],
+  "kept": 1,
+  "first_ok": false
+ },
+ "record_expense": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "13/site-packages/stateless/handler.py:82: in decorator\n    yield error  # type: ignore\nE   app.domain.ValidationError: invalid split value\n________________ test_amount_split_not_totaling_expense_raises _________________\ntest_it.py:55: in test_amount_split_not_totaling_expense_raises\n    assert str(excinfo.value) == 'amount split does not total expense'\nE   AssertionError: assert 'bad configuration' == 'amount split...total expense'\nE     \nE     - amount split does not total expense\nE     + bad configuration\n_______________ test_duplicate_expense_id_raises_without_saving ________________\ntest_it.py:66: in test_duplicate_expense_id_raises_without_saving\n    assert str(excinfo.value) == 'duplicate action id'\nE   AssertionError: assert 'bad configuration' == 'duplicate action id'\nE     \nE     - duplicate action id\nE     + bad configuration\n=========================== short test summary info ============================\nFAILED test_it.py::test_saves_and_returns_appended_expense - app.domain.Valid...\nFAILED test_it.py::test_amount_split_not_totaling_expense_raises - AssertionE...\nFAILED test_it.py::test_duplicate_expense_id_raises_without_saving - Assertio...\n3 failed, 3 passed in 0.19s\n"
+  },
+  "try1": {
+   "ok": false,
+   "out": "13/site-packages/stateless/handler.py:82: in decorator\n    yield error  # type: ignore\nE   app.domain.ValidationError: invalid split value\n________________ test_amount_split_not_totaling_expense_raises _________________\ntest_it.py:55: in test_amount_split_not_totaling_expense_raises\n    assert str(excinfo.value) == 'amount split does not total expense'\nE   AssertionError: assert 'bad configuration' == 'amount split...total expense'\nE     \nE     - amount split does not total expense\nE     + bad configuration\n_______________ test_duplicate_expense_id_raises_without_saving ________________\ntest_it.py:66: in test_duplicate_expense_id_raises_without_saving\n    assert str(excinfo.value) == 'duplicate action id'\nE   AssertionError: assert 'bad configuration' == 'duplicate action id'\nE     \nE     - duplicate action id\nE     + bad configuration\n=========================== short test summary info ============================\nFAILED test_it.py::test_saves_and_returns_appended_expense - app.domain.Valid...\nFAILED test_it.py::test_amount_split_not_totaling_expense_raises - AssertionE...\nFAILED test_it.py::test_duplicate_expense_id_raises_without_saving - Assertio...\n3 failed, 3 passed in 0.18s\n"
+  },
+  "src": "import pytest\nfrom app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import record_expense\nfrom stateless import run, supply\nfrom datetime import date\nfrom decimal import Decimal\n\n\ndef test_closed_trip_raises_before_validation_or_save():\n    e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), 'lunch', date(2026, 1, 2))\n    t = Trip('t1', 'Trip', 'USD', (Member('a', 'Ann'), Member('b', 'Bob')), (ExchangeRate('USD', Decimal('1')),), (), True)\n    repo = InMemoryTripRepository((t,))\n    \n    with pytest.raises(ClosedTripError) as excinfo:\n        run(supply(repo)(record_expense)('t1', e1))\n        \n    assert str(excinfo.value) == 't1'\n    assert repo.trips == {'t1': t}\n\ndef test_configuration_error_is_returned_before_expense_validation():\n    e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), 'lunch', date(2026, 1, 2))\n    t = Trip('t1', 'Trip', 'USD', (Member('a', 'Ann'), Member('b', 'Bob')), (ExchangeRate('USD', Decimal('1')),), (), False)\n    repo = InMemoryTripRepository((t,))\n    \n    # Monkeypatch the validation function\n    import app.logic\n    app.logic.validate_trip_configuration = lambda trip: 'bad configuration'\n    \n    with pytest.raises(ValidationError) as excinfo:\n        run(supply(repo)(record_expense)('t1', e1))\n\n    assert str(excinfo.value) == 'bad configuration'\n    assert repo.trips == {'t1': t}\n\n\n\ndef test_missing_trip_propagates_repository_error():\n    e1 = Expense('e1', 'a', Decimal('10.00'), 'USD', SplitKind.EQUAL, (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), 'lunch', date(2026, 1, 2))\n    repo = InMemoryTripRepository(())\n    \n    with pytest.raises(TripNotFoundError) as excinfo:\n        run(supply(repo)(record_expense)('t1', e1))\n\n    assert str(excinfo.value) == 't1'\n    assert repo.trips == {}\n",
+  "dropped": [
+   "test_amount_split_not_totaling_expense_raises",
+   "test_duplicate_expense_id_raises_without_saving",
+   "test_saves_and_returns_appended_expense"
+  ],
+  "kept": 3,
+  "first_ok": false
+ },
+ "undo_last_action": {
+  "cases": 6,
+  "try0": {
+   "ok": false,
+   "out": "ect))\n/usr/local/lib/python3.13/asyncio/runners.py:195: in run\n    return runner.run(main)\n/usr/local/lib/python3.13/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n/usr/local/lib/python3.13/asyncio/base_events.py:725: in run_until_complete\n    return future.result()\n/home/vscode/.local/lib/python3.13/site-packages/stateless/effect.py:51: in run_async\n    ability_or_error = next(effect)\n/home/vscode/.local/lib/python3.13/site-packages/stateless/handler.py:75: in decorator\n    effect = f(*args, **kwargs)\nE   TypeError: undo_last_action() got an unexpected keyword argument 'args'\n=========================== short test summary info ============================\nFAILED test_it.py::test_undo_saves_trip_without_final_payment - TypeError: un...\nFAILED test_it.py::test_undo_only_action_saves_empty_history - TypeError: und...\nFAILED test_it.py::test_undo_open_empty_trip_raises_empty_history - TypeError...\nFAILED test_it.py::test_undo_closed_trip_with_action_raises_closed_trip - Typ...\nFAILED test_it.py::test_undo_closed_empty_trip_prioritizes_closed_error - Typ...\nFAILED test_it.py::test_undo_missing_trip_propagates_not_found - TypeError: u...\n6 failed in 0.37s\n"
+  },
+  "try1": {
+   "ok": true,
+   "out": "......                                                                   [100%]\n6 passed in 0.11s\n"
+  },
+  "src": "from app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import undo_last_action\nimport pytest\nfrom stateless import run, supply\n\ndef test_undo_saves_trip_without_final_payment():\n    repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (\n        ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))),\n        PaymentAction(Payment('p1', 'm2', 'm1', 500, 'payback', date(2026, 1, 3))),\n    ), False),))\n    \n    result = run(supply(repo)(undo_last_action)('t1'))\n    \n    expected_trip = Trip('t1', 'Trip', 'USD', (), (), (\n        ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))),\n    ), False)\n    \n    assert result == expected_trip\n    assert repo.trips == {'t1': expected_trip}\n\ndef test_undo_only_action_saves_empty_history():\n    repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (\n        PaymentAction(Payment('p1', 'm1', 'm2', 123, 'coffee', date(2026, 1, 2))),\n    ), False),))\n    \n    result = run(supply(repo)(undo_last_action)('t1'))\n    \n    expected_trip = Trip('t1', 'Trip', 'USD', (), (), (), False)\n    \n    assert result == expected_trip\n    assert repo.trips == {'t1': expected_trip}\n\ndef test_undo_open_empty_trip_raises_empty_history():\n    repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (), False),))\n    \n    with pytest.raises(EmptyHistoryError) as exc_info:\n        run(supply(repo)(undo_last_action)('t1'))\n        \n    assert str(exc_info.value) == 't1'\n    assert repo.trips == {'t1': Trip('t1', 'Trip', 'USD', (), (), (), False)}\n\ndef test_undo_closed_trip_with_action_raises_closed_trip():\n    repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (\n        ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))),\n    ), True),))\n    \n    with pytest.raises(ClosedTripError) as exc_info:\n        run(supply(repo)(undo_last_action)('t1'))\n        \n    assert str(exc_info.value) == 't1'\n    assert repo.trips == {'t1': Trip('t1', 'Trip', 'USD', (), (), (\n        ExpenseAction(Expense('e1', 'm1', Decimal('10.00'), 'USD', SplitKind.EQUAL, (), 'lunch', date(2026, 1, 2))),\n    ), True)}\n\ndef test_undo_closed_empty_trip_prioritizes_closed_error():\n    repo = InMemoryTripRepository((Trip('t1', 'Trip', 'USD', (), (), (), True),))\n    \n    with pytest.raises(ClosedTripError) as exc_info:\n        run(supply(repo)(undo_last_action)('t1'))\n        \n    assert str(exc_info.value) == 't1'\n    assert repo.trips == {'t1': Trip('t1', 'Trip', 'USD', (), (), (), True)}\n\ndef test_undo_missing_trip_propagates_not_found():\n    repo = InMemoryTripRepository(())\n    \n    with pytest.raises(TripNotFoundError) as exc_info:\n        run(supply(repo)(undo_last_action)('t1'))\n        \n    assert str(exc_info.value) == 't1'\n    assert repo.trips == {}\n",
+  "dropped": [],
+  "kept": 6,
+  "first_ok": false
+ },
+ "record_payment": {
+  "cases": 7,
+  "try0": {
+   "ok": false,
+   "out": "...F...                                                                  [100%]\n=================================== FAILURES ===================================\n____________ test_configuration_failure_precedes_payment_validation ____________\ntest_it.py:55: in test_configuration_failure_precedes_payment_validation\n    monkeypatch.logic.validate_trip_configuration = lambda trip: 'bad configuration'\nE   NameError: name 'monkeypatch' is not defined\n=========================== short test summary info ============================\nFAILED test_it.py::test_configuration_failure_precedes_payment_validation - N...\n1 failed, 6 passed in 0.14s\n"
+  },
+  "try1": {
+   "ok": true,
+   "out": ".......                                                                  [100%]\n7 passed in 0.13s\n"
+  },
+  "src": "import pytest\nfrom app.domain import *\nfrom app.abilities import *\nfrom app.fakes import *\nfrom app.logic import record_payment\nfrom stateless import run, supply\nfrom datetime import date\nfrom decimal import Decimal\n\ndef test_records_valid_payment():\n    repo = InMemoryTripRepository((\n        Trip('t1', 'Trip', 'USD', \n             (Member('a', 'Alice'), Member('b', 'Bob')), \n             (ExchangeRate('USD', Decimal('1')),), \n             (), \n             False),\n    ))\n    payment = Payment('p1', 'a', 'b', 50, 'settle', date(2026, 1, 2))\n    returned_trip = run(supply(repo)(record_payment)('t1', payment))\n    assert returned_trip == Trip('t1', 'Trip', 'USD', \n                                 (Member('a', 'Alice'), Member('b', 'Bob')), \n                                 (ExchangeRate('USD', Decimal('1')),), \n                                 (PaymentAction(payment),), \n                                 False)\n    assert repo.trips == {'t1': returned_trip}\n\ndef test_missing_trip_propagates_repository_error():\n    repo = InMemoryTripRepository(())\n    payment = Payment('p1', 'a', 'b', 50, 'settle', date(2026, 1, 2))\n    with pytest.raises(TripNotFoundError, match='missing'):\n        run(supply(repo)(record_payment)('missing', payment))\n    assert repo.trips == {}\n\ndef test_closed_trip_wins_over_invalid_payment():\n    T = Trip('t1', 'Trip', 'USD', \n             (Member('a', 'Alice'), Member('b', 'Bob')), \n             (ExchangeRate('USD', Decimal('1')),), \n             (), \n             True)\n    repo = InMemoryTripRepository((T,))\n    payment = Payment('p1', 'a', 'b', 0, 'settle', date(2026, 1, 2))\n    with pytest.raises(ClosedTripError, match='t1'):\n        run(supply(repo)(record_payment)('t1', payment))\n    assert repo.trips == {'t1': T}\n\ndef test_configuration_failure_precedes_payment_validation(monkeypatch):\n    T = Trip('t1', 'Trip', 'USD', \n             (Member('a', 'Alice'), Member('b', 'Bob')), \n             (ExchangeRate('USD', Decimal('1')),), \n             (), \n             False)\n    repo = InMemoryTripRepository((T,))\n    monkeypatch.setattr('app.logic.validate_trip_configuration', lambda trip: 'bad configuration')\n    payment = Payment('p1', 'a', 'b', 0, 'settle', date(2026, 1, 2))\n    with pytest.raises(ValidationError, match='bad configuration'):\n        run(supply(repo)(record_payment)('t1', payment))\n    assert repo.trips == {'t1': T}\n\ndef test_zero_amount_precedes_duplicate_id_check():\n    old = Payment('p0', 'a', 'b', 1, 'old', date(2026, 1, 1))\n    T = Trip('t1', 'Trip', 'USD', \n             (Member('a', 'Alice'), Member('b', 'Bob')), \n             (ExchangeRate('USD', Decimal('1')),), \n             (PaymentAction(old),), \n             False)\n    repo = InMemoryTripRepository((T,))\n    payment = Payment('p0', 'a', 'b', 0, 'settle', date(2026, 1, 2))\n    with pytest.raises(ValidationError, match='invalid payment amount'):\n        run(supply(repo)(record_payment)('t1', payment))\n    assert repo.trips == {'t1': T}\n\ndef test_payment_id_cannot_reuse_payment_action_id():\n    old = Payment('p1', 'a', 'b', 1, 'old', date(2026, 1, 1))\n    T = Trip('t1', 'Trip', 'USD', \n             (Member('a', 'Alice'), Member('b', 'Bob')), \n             (ExchangeRate('USD', Decimal('1')),), \n             (PaymentAction(old),), \n             False)\n    repo = InMemoryTripRepository((T,))\n    payment = Payment('p1', 'a', 'b', 50, 'settle', date(2026, 1, 2))\n    with pytest.raises(ValidationError, match='duplicate action id'):\n        run(supply(repo)(record_payment)('t1', payment))\n    assert repo.trips == {'t1': T}\n\ndef test_payment_id_cannot_reuse_expense_action_id():\n    old = Expense('p1', 'a', Decimal('1'), 'USD', SplitKind.EQUAL, \n                  (SplitEntry('a', Decimal('0')), SplitEntry('b', Decimal('0'))), \n                  'old', date(2026, 1, 1))\n    T = Trip('t1', 'Trip', 'USD', \n             (Member('a', 'Alice'), Member('b', 'Bob')), \n             (ExchangeRate('USD', Decimal('1')),), \n             (ExpenseAction(old),), \n             False)\n    repo = InMemoryTripRepository((T,))\n    payment = Payment('p1', 'a', 'b', 50, 'settle', date(2026, 1, 2))\n    with pytest.raises(ValidationError, match='duplicate action id'):\n        run(supply(repo)(record_payment)('t1', payment))\n    assert repo.trips == {'t1': T}\n",
+  "dropped": [],
+  "kept": 7,
+  "first_ok": false
+ }
+}

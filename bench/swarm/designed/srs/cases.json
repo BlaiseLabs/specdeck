@@ -1,0 +1,612 @@
+{
+ "clamp_ease": [
+  {
+   "name": "above_minimum_returns_input_unchanged",
+   "given": "clamp_ease(2.5)",
+   "expect": "2.5"
+  },
+  {
+   "name": "below_minimum_clamps_to_minimum",
+   "given": "clamp_ease(1.0)",
+   "expect": "1.3"
+  },
+  {
+   "name": "at_minimum_returns_minimum",
+   "given": "clamp_ease(1.3)",
+   "expect": "1.3"
+  },
+  {
+   "name": "negative_value_clamps_to_minimum",
+   "given": "clamp_ease(-2.75)",
+   "expect": "1.3"
+  },
+  {
+   "name": "preserves_unrounded_value_above_minimum",
+   "given": "clamp_ease(1.3000000000000003)",
+   "expect": "1.3000000000000003"
+  }
+ ],
+ "is_buried": [
+  {
+   "name": "not_buried_when_until_is_none",
+   "given": "Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 2, 1), lapses=0, buried_until=None), date(2026, 2, 1)",
+   "expect": "False"
+  },
+  {
+   "name": "buried_on_burial_date_inclusive",
+   "given": "Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 2, 1), lapses=0, buried_until=date(2026, 2, 1)), date(2026, 2, 1)",
+   "expect": "True"
+  },
+  {
+   "name": "not_buried_after_burial_date",
+   "given": "Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 2, 1), lapses=0, buried_until=date(2026, 1, 31)), date(2026, 2, 1)",
+   "expect": "False"
+  },
+  {
+   "name": "buried_before_future_burial_date",
+   "given": "Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 2, 1), lapses=0, buried_until=date(2026, 2, 2)), date(2026, 2, 1)",
+   "expect": "True"
+  }
+ ],
+ "overdue_priority": [
+  {
+   "name": "overdue_example_two_days_interval_four",
+   "given": "Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 1, 8), lapses=0), date(2026, 1, 10)",
+   "expect": "0.5"
+  },
+  {
+   "name": "due_today_returns_zero",
+   "given": "Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 10), lapses=0), date(2026, 1, 10)",
+   "expect": "0.0"
+  },
+  {
+   "name": "future_due_date_returns_negative_priority",
+   "given": "Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=2, due_date=date(2026, 1, 11), lapses=0), date(2026, 1, 10)",
+   "expect": "-0.5"
+  },
+  {
+   "name": "zero_interval_uses_one_as_denominator",
+   "given": "Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 7), lapses=0), date(2026, 1, 10)",
+   "expect": "3.0"
+  },
+  {
+   "name": "negative_interval_uses_one_as_denominator",
+   "given": "Card(id='c1', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=-4, due_date=date(2026, 1, 12), lapses=0), date(2026, 1, 10)",
+   "expect": "-2.0"
+  }
+ ],
+ "is_due_new": [
+  {
+   "name": "new_due_today_unburied",
+   "given": "is_due_new(Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0), date(2026, 10, 13))",
+   "expect": "True"
+  },
+  {
+   "name": "new_due_tomorrow_unburied",
+   "given": "is_due_new(Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 14), lapses=0), date(2026, 10, 13))",
+   "expect": "False"
+  },
+  {
+   "name": "new_due_yesterday_unburied",
+   "given": "is_due_new(Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 12), lapses=0), date(2026, 10, 13))",
+   "expect": "True"
+  },
+  {
+   "name": "new_due_today_buried_until_today",
+   "given": "is_due_new(Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, buried_until=date(2026, 10, 13)), date(2026, 10, 13))",
+   "expect": "False"
+  },
+  {
+   "name": "new_due_today_burial_expired_yesterday",
+   "given": "is_due_new(Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, buried_until=date(2026, 10, 12)), date(2026, 10, 13))",
+   "expect": "True"
+  },
+  {
+   "name": "suspended_due_yesterday_unburied",
+   "given": "is_due_new(Card(id='c1', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=0, due_date=date(2026, 10, 12), lapses=0), date(2026, 10, 13))",
+   "expect": "False"
+  },
+  {
+   "name": "learning_due_yesterday_unburied",
+   "given": "is_due_new(Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 12), lapses=0), date(2026, 10, 13))",
+   "expect": "False"
+  }
+ ],
+ "is_due_learning": [
+  {
+   "name": "learning_due_yesterday_is_due",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 12), lapses=0), today=date(2026, 10, 13)",
+   "expect": "True"
+  },
+  {
+   "name": "buried_learning_due_yesterday_is_not_due",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 12), lapses=0, buried_until=date(2026, 10, 13)), today=date(2026, 10, 13)",
+   "expect": "False"
+  },
+  {
+   "name": "review_due_yesterday_is_not_due",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 12), lapses=0), today=date(2026, 10, 13)",
+   "expect": "False"
+  },
+  {
+   "name": "learning_due_today_is_due",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0), today=date(2026, 10, 13)",
+   "expect": "True"
+  },
+  {
+   "name": "learning_due_tomorrow_is_not_due",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 14), lapses=0), today=date(2026, 10, 13)",
+   "expect": "False"
+  },
+  {
+   "name": "learning_buried_after_today_and_due_is_due",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 12), lapses=0, buried_until=date(2026, 10, 14)), today=date(2026, 10, 13)",
+   "expect": "True"
+  },
+  {
+   "name": "new_due_yesterday_is_not_due",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 12), lapses=0), today=date(2026, 10, 13)",
+   "expect": "False"
+  }
+ ],
+ "learning_delay_days": [
+  {
+   "name": "returns_selected_step_for_good",
+   "given": "SchedulerSettings(learning_steps_days=(1, 3)), step_index=1, hard=False",
+   "expect": "3"
+  },
+  {
+   "name": "hard_uses_ceiling_of_one_point_five_times_delay",
+   "given": "SchedulerSettings(learning_steps_days=(1, 3)), step_index=0, hard=True",
+   "expect": "2"
+  },
+  {
+   "name": "empty_steps_falls_back_to_one_and_hard_is_two",
+   "given": "SchedulerSettings(learning_steps_days=()), step_index=9, hard=True",
+   "expect": "2"
+  },
+  {
+   "name": "negative_step_index_clamps_to_first_step",
+   "given": "SchedulerSettings(learning_steps_days=(2, 5)), step_index=-1, hard=False",
+   "expect": "2"
+  },
+  {
+   "name": "oversized_step_index_clamps_to_last_step",
+   "given": "SchedulerSettings(learning_steps_days=(2, 5)), step_index=99, hard=False",
+   "expect": "5"
+  },
+  {
+   "name": "nonpositive_steps_are_replaced_with_one",
+   "given": "SchedulerSettings(learning_steps_days=(0, -4, 3)), step_index=1, hard=False",
+   "expect": "1"
+  },
+  {
+   "name": "hard_delay_never_below_one_after_step_normalization",
+   "given": "SchedulerSettings(learning_steps_days=(0,)), step_index=0, hard=True",
+   "expect": "2"
+  }
+ ],
+ "is_leech": [
+  {
+   "name": "lapses_equal_threshold_is_leech",
+   "given": "Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=8), SchedulerSettings(leech_threshold=8)",
+   "expect": "True"
+  },
+  {
+   "name": "lapses_below_positive_threshold_is_not_leech",
+   "given": "Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=7), SchedulerSettings(leech_threshold=8)",
+   "expect": "False"
+  },
+  {
+   "name": "lapses_above_positive_threshold_is_leech",
+   "given": "Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=9), SchedulerSettings(leech_threshold=8)",
+   "expect": "True"
+  },
+  {
+   "name": "zero_threshold_disables_detection_even_with_many_lapses",
+   "given": "Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=100), SchedulerSettings(leech_threshold=0)",
+   "expect": "False"
+  },
+  {
+   "name": "negative_threshold_disables_detection",
+   "given": "Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 1, 1), lapses=0), SchedulerSettings(leech_threshold=-1)",
+   "expect": "False"
+  },
+  {
+   "name": "zero_lapses_meets_minimum_positive_threshold",
+   "given": "Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 1, 1), lapses=0), SchedulerSettings(leech_threshold=1)",
+   "expect": "False"
+  }
+ ],
+ "is_due_review": [
+  {
+   "name": "review_due_today",
+   "given": "is_due_review(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 13), lapses=0), date(2026, 10, 13))",
+   "expect": "True"
+  },
+  {
+   "name": "review_due_tomorrow",
+   "given": "is_due_review(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 14), lapses=0), date(2026, 10, 13))",
+   "expect": "False"
+  },
+  {
+   "name": "learning_due_yesterday",
+   "given": "is_due_review(Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026, 10, 12), lapses=0), date(2026, 10, 13))",
+   "expect": "False"
+  },
+  {
+   "name": "review_overdue",
+   "given": "is_due_review(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 12), lapses=0), date(2026, 10, 13))",
+   "expect": "True"
+  },
+  {
+   "name": "review_due_but_buried_today",
+   "given": "is_due_review(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 12), lapses=0, buried_until=date(2026, 10, 13)), date(2026, 10, 13))",
+   "expect": "False"
+  },
+  {
+   "name": "review_due_after_burial_expired",
+   "given": "is_due_review(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 12), lapses=0, buried_until=date(2026, 10, 12)), date(2026, 10, 13))",
+   "expect": "True"
+  }
+ ],
+ "suspend_leech": [
+  {
+   "name": "suspends_review_card_at_threshold_preserving_all_other_fields",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=21, due_date=date(2026, 10, 20), lapses=8, learning_step=3, relearning_interval_days=5, buried_until=date(2026, 10, 15), history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 30), grade=Grade.AGAIN, seconds=42, state_before=CardState.REVIEW),)); settings=SchedulerSettings(leech_threshold=8)",
+   "expect": "Card(id='c1', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=21, due_date=date(2026, 10, 20), lapses=8, learning_step=3, relearning_interval_days=5, buried_until=date(2026, 10, 15), history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 30), grade=Grade.AGAIN, seconds=42, state_before=CardState.REVIEW),))"
+  },
+  {
+   "name": "returns_original_card_below_threshold",
+   "given": "card=Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.3, interval_days=10, due_date=date(2026, 10, 14), lapses=7); settings=SchedulerSettings(leech_threshold=8)",
+   "expect": "the same input card object (result is card)"
+  },
+  {
+   "name": "suspends_card_above_threshold",
+   "given": "card=Card(id='c3', note_id='n3', state=CardState.REVIEW, ease=1.3, interval_days=1, due_date=date(2026, 10, 13), lapses=12); settings=SchedulerSettings(leech_threshold=8)",
+   "expect": "Card(id='c3', note_id='n3', state=CardState.SUSPENDED, ease=1.3, interval_days=1, due_date=date(2026, 10, 13), lapses=12)"
+  },
+  {
+   "name": "suspends_non_review_card_when_lapses_reach_threshold",
+   "given": "card=Card(id='c4', note_id='n4', state=CardState.LEARNING, ease=2.0, interval_days=0, due_date=date(2026, 10, 13), lapses=1, learning_step=1); settings=SchedulerSettings(leech_threshold=1)",
+   "expect": "Card(id='c4', note_id='n4', state=CardState.SUSPENDED, ease=2.0, interval_days=0, due_date=date(2026, 10, 13), lapses=1, learning_step=1)"
+  },
+  {
+   "name": "does_not_suspend_when_leech_threshold_is_disabled",
+   "given": "card=Card(id='c5', note_id='n5', state=CardState.REVIEW, ease=2.5, interval_days=30, due_date=date(2026, 11, 12), lapses=99); settings=SchedulerSettings(leech_threshold=0)",
+   "expect": "the same input card object (result is card)"
+  }
+ ],
+ "bury_siblings": [
+  {
+   "name": "buries_unburied_sibling_and_leaves_reviewed_other_note_and_suspended_unchanged",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c2', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c3', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c4', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())); reviewed_card_id='c1'; today=date(2026, 10, 13)",
+   "expect": "(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c2', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=date(2026, 10, 13), history=()), Card(id='c3', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c4', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()))"
+  },
+  {
+   "name": "retains_today_or_later_burial_and_replaces_earlier_burial",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c2', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=5, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=date(2026, 10, 12), history=()), Card(id='c3', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=1, relearning_interval_days=0, buried_until=date(2026, 10, 13), history=()), Card(id='c4', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=date(2026, 10, 14), history=())); reviewed_card_id='c1'; today=date(2026, 10, 13)",
+   "expect": "(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c2', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=5, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=date(2026, 10, 13), history=()), Card(id='c3', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=1, relearning_interval_days=0, buried_until=date(2026, 10, 13), history=()), Card(id='c4', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=date(2026, 10, 14), history=()))"
+  },
+  {
+   "name": "unknown_reviewed_id_returns_original_tuple",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c2', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=3, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())); reviewed_card_id='missing'; today=date(2026, 10, 13)",
+   "expect": "the exact same `cards` tuple object (identity), unchanged"
+  },
+  {
+   "name": "empty_cards_with_unknown_reviewed_id_returns_same_empty_tuple",
+   "given": "cards=(); reviewed_card_id='missing'; today=date(2026, 10, 13)",
+   "expect": "the exact same `cards` tuple object (identity), i.e. ()"
+  },
+  {
+   "name": "uses_first_matching_reviewed_id_to_choose_note",
+   "given": "cards=(Card(id='reviewed', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='reviewed', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c3', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c4', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())); reviewed_card_id='reviewed'; today=date(2026, 10, 13)",
+   "expect": "(Card(id='reviewed', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='reviewed', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()), Card(id='c3', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=date(2026, 10, 13), history=()), Card(id='c4', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=()))"
+  }
+ ],
+ "select_study_queue": [
+  {
+   "name": "learning_sorted_and_ignores_zero_limits",
+   "given": "cards=(Card(id=\"lb\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,8), lapses=0), Card(id=\"r\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=2, due_date=date(2026,1,8), lapses=0), Card(id=\"la\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,8), lapses=0), Card(id=\"n\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,8), lapses=0), Card(id=\"lc\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,9), lapses=0)); today=date(2026,1,10); settings=SchedulerSettings(daily_review_limit=0, daily_new_limit=0)",
+   "expect": "StudyQueue(learning_cards=(Card(id=\"la\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,8), lapses=0), Card(id=\"lb\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,8), lapses=0), Card(id=\"lc\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,9), lapses=0)), review_cards=(), new_cards=()); cards remains exactly unchanged"
+  },
+  {
+   "name": "review_priority_limit_one",
+   "given": "cards=(Card(id=\"low\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026,1,8), lapses=0), Card(id=\"high\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026,1,2), lapses=0)); today=date(2026,1,10); settings=SchedulerSettings(daily_review_limit=1)",
+   "expect": "StudyQueue(learning_cards=(), review_cards=(Card(id=\"high\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026,1,2), lapses=0),), new_cards=())"
+  },
+  {
+   "name": "review_ties_sort_by_due_date_then_id",
+   "given": "cards=(Card(id=\"c\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026,1,9), lapses=0), Card(id=\"z\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=2, due_date=date(2026,1,8), lapses=0), Card(id=\"a\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026,1,9), lapses=0), Card(id=\"b\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=3, due_date=date(2026,1,7), lapses=0)); today=date(2026,1,10); settings=SchedulerSettings(daily_review_limit=10)",
+   "expect": "StudyQueue(learning_cards=(), review_cards=(Card(id=\"b\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=3, due_date=date(2026,1,7), lapses=0), Card(id=\"z\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=2, due_date=date(2026,1,8), lapses=0), Card(id=\"a\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026,1,9), lapses=0), Card(id=\"c\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026,1,9), lapses=0)), new_cards=())"
+  },
+  {
+   "name": "new_same_due_date_sorts_by_id",
+   "given": "cards=(Card(id=\"b\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,10), lapses=0), Card(id=\"a\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,10), lapses=0)); today=date(2026,1,10); settings=SchedulerSettings(daily_new_limit=20)",
+   "expect": "StudyQueue(learning_cards=(), review_cards=(), new_cards=(Card(id=\"a\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,10), lapses=0), Card(id=\"b\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,10), lapses=0)))"
+  },
+  {
+   "name": "negative_new_limit_yields_no_new_cards",
+   "given": "cards=(Card(id=\"a\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,9), lapses=0), Card(id=\"b\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,10), lapses=0)); today=date(2026,1,10); settings=SchedulerSettings(daily_new_limit=-1)",
+   "expect": "StudyQueue(learning_cards=(), review_cards=(), new_cards=())"
+  },
+  {
+   "name": "only_due_available_cards_are_included",
+   "given": "cards=(Card(id=\"learning_due\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,10), lapses=0), Card(id=\"review_due\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026,1,10), lapses=0), Card(id=\"new_due\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,10), lapses=0), Card(id=\"learning_future\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,11), lapses=0), Card(id=\"review_buried\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026,1,9), lapses=0, buried_until=date(2026,1,11)), Card(id=\"new_suspended\", note_id=\"n\", state=CardState.SUSPENDED, ease=2.5, interval_days=0, due_date=date(2026,1,9), lapses=0)); today=date(2026,1,10); settings=SchedulerSettings()",
+   "expect": "StudyQueue(learning_cards=(Card(id=\"learning_due\", note_id=\"n\", state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026,1,10), lapses=0),), review_cards=(Card(id=\"review_due\", note_id=\"n\", state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026,1,10), lapses=0),), new_cards=(Card(id=\"new_due\", note_id=\"n\", state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026,1,10), lapses=0),))"
+  }
+ ],
+ "current_streak": [
+  {
+   "name": "empty_cards_returns_zero",
+   "given": "cards=(), today=date(2026, 10, 13)",
+   "expect": "0"
+  },
+  {
+   "name": "yesterday_event_without_today_returns_zero",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 12), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 12, 23, 59), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW),)),), today=date(2026, 10, 13)",
+   "expect": "0"
+  },
+  {
+   "name": "today_and_yesterday_returns_two",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 12, 9, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW))),), today=date(2026, 10, 13)",
+   "expect": "2"
+  },
+  {
+   "name": "gap_after_today_returns_one",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 0, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 11, 23, 59), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW))),), today=date(2026, 10, 13)",
+   "expect": "1"
+  },
+  {
+   "name": "multiple_events_on_same_day_count_once",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 8, 0), grade=Grade.HARD, seconds=10, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 20, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 12, 8, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW))),), today=date(2026, 10, 13)",
+   "expect": "2"
+  },
+  {
+   "name": "events_across_cards_form_long_consecutive_streak",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=1, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 12, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 11, 12, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW))), Card(id='c2', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 12), lapses=0, history=(ReviewEvent(card_id='c2', reviewed_at=dt(2026, 10, 12, 12, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.NEW),))), today=date(2026, 10, 13)",
+   "expect": "3"
+  }
+ ],
+ "summarise_day": [
+  {
+   "name": "spec_example_good_and_again",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 15), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 1, 15, 9, 0), grade=Grade.GOOD, seconds=30, state_before=CardState.REVIEW),)), Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 15), lapses=0, history=(ReviewEvent(card_id='c2', reviewed_at=dt(2026, 1, 15, 10, 0), grade=Grade.AGAIN, seconds=10, state_before=CardState.REVIEW),))); study_date=date(2026, 1, 15)",
+   "expect": "DailySummary(study_date=date(2026, 1, 15), grade_counts=((Grade.AGAIN, 1), (Grade.HARD, 0), (Grade.GOOD, 1), (Grade.EASY, 0)), retention_rate=0.5, total_seconds=40, reviewed_cards=2)"
+  },
+  {
+   "name": "no_events_empty_input",
+   "given": "cards=(); study_date=date(2026, 2, 1)",
+   "expect": "DailySummary(study_date=date(2026, 2, 1), grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 0), (Grade.GOOD, 0), (Grade.EASY, 0)), retention_rate=0.0, total_seconds=0, reviewed_cards=0)"
+  },
+  {
+   "name": "events_on_other_dates_are_ignored",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 3, 10), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 3, 9, 23, 59), grade=Grade.EASY, seconds=100, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 3, 10, 12, 0), grade=Grade.HARD, seconds=9, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 3, 11, 0, 0), grade=Grade.GOOD, seconds=100, state_before=CardState.REVIEW)) ,); study_date=date(2026, 3, 10)",
+   "expect": "DailySummary(study_date=date(2026, 3, 10), grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 1), (Grade.GOOD, 0), (Grade.EASY, 0)), retention_rate=0.0, total_seconds=9, reviewed_cards=1)"
+  },
+  {
+   "name": "all_grades_counted_in_required_order",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 4, 5), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 4, 5, 8, 0), grade=Grade.EASY, seconds=1, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 4, 5, 8, 1), grade=Grade.AGAIN, seconds=1, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 4, 5, 8, 2), grade=Grade.GOOD, seconds=1, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 4, 5, 8, 3), grade=Grade.HARD, seconds=1, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 4, 5, 8, 4), grade=Grade.AGAIN, seconds=1, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 4, 5, 8, 5), grade=Grade.GOOD, seconds=1, state_before=CardState.REVIEW))),); study_date=date(2026, 4, 5)",
+   "expect": "DailySummary(study_date=date(2026, 4, 5), grade_counts=((Grade.AGAIN, 2), (Grade.HARD, 1), (Grade.GOOD, 2), (Grade.EASY, 1)), retention_rate=0.5, total_seconds=6, reviewed_cards=6)"
+  },
+  {
+   "name": "negative_seconds_are_clamped_and_events_are_not_deduplicated",
+   "given": "cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 5, 20), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 5, 20, 9, 0), grade=Grade.GOOD, seconds=-7, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 5, 20, 9, 1), grade=Grade.AGAIN, seconds=0, state_before=CardState.REVIEW))),); study_date=date(2026, 5, 20)",
+   "expect": "DailySummary(study_date=date(2026, 5, 20), grade_counts=((Grade.AGAIN, 1), (Grade.HARD, 0), (Grade.GOOD, 1), (Grade.EASY, 0)), retention_rate=0.5, total_seconds=0, reviewed_cards=2)"
+  }
+ ],
+ "schedule_review": [
+  {
+   "name": "good_example_preserves_unlisted_fields",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=2, learning_step=3, relearning_interval_days=6, buried_until=date(2026, 1, 20), history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 1, 2, 9, 0), grade=Grade.GOOD, seconds=12, state_before=CardState.REVIEW),)); grade=Grade.GOOD; today=date(2026, 1, 10); settings=SchedulerSettings()",
+   "expect": "Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=25, due_date=date(2026, 2, 4), lapses=2, learning_step=3, relearning_interval_days=6, buried_until=date(2026, 1, 20), history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 1, 2, 9, 0), grade=Grade.GOOD, seconds=12, state_before=CardState.REVIEW),))"
+  },
+  {
+   "name": "hard_example",
+   "given": "card=Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=0, learning_step=2, relearning_interval_days=4); grade=Grade.HARD; today=date(2026, 1, 10); settings=SchedulerSettings()",
+   "expect": "Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.35, interval_days=12, due_date=date(2026, 1, 22), lapses=0, learning_step=2, relearning_interval_days=4, buried_until=None, history=())"
+  },
+  {
+   "name": "again_example_enters_relearning",
+   "given": "card=Card(id='c3', note_id='n3', state=CardState.REVIEW, ease=2.5, interval_days=6, due_date=date(2026, 1, 1), lapses=2, learning_step=9, relearning_interval_days=99, buried_until=date(2026, 1, 20), history=(ReviewEvent(card_id='c3', reviewed_at=dt(2026, 1, 2, 9, 0), grade=Grade.GOOD, seconds=8, state_before=CardState.REVIEW),)); grade=Grade.AGAIN; today=date(2026, 1, 10); settings=SchedulerSettings()",
+   "expect": "Card(id='c3', note_id='n3', state=CardState.LEARNING, ease=2.3, interval_days=6, due_date=date(2026, 1, 11), lapses=3, learning_step=0, relearning_interval_days=6, buried_until=date(2026, 1, 20), history=(ReviewEvent(card_id='c3', reviewed_at=dt(2026, 1, 2, 9, 0), grade=Grade.GOOD, seconds=8, state_before=CardState.REVIEW),))"
+  },
+  {
+   "name": "easy_uses_updated_ease_for_interval",
+   "given": "card=Card(id='c4', note_id='n4', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 1, 1), lapses=1); grade=Grade.EASY; today=date(2026, 1, 10); settings=SchedulerSettings()",
+   "expect": "Card(id='c4', note_id='n4', state=CardState.REVIEW, ease=2.65, interval_days=34, due_date=date(2026, 2, 13), lapses=1, learning_step=0, relearning_interval_days=0, buried_until=None, history=())"
+  },
+  {
+   "name": "good_uses_python_bankers_rounding",
+   "given": "card=Card(id='c5', note_id='n5', state=CardState.REVIEW, ease=2.5, interval_days=5, due_date=date(2026, 1, 1), lapses=0); grade=Grade.GOOD; today=date(2026, 1, 10); settings=SchedulerSettings()",
+   "expect": "Card(id='c5', note_id='n5', state=CardState.REVIEW, ease=2.5, interval_days=12, due_date=date(2026, 1, 22), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())"
+  },
+  {
+   "name": "hard_normalizes_nonpositive_old_interval_and_honors_minimum",
+   "given": "card=Card(id='c6', note_id='n6', state=CardState.REVIEW, ease=1.3, interval_days=0, due_date=date(2026, 1, 1), lapses=0); grade=Grade.HARD; today=date(2026, 1, 10); settings=SchedulerSettings(minimum_interval_days=5)",
+   "expect": "Card(id='c6', note_id='n6', state=CardState.REVIEW, ease=1.3, interval_days=5, due_date=date(2026, 1, 15), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())"
+  },
+  {
+   "name": "good_honors_minimum_interval",
+   "given": "card=Card(id='c7', note_id='n7', state=CardState.REVIEW, ease=1.3, interval_days=1, due_date=date(2026, 1, 1), lapses=0); grade=Grade.GOOD; today=date(2026, 1, 10); settings=SchedulerSettings(minimum_interval_days=4)",
+   "expect": "Card(id='c7', note_id='n7', state=CardState.REVIEW, ease=1.3, interval_days=4, due_date=date(2026, 1, 14), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())"
+  },
+  {
+   "name": "easy_clamps_updated_ease_to_minimum",
+   "given": "card=Card(id='c8', note_id='n8', state=CardState.REVIEW, ease=1.1, interval_days=1, due_date=date(2026, 1, 1), lapses=0); grade=Grade.EASY; today=date(2026, 1, 10); settings=SchedulerSettings()",
+   "expect": "Card(id='c8', note_id='n8', state=CardState.REVIEW, ease=1.3, interval_days=2, due_date=date(2026, 1, 12), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())"
+  }
+ ],
+ "schedule_new_or_learning": [
+  {
+   "name": "new_good_starts_first_learning_step",
+   "given": "card=Card(id='c1', note_id='n1', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 1, 1), lapses=0); grade=Grade.GOOD; today=date(2026, 1, 1); settings=SchedulerSettings(learning_steps_days=(1, 3), graduating_interval_days=4)",
+   "expect": "Card(id='c1', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 2), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())"
+  },
+  {
+   "name": "learning_good_at_last_step_graduates_with_graduating_interval",
+   "given": "card=Card(id='c2', note_id='n2', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 1), lapses=0, learning_step=1); grade=Grade.GOOD; today=date(2026, 1, 1); settings=SchedulerSettings(learning_steps_days=(1, 3), graduating_interval_days=4)",
+   "expect": "Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 1, 5), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())"
+  },
+  {
+   "name": "learning_again_resets_step_and_preserves_non_schedule_fields",
+   "given": "event=ReviewEvent(card_id='c3', reviewed_at=dt(2025, 12, 31, 12, 0), grade=Grade.GOOD, seconds=17, state_before=CardState.NEW); card=Card(id='c3', note_id='n3', state=CardState.LEARNING, ease=1.7, interval_days=9, due_date=date(2026, 1, 1), lapses=4, learning_step=1, relearning_interval_days=6, buried_until=date(2026, 1, 9), history=(event,)); grade=Grade.AGAIN; today=date(2026, 1, 1); settings=SchedulerSettings(learning_steps_days=(1, 3))",
+   "expect": "Card(id='c3', note_id='n3', state=CardState.LEARNING, ease=1.7, interval_days=9, due_date=date(2026, 1, 2), lapses=4, learning_step=0, relearning_interval_days=6, buried_until=date(2026, 1, 9), history=(ReviewEvent(card_id='c3', reviewed_at=dt(2025, 12, 31, 12, 0), grade=Grade.GOOD, seconds=17, state_before=CardState.NEW),))"
+  },
+  {
+   "name": "easy_graduates_with_one_day_minimum_and_clears_relearning_interval",
+   "given": "card=Card(id='c4', note_id='n4', state=CardState.LEARNING, ease=2.8, interval_days=2, due_date=date(2026, 1, 1), lapses=3, learning_step=1, relearning_interval_days=8, buried_until=date(2026, 1, 4)); grade=Grade.EASY; today=date(2026, 1, 1); settings=SchedulerSettings(easy_interval_days=0)",
+   "expect": "Card(id='c4', note_id='n4', state=CardState.REVIEW, ease=2.8, interval_days=1, due_date=date(2026, 1, 2), lapses=3, learning_step=0, relearning_interval_days=0, buried_until=date(2026, 1, 4), history=())"
+  },
+  {
+   "name": "new_hard_behaves_as_again",
+   "given": "card=Card(id='c5', note_id='n5', state=CardState.NEW, ease=2.5, interval_days=11, due_date=date(2026, 1, 1), lapses=1, relearning_interval_days=5); grade=Grade.HARD; today=date(2026, 1, 1); settings=SchedulerSettings(learning_steps_days=(1, 3))",
+   "expect": "Card(id='c5', note_id='n5', state=CardState.LEARNING, ease=2.5, interval_days=11, due_date=date(2026, 1, 2), lapses=1, learning_step=0, relearning_interval_days=5, buried_until=None, history=())"
+  },
+  {
+   "name": "learning_hard_clamps_oversized_step_before_requesting_hard_delay",
+   "given": "monkeypatch logic.learning_delay_days with a stub that accepts exactly (settings, 1, True) and returns 6; card=Card(id='c6', note_id='n6', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 1), lapses=0, learning_step=99); grade=Grade.HARD; today=date(2026, 1, 1); settings=SchedulerSettings(learning_steps_days=(1, 3))",
+   "expect": "the delay stub is called exactly once with (settings, 1, True), and the result is Card(id='c6', note_id='n6', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 7), lapses=0, learning_step=1, relearning_interval_days=0, buried_until=None, history=())"
+  },
+  {
+   "name": "learning_good_advances_to_another_step",
+   "given": "card=Card(id='c7', note_id='n7', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 1), lapses=0, learning_step=0); grade=Grade.GOOD; today=date(2026, 1, 1); settings=SchedulerSettings(learning_steps_days=(1, 3, 5))",
+   "expect": "Card(id='c7', note_id='n7', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 4), lapses=0, learning_step=1, relearning_interval_days=0, buried_until=None, history=())"
+  },
+  {
+   "name": "learning_good_graduation_uses_positive_relearning_interval_but_respects_minimum",
+   "given": "card=Card(id='c8', note_id='n8', state=CardState.LEARNING, ease=2.5, interval_days=0, due_date=date(2026, 1, 1), lapses=0, learning_step=1, relearning_interval_days=2); grade=Grade.GOOD; today=date(2026, 1, 1); settings=SchedulerSettings(learning_steps_days=(1, 3), graduating_interval_days=9, minimum_interval_days=3)",
+   "expect": "Card(id='c8', note_id='n8', state=CardState.REVIEW, ease=2.5, interval_days=3, due_date=date(2026, 1, 4), lapses=0, learning_step=0, relearning_interval_days=0, buried_until=None, history=())"
+  }
+ ],
+ "grade_card": [
+  {
+   "name": "suspended_good_is_identical_and_does_not_call_helpers",
+   "given": "card = Card(id='s1', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=12, due_date=date(2026, 5, 1), lapses=3, learning_step=1, relearning_interval_days=2, buried_until=date(2026, 5, 20), history=(ReviewEvent('s1', datetime(2026, 5, 2, 8, 0), Grade.AGAIN, 10, CardState.REVIEW),)); grade = Grade.GOOD; reviewed_at = datetime(2026, 5, 10, 9, 30); seconds = -4; settings = SchedulerSettings(); patch logic.schedule_new_or_learning, logic.schedule_review, and logic.suspend_leech to each raise AssertionError if called.",
+   "expect": "result is card (the identical object); result == Card(id='s1', note_id='n1', state=CardState.SUSPENDED, ease=2.5, interval_days=12, due_date=date(2026, 5, 1), lapses=3, learning_step=1, relearning_interval_days=2, buried_until=date(2026, 5, 20), history=(ReviewEvent('s1', datetime(2026, 5, 2, 8, 0), Grade.AGAIN, 10, CardState.REVIEW),))"
+  },
+  {
+   "name": "new_easy_schedules_then_appends_clamped_event_and_preserves_history",
+   "given": "old_event = ReviewEvent('other', datetime(2026, 5, 1, 7, 0), Grade.GOOD, 9, CardState.NEW); card = Card(id='new1', note_id='n2', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 5, 10), lapses=0, history=(old_event,)); grade = Grade.EASY; reviewed_at = datetime(2026, 5, 10, 23, 59, 58); seconds = -9; settings = SchedulerSettings(); scheduled = Card(id='new1', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=7, due_date=date(2026, 5, 17), lapses=0, history=(old_event,)); patch logic.schedule_new_or_learning with a spy returning scheduled; patch logic.suspend_leech with a spy returning its card argument; patch logic.schedule_review to raise AssertionError if called.",
+   "expect": "result == Card(id='new1', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=7, due_date=date(2026, 5, 17), lapses=0, history=(ReviewEvent('other', datetime(2026, 5, 1, 7, 0), Grade.GOOD, 9, CardState.NEW), ReviewEvent('new1', datetime(2026, 5, 10, 23, 59, 58), Grade.EASY, 0, CardState.NEW))); logic.schedule_new_or_learning was called exactly once with (card, Grade.EASY, date(2026, 5, 10), settings); logic.suspend_leech was called exactly once with (scheduled, settings)"
+  },
+  {
+   "name": "learning_hard_uses_learning_scheduler_and_appends_event",
+   "given": "card = Card(id='l1', note_id='n3', state=CardState.LEARNING, ease=2.2, interval_days=0, due_date=date(2026, 5, 10), lapses=1, learning_step=1, relearning_interval_days=2); grade = Grade.HARD; reviewed_at = datetime(2026, 5, 10, 0, 0, 1); seconds = 4; settings = SchedulerSettings(); scheduled = Card(id='l1', note_id='n3', state=CardState.LEARNING, ease=2.2, interval_days=0, due_date=date(2026, 5, 13), lapses=1, learning_step=1, relearning_interval_days=2); patch logic.schedule_new_or_learning with a spy returning scheduled; patch logic.suspend_leech with a spy returning its card argument; patch logic.schedule_review to raise AssertionError if called.",
+   "expect": "result == Card(id='l1', note_id='n3', state=CardState.LEARNING, ease=2.2, interval_days=0, due_date=date(2026, 5, 13), lapses=1, learning_step=1, relearning_interval_days=2, history=(ReviewEvent('l1', datetime(2026, 5, 10, 0, 0, 1), Grade.HARD, 4, CardState.LEARNING),)); logic.schedule_new_or_learning was called exactly once with (card, Grade.HARD, date(2026, 5, 10), settings); logic.suspend_leech was called exactly once with (scheduled, settings)"
+  },
+  {
+   "name": "review_again_at_leech_threshold_is_suspended_then_gets_event",
+   "given": "card = Card(id='r1', note_id='n4', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 5, 1), lapses=7); grade = Grade.AGAIN; reviewed_at = datetime(2026, 5, 10, 12, 0); seconds = 31; settings = SchedulerSettings(leech_threshold=8); scheduled = Card(id='r1', note_id='n4', state=CardState.LEARNING, ease=2.3, interval_days=10, due_date=date(2026, 5, 11), lapses=8, relearning_interval_days=5); suspended = Card(id='r1', note_id='n4', state=CardState.SUSPENDED, ease=2.3, interval_days=10, due_date=date(2026, 5, 11), lapses=8, relearning_interval_days=5); patch logic.schedule_review with a spy returning scheduled; patch logic.suspend_leech with a spy returning suspended; patch logic.schedule_new_or_learning to raise AssertionError if called.",
+   "expect": "result == Card(id='r1', note_id='n4', state=CardState.SUSPENDED, ease=2.3, interval_days=10, due_date=date(2026, 5, 11), lapses=8, relearning_interval_days=5, history=(ReviewEvent('r1', datetime(2026, 5, 10, 12, 0), Grade.AGAIN, 31, CardState.REVIEW),)); logic.schedule_review was called exactly once with (card, Grade.AGAIN, date(2026, 5, 10), settings); logic.suspend_leech was called exactly once with (scheduled, settings)"
+  }
+ ],
+ "study_streak": [
+  {
+   "name": "today_and_yesterday_events_returns_two",
+   "given": "today=date(2026, 10, 13); CardRepository ability=CountingRepo(cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 0, 0), grade=Grade.GOOD, seconds=30, state_before=CardState.REVIEW),)), Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 10, 12), lapses=0, history=(ReviewEvent(card_id='c2', reviewed_at=dt(2026, 10, 12, 10, 0, 0), grade=Grade.GOOD, seconds=20, state_before=CardState.REVIEW),)))); initial repo.list_calls=0; initial repo.saved_cards=[]",
+   "expect": "result == 2; repo.list_calls == 1; repo.saved_cards == []"
+  },
+  {
+   "name": "no_event_today_returns_zero",
+   "given": "today=date(2026, 10, 13); CardRepository ability=CountingRepo(cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 10, 12), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 12, 9, 0, 0), grade=Grade.GOOD, seconds=30, state_before=CardState.REVIEW),)),)); initial repo.list_calls=0; initial repo.saved_cards=[]",
+   "expect": "result == 0; repo.list_calls == 1; repo.saved_cards == []"
+  },
+  {
+   "name": "empty_repository_returns_zero",
+   "given": "today=date(2026, 10, 13); CardRepository ability=CountingRepo(cards=()); initial repo.list_calls=0; initial repo.saved_cards=[]",
+   "expect": "result == 0; repo.list_calls == 1; repo.saved_cards == []"
+  },
+  {
+   "name": "multiple_events_on_same_day_do_not_extend_three_day_streak",
+   "given": "today=date(2026, 10, 13); CardRepository ability=CountingRepo(cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 8, 0, 0), grade=Grade.HARD, seconds=10, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 18, 0, 0), grade=Grade.GOOD, seconds=20, state_before=CardState.REVIEW))), Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 10, 12), lapses=0, history=(ReviewEvent(card_id='c2', reviewed_at=dt(2026, 10, 12, 12, 0, 0), grade=Grade.GOOD, seconds=15, state_before=CardState.REVIEW),)), Card(id='c3', note_id='n3', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 10, 11), lapses=0, history=(ReviewEvent(card_id='c3', reviewed_at=dt(2026, 10, 11, 12, 0, 0), grade=Grade.EASY, seconds=15, state_before=CardState.REVIEW),)))); initial repo.list_calls=0; initial repo.saved_cards=[]",
+   "expect": "result == 3; repo.list_calls == 1; repo.saved_cards == []"
+  },
+  {
+   "name": "future_event_does_not_extend_streak_ending_today",
+   "given": "today=date(2026, 10, 13); CardRepository ability=CountingRepo(cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 0, 0), grade=Grade.GOOD, seconds=30, state_before=CardState.REVIEW),)), Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=4, due_date=date(2026, 10, 14), lapses=0, history=(ReviewEvent(card_id='c2', reviewed_at=dt(2026, 10, 14, 9, 0, 0), grade=Grade.GOOD, seconds=30, state_before=CardState.REVIEW),)))); initial repo.list_calls=0; initial repo.saved_cards=[]",
+   "expect": "result == 1; repo.list_calls == 1; repo.saved_cards == []"
+  }
+ ],
+ "build_today_queue": [
+  {
+   "name": "delegates_once_forwards_exact_arguments_and_does_not_mutate_repository",
+   "given": "today=date(2026, 10, 13); settings=SchedulerSettings(learning_steps_days=(2,), graduating_interval_days=9, easy_interval_days=12, lapse_multiplier=0.4, minimum_interval_days=2, leech_threshold=3, daily_new_limit=4, daily_review_limit=5); returned_cards=(Card(id='r', note_id='n', state=CardState.REVIEW, ease=2.5, interval_days=6, due_date=date(2026, 10, 13), lapses=1),); repo=SpyCardRepository(returned_cards=returned_cards, list_calls=0, get_calls=0, save_calls=0), bound as the CardRepository ability. Monkeypatch logic.select_study_queue with a stub that appends its three received arguments to calls and returns sentinel_queue=StudyQueue(learning_cards=(), review_cards=returned_cards, new_cards=()).",
+   "expect": "build_today_queue(today, settings) returns the identical sentinel_queue object; calls == [(returned_cards, today, settings)]; repo.list_calls == 1; repo.get_calls == 0; repo.save_calls == 0; repo.returned_cards == returned_cards."
+  },
+  {
+   "name": "one_due_review_matches_spec_example",
+   "given": "today=date(2026, 10, 13); settings=SchedulerSettings(); review=Card(id='review-1', note_id='note-1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0); repo=InMemoryCardRepository((review,)), bound as the CardRepository ability.",
+   "expect": "StudyQueue(learning_cards=(), review_cards=(review,), new_cards=()); repo.saved_cards == []; repo.cards == {'review-1': review}."
+  },
+  {
+   "name": "only_future_cards_matches_spec_example",
+   "given": "today=date(2026, 10, 13); settings=SchedulerSettings(); learning=Card(id='learning-future', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026, 10, 14), lapses=0, learning_step=0); review=Card(id='review-future', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=5, due_date=date(2026, 10, 14), lapses=0); new=Card(id='new-future', note_id='n3', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 14), lapses=0); repo=InMemoryCardRepository((learning, review, new)), bound as the CardRepository ability.",
+   "expect": "StudyQueue(learning_cards=(), review_cards=(), new_cards=()); repo.saved_cards == []; repo.cards == {'learning-future': learning, 'review-future': review, 'new-future': new}."
+  },
+  {
+   "name": "empty_repository_returns_empty_queue",
+   "given": "today=date(2026, 10, 13); settings=SchedulerSettings(); repo=InMemoryCardRepository(()), bound as the CardRepository ability.",
+   "expect": "StudyQueue(learning_cards=(), review_cards=(), new_cards=()); repo.saved_cards == []; repo.cards == {}."
+  },
+  {
+   "name": "due_cards_are_returned_in_their_correct_queue_sections",
+   "given": "today=date(2026, 10, 13); settings=SchedulerSettings(); learning=Card(id='learning', note_id='n1', state=CardState.LEARNING, ease=2.5, interval_days=1, due_date=date(2026, 10, 13), lapses=0, learning_step=1); review=Card(id='review', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=20, due_date=date(2026, 10, 13), lapses=2); new=Card(id='new', note_id='n3', state=CardState.NEW, ease=2.5, interval_days=0, due_date=date(2026, 10, 13), lapses=0); repo=InMemoryCardRepository((new, review, learning)), bound as the CardRepository ability.",
+   "expect": "StudyQueue(learning_cards=(learning,), review_cards=(review,), new_cards=(new,)); repo.saved_cards == []; repo.cards == {'new': new, 'review': review, 'learning': learning}."
+  }
+ ],
+ "grade_review": [
+  {
+   "name": "unknown_id_throws_card_not_found_without_saves",
+   "given": "repo=InMemoryCardRepository(()); card_id='missing'; grade=Grade.GOOD; reviewed_at=dt(2026,1,15,9,30,0); seconds=12; settings=SchedulerSettings()",
+   "expect": "raises CardNotFound('missing'); repo.saved_cards == []"
+  },
+  {
+   "name": "graded_card_is_saved_then_changed_same_note_sibling_is_saved",
+   "given": "A=Card('a','n',CardState.NEW,2.5,0,date(2026,1,1),0); B=Card('b','n',CardState.NEW,2.5,0,date(2026,1,1),0); G=Card('a','n',CardState.REVIEW,2.6,4,date(2026,1,19),0); Bb=Card('b','n',CardState.NEW,2.5,0,date(2026,1,1),0,0,0,date(2026,1,15)); repo=InMemoryCardRepository((A,B)); grade_card is monkeypatched to a spy returning G; bury_siblings is monkeypatched to a spy returning (G,Bb); card_id='a'; grade=Grade.GOOD; reviewed_at=dt(2026,1,15,9,30,0); seconds=12; settings=SchedulerSettings()",
+   "expect": "return G; grade_card was called exactly once with (A,Grade.GOOD,dt(2026,1,15,9,30,0),12,settings); bury_siblings was called exactly once with ((G,B),'a',date(2026,1,15)); repo.saved_cards == [G,Bb]"
+  },
+  {
+   "name": "does_not_resave_reviewed_card_or_unchanged_bury_results",
+   "given": "A=Card('a','n',CardState.NEW,2.5,0,date(2026,1,1),0); B=Card('b','n',CardState.NEW,2.5,0,date(2026,1,1),0); C=Card('c','other',CardState.REVIEW,2.5,5,date(2026,1,20),0); G=Card('a','n',CardState.LEARNING,2.5,0,date(2026,1,16),0,1); G_again=Card('a','n',CardState.LEARNING,2.5,0,date(2026,1,17),0,1); Cb=Card('c','other',CardState.REVIEW,2.5,5,date(2026,1,20),0,0,0,date(2026,1,15)); repo=InMemoryCardRepository((A,B,C)); grade_card is monkeypatched to return G; bury_siblings is monkeypatched to return (G_again,B,Cb); card_id='a'; grade=Grade.GOOD; reviewed_at=dt(2026,1,15,9,30,0); seconds=0; settings=SchedulerSettings()",
+   "expect": "return G; repo.saved_cards == [G,Cb]"
+  },
+  {
+   "name": "suspended_card_is_saved_unchanged_and_eligible_sibling_is_buried",
+   "given": "S=Card('s','n',CardState.SUSPENDED,2.5,10,date(2026,2,1),3,0,0,None,()); B=Card('b','n',CardState.REVIEW,2.5,10,date(2026,2,1),0); Bb=Card('b','n',CardState.REVIEW,2.5,10,date(2026,2,1),0,0,0,date(2026,1,15)); repo=InMemoryCardRepository((S,B)); card_id='s'; grade=Grade.EASY; reviewed_at=dt(2026,1,15,9,30,0); seconds=12; settings=SchedulerSettings()",
+   "expect": "return S; repo.saved_cards == [S,Bb]; repo.cards == {'s': S, 'b': Bb}"
+  },
+  {
+   "name": "suspended_or_different_note_cards_are_not_buried",
+   "given": "S=Card('s','n',CardState.SUSPENDED,2.5,10,date(2026,2,1),3); SS=Card('ss','n',CardState.SUSPENDED,2.5,4,date(2026,1,20),0); O=Card('o','other',CardState.NEW,2.5,0,date(2026,1,1),0); repo=InMemoryCardRepository((S,SS,O)); card_id='s'; grade=Grade.AGAIN; reviewed_at=dt(2026,1,15,9,30,0); seconds=1; settings=SchedulerSettings()",
+   "expect": "return S; repo.saved_cards == [S]; repo.cards == {'s': S, 'ss': SS, 'o': O}"
+  }
+ ],
+ "daily_summary": [
+  {
+   "name": "one_good_event_on_requested_date",
+   "given": "CardRepository -> CountingCardRepository(cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 30), grade=Grade.GOOD, seconds=42, state_before=CardState.REVIEW),)),), list_calls=0, save_calls=0); call daily_summary(date(2026, 10, 13))",
+   "expect": "DailySummary(study_date=date(2026, 10, 13), grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 0), (Grade.GOOD, 1), (Grade.EASY, 0)), retention_rate=1.0, total_seconds=42, reviewed_cards=1); fake post-state: list_calls=1, save_calls=0"
+  },
+  {
+   "name": "event_only_on_another_date_is_zero_summary",
+   "given": "CardRepository -> InMemoryCardRepository(cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 12, 23, 59), grade=Grade.GOOD, seconds=42, state_before=CardState.REVIEW),)),)); call daily_summary(date(2026, 10, 13))",
+   "expect": "DailySummary(study_date=date(2026, 10, 13), grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 0), (Grade.GOOD, 0), (Grade.EASY, 0)), retention_rate=0.0, total_seconds=0, reviewed_cards=0); fake post-state: saved_cards=[]"
+  },
+  {
+   "name": "empty_repository_is_zero_summary",
+   "given": "CardRepository -> InMemoryCardRepository(cards=()); call daily_summary(date(2026, 10, 13))",
+   "expect": "DailySummary(study_date=date(2026, 10, 13), grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 0), (Grade.GOOD, 0), (Grade.EASY, 0)), retention_rate=0.0, total_seconds=0, reviewed_cards=0); fake post-state: saved_cards=[]"
+  },
+  {
+   "name": "all_grades_across_cards_and_out_of_day_history_are_aggregated",
+   "given": "CardRepository -> InMemoryCardRepository(cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 0, 0), grade=Grade.AGAIN, seconds=10, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 12, 0), grade=Grade.HARD, seconds=20, state_before=CardState.REVIEW))), Card(id='c2', note_id='n2', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c2', reviewed_at=dt(2026, 10, 13, 23, 59), grade=Grade.GOOD, seconds=30, state_before=CardState.REVIEW), ReviewEvent(card_id='c2', reviewed_at=dt(2026, 10, 13, 8, 0), grade=Grade.EASY, seconds=40, state_before=CardState.REVIEW), ReviewEvent(card_id='c2', reviewed_at=dt(2026, 10, 12, 23, 59), grade=Grade.GOOD, seconds=999, state_before=CardState.REVIEW))))); call daily_summary(date(2026, 10, 13))",
+   "expect": "DailySummary(study_date=date(2026, 10, 13), grade_counts=((Grade.AGAIN, 1), (Grade.HARD, 1), (Grade.GOOD, 1), (Grade.EASY, 1)), retention_rate=0.75, total_seconds=100, reviewed_cards=4); fake post-state: saved_cards=[]"
+  },
+  {
+   "name": "multiple_events_for_one_card_count_as_multiple_reviews",
+   "given": "CardRepository -> InMemoryCardRepository(cards=(Card(id='c1', note_id='n1', state=CardState.REVIEW, ease=2.5, interval_days=10, due_date=date(2026, 10, 13), lapses=0, history=(ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 9, 0), grade=Grade.GOOD, seconds=7, state_before=CardState.REVIEW), ReviewEvent(card_id='c1', reviewed_at=dt(2026, 10, 13, 18, 0), grade=Grade.GOOD, seconds=10, state_before=CardState.REVIEW))),)); call daily_summary(date(2026, 10, 13))",
+   "expect": "DailySummary(study_date=date(2026, 10, 13), grade_counts=((Grade.AGAIN, 0), (Grade.HARD, 0), (Grade.GOOD, 2), (Grade.EASY, 0)), retention_rate=1.0, total_seconds=17, reviewed_cards=2); fake post-state: saved_cards=[]"
+  }
+ ]
+}
