@@ -46,7 +46,9 @@ It works in a scratch copy, so this directory is left as it is.
   well as specdeck's generated file, which cost more tokens.
 - A rule test is only as good as its check. In that A/B, both agents that hit a rule test under
   pressure got around it (`importlib.import_module("pandas")` past an import scan) rather than
-  keeping the rule. Check the rule's intent, not one way of writing the violation, and expect a
-  reviewer to still look.
+  keeping the rule. One sentence in AGENTS.md, which `specdeck agents` now writes ("making the
+  test pass without keeping the rule is breaking the rule"), stopped that in 4 of 4 follow-up
+  trials, and so did a test that checks the rule's intent at run time. Small numbers; a reviewer
+  should still look.
 - An agent that never runs the tests still breaks the rule. CI running `pytest` is what makes it
   stick.

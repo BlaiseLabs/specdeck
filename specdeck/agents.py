@@ -61,7 +61,13 @@ def block(reqs: Requirements, report: Optional[dict]) -> str:
            f"The rules below are requirements in `requirements.yaml`, typed as in {STANDARD}. Each is "
            "checked by the tests named under it; the status is from the last test run. Keep to every rule "
            "that holds. A broken rule is the first thing to fix, or to raise with a person if the rule "
-           "itself looks wrong. Change a rule by editing `requirements.yaml`, never this block.", ""]
+           "itself looks wrong. Change a rule by editing `requirements.yaml`, never this block.", "",
+           # Measured in bench/rules_ab (small n): with this sentence no agent got around a rule test
+           # under pressure (0 of 4, against 2 of 2 without); asking to say so raised how often agents
+           # told the person they had kept a rule against the request from 0 of 6 to 2 of 6.
+           "A rule's test checks the rule. Making the test pass without keeping the rule (a dynamic import, "
+           "a check sidestepped) is breaking the rule. If a request conflicts with a rule, keep the rule and "
+           "say so in your summary: which rule, and what you did instead.", ""]
     broken = [r for r in rows if r.get("type") in dict(RULES) and r.get("status") == "failing"]
     names = ", ".join(f"`{r['id']}`" for r in broken)
     if broken:   # first, where an agent reading from the top meets it before anything else

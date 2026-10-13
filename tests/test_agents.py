@@ -53,6 +53,8 @@ def test_the_rules_are_written_with_their_reasons_tests_and_status(tmp_path):
         assert text.index("**Broken in the last run:** `arch.queue`") < text.index("### Design constraints")
     with and_("a rule verified another way tells the agent to check it by hand", expected="inspection"):
         assert "Verified by inspection, not by a test: check it yourself" in text
+    with and_("the agent is told that getting around a rule's test breaks the rule, and to say when it keeps one"):
+        assert "Making the test pass without keeping the rule" in text and "keep the rule and say so" in text
     with and_("functional requirements are not rules", expected="price.bulk absent"):
         assert "price.bulk" not in text
 

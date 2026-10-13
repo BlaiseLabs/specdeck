@@ -429,6 +429,8 @@ requirements:
     An instructions file is mostly rules, and a hand-written one goes stale without anyone being
     told. Kept as typed requirements (§9.6.16, §9.6.17, §5.2.8.3), the rules carry their reasons
     and are checked by tests, so the file says which rules hold now and which are broken.
+    Measured (bench/rules_ab): agents under pressure got around a rule test instead of keeping the
+    rule, until the file said that doing so breaks the rule.
   type: functional
   verification: test
 

@@ -1,6 +1,6 @@
 # specdeck — software requirements specification
 
-**Revision:** generated 2026-10-13 14:40 UTC from commit 666974f · **Prepared to:** ISO/IEC/IEEE 29148:2018, content of §9.6 (identification §9.2.1)
+**Revision:** generated 2026-10-13 14:57 UTC from commit ec5097f · **Prepared to:** ISO/IEC/IEEE 29148:2018, content of §9.6 (identification §9.2.1)
 
 ## Tailoring
 
@@ -348,7 +348,7 @@ The agent context shall come in named strategies, each stating its contents and 
 
 `specdeck agents` shall write each design-constraint, standards-compliance and process requirement into the agent instructions file with its rationale, the tests that verify the requirement and its verification status.
 
-- **Rationale:** An instructions file is mostly rules, and a hand-written one goes stale without anyone being told. Kept as typed requirements (§9.6.16, §9.6.17, §5.2.8.3), the rules carry their reasons and are checked by tests, so the file says which rules hold now and which are broken.
+- **Rationale:** An instructions file is mostly rules, and a hand-written one goes stale without anyone being told. Kept as typed requirements (§9.6.16, §9.6.17, §5.2.8.3), the rules carry their reasons and are checked by tests, so the file says which rules hold now and which are broken. Measured (bench/rules_ab): agents under pressure got around a rule test instead of keeping the rule, until the file said that doing so breaks the rule.
 - **Type:** functional
 - **Verification method:** test
 - **Verification status:** met — verified by `tests/test_agents.py::test_the_rules_are_written_with_their_reasons_tests_and_status`
