@@ -1,0 +1,255 @@
+{
+ "mutation": {
+  "validate_new_action": {
+   "mutants": 4,
+   "killed_orig": 3,
+   "killed_new": 3
+  },
+  "round_to_cents": {
+   "mutants": 2,
+   "killed_orig": 2,
+   "killed_new": 2
+  },
+  "rate_for_currency": {
+   "mutants": 6,
+   "killed_orig": 6,
+   "killed_new": 6
+  },
+  "expense_deltas": {
+   "mutants": 4,
+   "killed_orig": 4,
+   "killed_new": 4
+  },
+  "payment_deltas": {
+   "mutants": 0,
+   "killed_orig": 0,
+   "killed_new": 0
+  },
+  "validate_payment": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": 11
+  },
+  "split_source_amounts": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": 11
+  },
+  "validate_trip_configuration": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": 11
+  },
+  "validate_expense": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": 11
+  },
+  "append_action": {
+   "mutants": 2,
+   "killed_orig": 2,
+   "killed_new": 2
+  },
+  "compute_balances": {
+   "mutants": 6,
+   "killed_orig": 6,
+   "killed_new": 6
+  },
+  "remove_last_action": {
+   "mutants": 4,
+   "killed_orig": 4,
+   "killed_new": 2
+  },
+  "allocate_expense_base_cents": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": 11
+  },
+  "record_expense": {
+   "mutants": 12,
+   "killed_orig": 12,
+   "killed_new": null
+  },
+  "close_trip": {
+   "mutants": 10,
+   "killed_orig": 10,
+   "killed_new": null
+  },
+  "record_payment": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": null
+  },
+  "undo_last_action": {
+   "mutants": 8,
+   "killed_orig": 8,
+   "killed_new": null
+  },
+  "member_statement": {
+   "mutants": 12,
+   "killed_orig": 12,
+   "killed_new": 12
+  },
+  "settle_up": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": 11
+  }
+ },
+ "agreement": {
+  "gpt-4o-mini": [
+   [
+    "rate_for_currency",
+    true,
+    true
+   ],
+   [
+    "validate_new_action",
+    true,
+    true
+   ],
+   [
+    "split_source_amounts",
+    true,
+    true
+   ],
+   [
+    "round_to_cents",
+    true,
+    true
+   ],
+   [
+    "validate_payment",
+    false,
+    false
+   ],
+   [
+    "payment_deltas",
+    true,
+    true
+   ],
+   [
+    "compute_balances",
+    true,
+    true
+   ],
+   [
+    "validate_trip_configuration",
+    false,
+    false
+   ],
+   [
+    "validate_expense",
+    false,
+    false
+   ],
+   [
+    "expense_deltas",
+    false,
+    false
+   ],
+   [
+    "append_action",
+    true,
+    true
+   ],
+   [
+    "remove_last_action",
+    true,
+    true
+   ],
+   [
+    "allocate_expense_base_cents",
+    true,
+    true
+   ],
+   [
+    "member_statement",
+    false,
+    false
+   ],
+   [
+    "settle_up",
+    false,
+    false
+   ]
+  ],
+  "qwen3_8b": [
+   [
+    "validate_trip_configuration",
+    false,
+    false
+   ],
+   [
+    "rate_for_currency",
+    true,
+    true
+   ],
+   [
+    "validate_expense",
+    false,
+    false
+   ],
+   [
+    "validate_payment",
+    false,
+    false
+   ],
+   [
+    "validate_new_action",
+    true,
+    true
+   ],
+   [
+    "split_source_amounts",
+    false,
+    false
+   ],
+   [
+    "round_to_cents",
+    false,
+    false
+   ],
+   [
+    "allocate_expense_base_cents",
+    false,
+    false
+   ],
+   [
+    "expense_deltas",
+    false,
+    false
+   ],
+   [
+    "payment_deltas",
+    true,
+    true
+   ],
+   [
+    "compute_balances",
+    true,
+    true
+   ],
+   [
+    "settle_up",
+    false,
+    false
+   ],
+   [
+    "member_statement",
+    false,
+    false
+   ],
+   [
+    "append_action",
+    true,
+    true
+   ],
+   [
+    "remove_last_action",
+    true,
+    true
+   ]
+  ]
+ }
+}

@@ -1,0 +1,3 @@
+ledger casetests2_qwen3_8b: mutants 154; caught by original tests 146, by new tests 103 (on 112 with usable new tests; originals on those 105)
+  agreement on gpt-4o-mini's functions: 15/15; differ: []
+  agreement on qwen3_8b's functions: 15/15; differ: []

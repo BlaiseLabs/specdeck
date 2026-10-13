@@ -1,0 +1,19 @@
+casetests2_qwen3_8b    validate_trip_configuration    cases 8 kept 8 dropped 0 first_ok True
+casetests2_qwen3_8b    rate_for_currency              cases 6 kept 6 dropped 0 first_ok True
+casetests2_qwen3_8b    validate_expense               cases 8 kept 8 dropped 0 first_ok True
+casetests2_qwen3_8b    validate_payment               cases 8 kept 8 dropped 0 first_ok True
+casetests2_qwen3_8b    validate_new_action            cases 5 kept 5 dropped 0 first_ok True
+casetests2_qwen3_8b    split_source_amounts           cases 6 kept 6 dropped 0 first_ok True
+casetests2_qwen3_8b    round_to_cents                 cases 6 kept 6 dropped 0 first_ok True
+casetests2_qwen3_8b    allocate_expense_base_cents    cases 6 kept 6 dropped 0 first_ok True
+casetests2_qwen3_8b    expense_deltas                 cases 4 kept 4 dropped 0 first_ok True
+casetests2_qwen3_8b    payment_deltas                 cases 4 kept 4 dropped 0 first_ok True
+casetests2_qwen3_8b    compute_balances               cases 5 kept 5 dropped 0 first_ok False
+casetests2_qwen3_8b    settle_up                      cases 8 kept 8 dropped 0 first_ok True
+casetests2_qwen3_8b    member_statement               cases 6 kept 6 dropped 0 first_ok True
+casetests2_qwen3_8b    append_action                  cases 4 kept 4 dropped 0 first_ok True
+casetests2_qwen3_8b    remove_last_action             cases 4 kept 1 dropped 3 first_ok False
+casetests2_qwen3_8b    record_expense                 cases 6 kept 0 dropped 6 first_ok False  UNUSABLE
+casetests2_qwen3_8b    record_payment                 cases 7 kept 0 dropped 7 first_ok False  UNUSABLE
+casetests2_qwen3_8b    close_trip                     cases 4 kept 0 dropped 4 first_ok False  UNUSABLE
+casetests2_qwen3_8b    undo_last_action               cases 6 kept 0 dropped 0 first_ok False  UNUSABLE

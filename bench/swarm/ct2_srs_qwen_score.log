@@ -1,0 +1,3 @@
+srs casetests2_qwen3_8b: mutants 124; caught by original tests 120, by new tests 101 (on 105 with usable new tests; originals on those 101)
+  agreement on gpt-4o-mini's functions: 16/16; differ: []
+  agreement on qwen3_8b's functions: 16/16; differ: []

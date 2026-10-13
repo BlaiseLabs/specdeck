@@ -1,0 +1,20 @@
+casetests2_qwen3_8b    clamp_ease                     cases 5 kept 5 dropped 0 first_ok True
+casetests2_qwen3_8b    overdue_priority               cases 5 kept 5 dropped 0 first_ok True
+casetests2_qwen3_8b    is_buried                      cases 4 kept 4 dropped 0 first_ok True
+casetests2_qwen3_8b    is_due_review                  cases 6 kept 6 dropped 0 first_ok True
+casetests2_qwen3_8b    is_due_learning                cases 7 kept 6 dropped 1 first_ok False
+casetests2_qwen3_8b    is_due_new                     cases 7 kept 7 dropped 0 first_ok True
+casetests2_qwen3_8b    select_study_queue             cases 6 kept 6 dropped 0 first_ok True
+casetests2_qwen3_8b    learning_delay_days            cases 7 kept 7 dropped 0 first_ok True
+casetests2_qwen3_8b    schedule_new_or_learning       cases 8 kept 7 dropped 1 first_ok False
+casetests2_qwen3_8b    schedule_review                cases 8 kept 8 dropped 0 first_ok False
+casetests2_qwen3_8b    is_leech                       cases 6 kept 6 dropped 0 first_ok True
+casetests2_qwen3_8b    suspend_leech                  cases 5 kept 5 dropped 0 first_ok True
+casetests2_qwen3_8b    grade_card                     cases 4 kept 0 dropped 0 first_ok False  UNUSABLE
+casetests2_qwen3_8b    bury_siblings                  cases 5 kept 5 dropped 0 first_ok True
+casetests2_qwen3_8b    summarise_day                  cases 5 kept 5 dropped 0 first_ok True
+casetests2_qwen3_8b    current_streak                 cases 6 kept 5 dropped 1 first_ok False
+casetests2_qwen3_8b    grade_review                   cases 5 kept 3 dropped 2 first_ok False
+casetests2_qwen3_8b    build_today_queue              cases 5 kept 0 dropped 5 first_ok False  UNUSABLE
+casetests2_qwen3_8b    daily_summary                  cases 5 kept 0 dropped 5 first_ok False  UNUSABLE
+casetests2_qwen3_8b    study_streak                   cases 5 kept 0 dropped 5 first_ok False  UNUSABLE

@@ -1,0 +1,270 @@
+{
+ "mutation": {
+  "clamp_ease": {
+   "mutants": 1,
+   "killed_orig": 1,
+   "killed_new": 1
+  },
+  "is_due_review": {
+   "mutants": 3,
+   "killed_orig": 3,
+   "killed_new": 3
+  },
+  "is_due_learning": {
+   "mutants": 3,
+   "killed_orig": 3,
+   "killed_new": 3
+  },
+  "is_due_new": {
+   "mutants": 3,
+   "killed_orig": 3,
+   "killed_new": 3
+  },
+  "select_study_queue": {
+   "mutants": 2,
+   "killed_orig": 2,
+   "killed_new": 2
+  },
+  "is_buried": {
+   "mutants": 4,
+   "killed_orig": 4,
+   "killed_new": 4
+  },
+  "overdue_priority": {
+   "mutants": 5,
+   "killed_orig": 5,
+   "killed_new": 5
+  },
+  "suspend_leech": {
+   "mutants": 3,
+   "killed_orig": 3,
+   "killed_new": 3
+  },
+  "is_leech": {
+   "mutants": 6,
+   "killed_orig": 5,
+   "killed_new": 5
+  },
+  "grade_card": {
+   "mutants": 10,
+   "killed_orig": 10,
+   "killed_new": null
+  },
+  "learning_delay_days": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": 11
+  },
+  "schedule_new_or_learning": {
+   "mutants": 12,
+   "killed_orig": 12,
+   "killed_new": 11
+  },
+  "schedule_review": {
+   "mutants": 12,
+   "killed_orig": 11,
+   "killed_new": 12
+  },
+  "build_today_queue": {
+   "mutants": 3,
+   "killed_orig": 3,
+   "killed_new": null
+  },
+  "daily_summary": {
+   "mutants": 3,
+   "killed_orig": 3,
+   "killed_new": null
+  },
+  "summarise_day": {
+   "mutants": 8,
+   "killed_orig": 8,
+   "killed_new": 8
+  },
+  "bury_siblings": {
+   "mutants": 10,
+   "killed_orig": 9,
+   "killed_new": 9
+  },
+  "study_streak": {
+   "mutants": 3,
+   "killed_orig": 3,
+   "killed_new": null
+  },
+  "grade_review": {
+   "mutants": 12,
+   "killed_orig": 12,
+   "killed_new": 12
+  },
+  "current_streak": {
+   "mutants": 9,
+   "killed_orig": 9,
+   "killed_new": 9
+  }
+ },
+ "agreement": {
+  "gpt-4o-mini": [
+   [
+    "clamp_ease",
+    true,
+    true
+   ],
+   [
+    "is_buried",
+    true,
+    true
+   ],
+   [
+    "overdue_priority",
+    true,
+    true
+   ],
+   [
+    "is_due_learning",
+    true,
+    true
+   ],
+   [
+    "is_due_new",
+    true,
+    true
+   ],
+   [
+    "is_due_review",
+    true,
+    true
+   ],
+   [
+    "is_leech",
+    true,
+    true
+   ],
+   [
+    "learning_delay_days",
+    true,
+    true
+   ],
+   [
+    "select_study_queue",
+    true,
+    true
+   ],
+   [
+    "suspend_leech",
+    false,
+    false
+   ],
+   [
+    "schedule_review",
+    true,
+    true
+   ],
+   [
+    "bury_siblings",
+    true,
+    true
+   ],
+   [
+    "current_streak",
+    true,
+    true
+   ],
+   [
+    "summarise_day",
+    true,
+    true
+   ],
+   [
+    "grade_review",
+    true,
+    true
+   ],
+   [
+    "schedule_new_or_learning",
+    false,
+    false
+   ]
+  ],
+  "qwen3_8b": [
+   [
+    "clamp_ease",
+    true,
+    true
+   ],
+   [
+    "overdue_priority",
+    true,
+    true
+   ],
+   [
+    "is_buried",
+    true,
+    true
+   ],
+   [
+    "is_due_review",
+    true,
+    true
+   ],
+   [
+    "is_due_learning",
+    true,
+    true
+   ],
+   [
+    "is_due_new",
+    true,
+    true
+   ],
+   [
+    "select_study_queue",
+    false,
+    false
+   ],
+   [
+    "learning_delay_days",
+    true,
+    true
+   ],
+   [
+    "schedule_new_or_learning",
+    false,
+    false
+   ],
+   [
+    "schedule_review",
+    true,
+    true
+   ],
+   [
+    "is_leech",
+    true,
+    true
+   ],
+   [
+    "suspend_leech",
+    true,
+    true
+   ],
+   [
+    "bury_siblings",
+    false,
+    false
+   ],
+   [
+    "summarise_day",
+    true,
+    true
+   ],
+   [
+    "current_streak",
+    true,
+    true
+   ],
+   [
+    "grade_review",
+    true,
+    true
+   ]
+  ]
+ }
+}

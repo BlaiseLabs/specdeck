@@ -163,3 +163,67 @@ note.
 
 **Cost:** 339k OpenAI tokens of the 750k grant (account one); Qwen ran locally for free.
 `combine.py` rebuilds the tables.
+
+---
+
+# Round 3: terra says WHAT to test, a cheap model writes HOW (2026-10-13, `casetests.py`)
+
+**The split:**
+- **terra:** a terse case list per function, giving the inputs and the exact expected result.
+- **Cheap model:** turns each case into pytest code.
+
+**Checks:**
+- The cheap model's tests must pass on terra's reference; one fix-up retry is allowed, then any
+  test still failing is dropped.
+- **Strength:** proofdeck plants one-line mutants (up to 12 per function) in the reference; we
+  compare the mutants caught against terra's original tests.
+- **Agreement:** the new tests must accept and reject the same round-2 worker functions as the
+  originals.
+
+## Cost: no saving
+
+| terra output tokens | original full tests | case lists only |
+|---|---|---|
+| srs | 36.7k | 39.7k |
+| ledger | 40.2k | 32.9k |
+
+- Visible test code was only ~15k per program; the rest of terra's output is reasoning about
+  what to check and the exact expected values.
+- The case lists are no shorter than the test code (~20k / 14k visible), because they spell
+  every object out in full.
+- The boilerplate a cheap model can take over was never the cost.
+
+## Quality: the cheap models' tests match terra's
+
+This holds once the expansion prompt is right.
+
+| tests by | functions with usable tests | mutants caught (theirs vs terra's originals on the same functions) | verdicts on worker code same as originals |
+|---|---|---|---|
+| gpt-4o-mini, srs | 15/20 written, all usable (the grant ran out) | 90 vs 90 of 94 | 15/15 + 15/15 |
+| qwen3:8b, srs | 16/20 | 101 vs 101 of 105 | 16/16 + 16/16 |
+| qwen3:8b, ledger | 15/19 (approx.) | 103 vs 105 of 112 | 15/15 + 15/15 |
+
+In the last column, the two numbers are gpt-4o-mini's functions + qwen's functions.
+
+**About the first expansion prompt:** it was broken. It described `run(supply(...))` for
+services, and gpt-4o-mini applied it to pure functions too ("'bool' object is not an
+iterator"), so about half the functions ended up with no usable tests. Saying plainly "a pure
+function: call it directly, never run/supply" plus a service example fixed it. That's the same
+lesson as round 2: the worker kit matters as much as the model.
+
+## Conclusion
+
+Cheap models write correct, equally strong tests from exact cases. But that doesn't make the
+strong model cheaper: its cost is deciding what to check and computing the answers, and that
+stays with it. The swarm's case is locality and openness:
+- a local model writes most of the code and the test code
+- terra designs, decides the cases and handles escalations
+
+It is not a token saving on the strong model.
+
+**Spend:**
+- This round: terra case lists 121k; gpt-4o-mini expansion 310k, of which 244k was the broken
+  prompt.
+- The 750k grant ended at **770.6k**, an overrun of 20.6k from parallel calls in flight when
+  the cap hit.
+- qwen ran locally for free.
