@@ -52,12 +52,14 @@ DEFAULT = Policy((
            evidence="bench/rules_ab: asked to use pandas in a stdlib-only project, 2 of 2 agents with a rule test "
                     "imported it through importlib to get past the test; with this clause 4 of 4 kept the rule."),
     Clause("conflicts",
-           "If a request conflicts with a rule, keep the rule and say so in your summary: which rule, and what "
-           "you did instead.",
+           "When a request asks for something a rule forbids, do not do that part. Keep the rule, and start your "
+           "summary with \"Not done as asked:\", naming what you did not do, the rule, and what you did instead.",
            rationale="A person who asks for something a rule forbids may not know the rule. Keeping the rule "
-                     "silently leaves them thinking they got what they asked for.",
-           evidence="bench/rules_ab: with requests that pulled against a rule, 0 of 6 summaries mentioned the rule "
-                     "kept; with this clause, 2 of 6 did."),
+                     "silently leaves them thinking they got what they asked for; a fixed opening makes the "
+                     "departure impossible to miss and easy to search for.",
+           evidence="bench/rules_ab, four wordings on six requests that pulled against a rule: summaries that "
+                    "said plainly what was not done and why — no clause 0 of 6, \"keep the rule and say so\" 3 of "
+                    "6, this wording 5 of 6. No rule was broken under any wording."),
 ))
 
 

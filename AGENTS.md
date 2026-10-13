@@ -4,7 +4,7 @@
 
 The rules below are requirements in `requirements.yaml`, typed as in ISO/IEC/IEEE 29148:2018. Each is checked by the tests named under it; the status is from the last test run. Keep to every rule that holds. A broken rule is the first thing to fix, or to raise with a person if the rule itself looks wrong. Change a rule by editing `requirements.yaml`, never this block.
 
-A rule's test checks the rule. Making the test pass without keeping the rule (a dynamic import, a check sidestepped) is breaking the rule. If a request conflicts with a rule, keep the rule and say so in your summary: which rule, and what you did instead.
+A rule's test checks the rule. Making the test pass without keeping the rule (a dynamic import, a check sidestepped) is breaking the rule. When a request asks for something a rule forbids, do not do that part. Keep the rule, and start your summary with "Not done as asked:", naming what you did not do, the rule, and what you did instead.
 
 ### Design constraints (§9.6.16)
 
