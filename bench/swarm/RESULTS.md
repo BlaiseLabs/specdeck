@@ -227,3 +227,46 @@ It is not a token saving on the strong model.
 - The 750k grant ended at **770.6k**, an overrun of 20.6k from parallel calls in flight when
   the cap hit.
 - qwen ran locally for free.
+
+---
+
+# Round 3: terra says what to test, a cheap model writes the test code (2026-10-13, `casetests.py`)
+
+**The setup:**
+- terra writes a terse case list per function: inputs plus the exact expected result.
+- A cheap model turns each list into pytest code.
+
+**The checks:**
+- The new tests must pass against terra's reference (one fix-up retry; any test still failing
+  is dropped).
+- proofdeck plants one-line bugs in the reference functions; how many the new tests catch is
+  compared with terra's original tests on the same planted bugs.
+- The new tests must accept and reject the same worker functions as the originals.
+
+**Cost: no saving.**
+- Case lists cost terra about as much as full tests did: 39.7k vs 36.7k output tokens on srs,
+  32.9k vs 40.2k on the ledger.
+- About 60% of terra's test output is hidden reasoning, i.e. deciding what to test and the
+  exact expected values. That stays with the strong model.
+- The visible case lists are no shorter than the test code (20k / 14k tokens vs 15k / 15k).
+
+**Quality: the cheap models' tests match terra's,** once the expansion prompt is right.
+
+| tests written by | functions with usable tests | planted bugs caught (theirs / terra's on the same functions) | same verdicts on worker code |
+|---|---|---|---|
+| gpt-4o-mini, srs | 15 (5 not run: grant ran out) | 90 / 90 | 15/15 |
+| qwen3:8b, srs | 16/20 | 101 / 101 | 16/16 |
+| qwen3:8b, ledger | 15/19 | 103 / 105 | 15/15 |
+
+**The first expansion prompt was broken.**
+- It explained `run(supply(...))` for services, and gpt-4o-mini applied it to pure functions
+  too. That wasted 244k tokens on unusable tests.
+- The fixed prompt mentions run/supply only for services, with an example.
+
+**Spend:** the grant overran to 770.6k of 750k, because parallel calls were already in flight
+when the cap hit.
+
+**Conclusion:**
+- Cheap models can write the test code reliably from exact cases.
+- But the strong model's cost is deciding what to check, so this doesn't make the pipeline
+  cheaper.
