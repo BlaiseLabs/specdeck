@@ -125,3 +125,16 @@ requirements:
   type: functional
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §5.2.4–5.2.7
+
+- id: req.srs
+  statement: >-
+    `specdeck srs` shall produce the software requirements specification with the content of
+    ISO/IEC/IEEE 29148:2018 §9.6, in the standard's order, verified from the last test run.
+  rationale: >-
+    The standard defines what a software requirements specification contains. Generating it from
+    the requirements and the tests that verify them gives a document a reviewer or auditor
+    recognises, that reports which requirements are verified now, and that cannot drift. Sections
+    only people can write are marked to be supplied, so an incomplete set is visible (§5.2.6).
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §9.6

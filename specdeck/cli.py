@@ -6,6 +6,7 @@
     specdeck trust         join the requirements with a proofdeck report: met, or just passing?
     specdeck report        Markdown for a PR comment: scenarios, fix-first, requirements, proof
     specdeck context       one document describing the suite, for a coding agent
+    specdeck srs           the software requirements specification, in ISO/IEC/IEEE 29148:2018 form
     specdeck watch         re-run the suite when a file changes
     specdeck runs          list recorded runs
     specdeck diff A B      what changed between two runs
@@ -140,6 +141,13 @@ def main(argv=None) -> int:
     _add_trust(sub)
     _add_report(sub)
     _add_context(sub)
+    s = sub.add_parser("srs", help="the software requirements specification, generated in the form of "
+                                   "ISO/IEC/IEEE 29148:2018 (content of §9.6), from the requirements and the last run")
+    s.add_argument("--requirements", default=DEFAULT_REQUIREMENTS, help="requirements file (default requirements.yaml)")
+    s.add_argument("--report", default=".specdeck/requirements.json",
+                   help="requirements report from the last run, for verification status")
+    s.add_argument("--spec", default=DEFAULT_SPEC, help="generated spec, for tests that trace to no requirement")
+    s.add_argument("--out", default=None, help="write here instead of stdout (e.g. SRS.md)")
     _add_watch(sub)
     _add_history(sub)
     args = ap.parse_args(argv)
@@ -161,6 +169,8 @@ def _dispatch(args) -> int:
         return cmd_report(args)
     if args.cmd == "context":
         return cmd_context(args)
+    if args.cmd == "srs":
+        return cmd_srs(args)
     if args.cmd == "watch":
         from .watch import watch
 
@@ -231,6 +241,32 @@ def cmd_requirements(args) -> int:
             print(f"  ! {p}")
     if args.fail_on_unmet and rep["counts"]["met"] != rep["counts"]["total"]:
         return 1
+    return 0
+
+
+def cmd_srs(args) -> int:
+    import yaml
+
+    from .requirements import load
+    from .srs import build
+
+    reqs = load(args.requirements)
+    if not reqs.items:
+        print(f"specdeck: no requirements in {args.requirements}", file=sys.stderr)
+        return 2
+    report = _load_json(args.report, "requirements report") if Path(args.report).exists() else None
+    if report is None:
+        print("specdeck: no requirements report yet — run pytest first for verification status (continuing)",
+              file=sys.stderr)
+    spec = Path(args.spec)
+    scenarios = (yaml.safe_load(spec.read_text(encoding="utf-8")) or {}).get("scenarios") if spec.exists() else None
+    text = build(reqs, report, scenarios, reqs.srs, Path.cwd())
+    if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out).write_text(text, encoding="utf-8")
+        print(f"specdeck: wrote {args.out}", file=sys.stderr)
+    else:
+        print(text, end="")
     return 0
 
 

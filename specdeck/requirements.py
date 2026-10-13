@@ -128,6 +128,7 @@ class Requirements:
     path: Optional[Path] = None
     items: dict = field(default_factory=dict)       # id -> Requirement, in file order
     problems: list = field(default_factory=list)    # human-readable problems with the file
+    srs: dict = field(default_factory=dict)         # the `srs:` block: §9.6 sections only people can write
 
     def __bool__(self) -> bool:
         return bool(self.items)
@@ -165,6 +166,8 @@ def load(path) -> Requirements:
         reqs.problems.append(f"{path.name} is not valid YAML: {exc}")
         return reqs
     entries = data.get("requirements") if isinstance(data, dict) else data
+    if isinstance(data, dict) and isinstance(data.get("srs"), dict):
+        reqs.srs = dict(data["srs"])
     if not isinstance(entries, list):
         reqs.problems.append(f"{path.name}: expected a list under `requirements:`")
         return reqs
