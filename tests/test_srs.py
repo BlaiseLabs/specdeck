@@ -28,6 +28,11 @@ requirements:
     verification: [test, analysis]
   - id: price.legacy
     says: Totals are rounded half up.
+  - id: price.logo
+    statement: The receipt shall carry the company logo.
+    rationale: Brand rules.
+    type: usability
+    verification: inspection
 """)
         reqs = load(f)
         report = {"requirements": [
@@ -53,3 +58,6 @@ requirements:
     with and_("verification is a traceability matrix, with quality findings and the review checklist"):
         assert "| `price.fast` | test, analysis | `t.py::test_fast` | failing |" in doc
         assert '"stray" traces to no requirement' in doc and "**Feasible:**" in doc
+    with and_("a requirement verified another way shows its declared method, not 'untested'",
+              expected="by inspection (declared)"):
+        assert "| `price.logo` | inspection | — | by inspection (declared) |" in doc

@@ -10,8 +10,9 @@ What a tool can check of the standard's quality criteria, each diagnostic citing
   ``requirements.load``. *Appropriate*, *feasible* and *correct* need judgement; the generated
   specification lists them for review rather than pretending to check them.
 - §5.2.6 characteristics of a set: *complete* (no TBD/TBS/TBR, every test traced to a
-  requirement), *consistent* (unique ids, which ``requirements.load`` checks, and no links to
-  requirements that do not exist).
+  requirement), *consistent* (unique ids, which ``requirements.load`` checks; no links to
+  requirements that do not exist; and, in ``consistency``, no requirement or linked test that
+  contradicts an example).
 - §5.2.7 requirement language criteria: the kinds of unbounded or ambiguous terms the standard
   says to avoid. The word lists are specdeck's; the categories are the standard's.
 
@@ -97,15 +98,20 @@ def _article(word: str) -> str:
     return "an" if word[0] in "aeiou" else "a"
 
 
-def check_set(reqs, scenarios: Optional[list]) -> list:
+def check_set(reqs, scenarios: Optional[list], roots=()) -> list:
     """§5.2.5 verifiable and §5.2.6 complete/consistent, using the generated spec's links.
 
     ``scenarios``: the generated spec's scenarios (each with tags ``req:<id>``), or None when no
     spec is available, in which case only the requirements file itself is checked.
+    ``roots``: where to look for the test files the scenarios name, for the check that no linked
+    test contradicts an example.
     """
+    from . import consistency
+
     out = []
     for req in reqs.items.values():
         out += check_requirement(req)
+    out += consistency.check(reqs, scenarios, roots)
     if scenarios is None:
         return out
     linked: dict = {}

@@ -206,3 +206,61 @@ requirements:
         assert "unverified" in by("TBX") and by("UNTRACED_TEST") == {"c"} and by("UNKNOWN_REQUIREMENT") == {"ghost"}
     with and_("every finding cites the clause it comes from"):
         assert all(d.clause and d.clause.startswith("§") for d in diags if d.code != "REQUIREMENT")
+
+
+@scenario("validate-requirement-consistency", group="validation", tags=["requirements", "standard"],
+          depends_on=["validate-requirement-quality"], covers=["req.consistent-examples", "req.consistent-tests"])
+def test_the_set_is_checked_for_consistency_under_29148(tmp_path):
+    """A set of requirements is consistent when nothing in it contradicts anything else (ISO/IEC/IEEE
+    29148:2018 §5.2.6). A requirement giving two answers for the same inputs, or a linked test
+    asserting a different number from an example, is reported with the place it happens."""
+    with given("a requirement with examples, one that contradicts itself, and tests linked to the first"):
+        reqs = tmp_path / "requirements.yaml"
+        reqs.write_text("""\
+requirements:
+  - id: pricing.bulk
+    statement: An order of 100 units or more shall get 15% off.
+    rationale: Agreed with sales.
+    examples:
+      - {given: {qty: 100}, expect: 15}
+      - {given: {qty: 99}, expect: 5}
+  - id: pricing.tax
+    statement: The tax shall be 8% of the total.
+    rationale: Law.
+    examples:
+      - {given: {total: 100}, expect: 8}
+      - {given: {total: 100}, expect: 10}
+""")
+        (tmp_path / "test_price.py").write_text('''\
+from specdeck import example, scenario
+
+@scenario("agrees", covers=["pricing.bulk"])
+def test_agrees():
+    assert discount(100) == 15
+    assert discount(qty=99) == 5
+    assert discount(100) == example("pricing.bulk", qty=100)
+
+@scenario("disagrees", covers=["pricing.bulk"])
+def test_disagrees():
+    expected = 10
+    assert discount(100) == expected
+
+def test_unlinked():
+    assert discount(100) == 12          # claims no requirement: not compared
+''')
+        spec = tmp_path / "spec.yaml"
+        spec.write_text(yaml.safe_dump({"feature": "f", "scenarios": [
+            {"id": s, "name": s, "tags": ["req:pricing.bulk"], "logic": [f"pytest test_price.py::test_{s}"]}
+            for s in ("agrees", "disagrees", "unlinked")]}))
+    with when("it is validated with the spec"):
+        diags = validate_requirements_file(reqs, spec=spec)
+        found = lambda code: [d for d in diags if d.code == code]  # noqa: E731
+    with then("the requirement that contradicts itself is reported", expected="CONFLICTING_EXAMPLES on pricing.tax"):
+        assert [d.scenario for d in found("CONFLICTING_EXAMPLES")] == ["pricing.tax"]
+    with and_("the linked test that writes down a different number is reported at its line",
+              expected="test_price.py:12, expects 10 where qty=100 gives 15"):
+        [d] = found("CONTRADICTS_EXAMPLE")
+        assert d.scenario == "pricing.bulk" and d.message.startswith("test_price.py:12 ")
+        assert "expects 10" in d.message and "qty=100" in d.message and "15" in d.message
+    with and_("both cite the set characteristic they break", expected="§5.2.6"):
+        assert all(d.clause == "§5.2.6" for d in found("CONFLICTING_EXAMPLES") + found("CONTRADICTS_EXAMPLE"))

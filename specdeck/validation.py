@@ -315,10 +315,12 @@ def validate_requirements_file(path, spec=None) -> list:
     if not reqs.items:
         diags.append(Diagnostic("warning", "NO_REQUIREMENTS", f"{p} declares no requirements."))
         return diags
-    scenarios = None
+    scenarios, roots = None, []
     if spec is not None and Path(spec).exists():
+        here = Path(spec).resolve().parent         # .specdeck/ normally sits in pytest's rootdir
+        roots = [here.parent, here, Path.cwd()]
         try:
             scenarios = (yaml.safe_load(Path(spec).read_text(encoding="utf-8")) or {}).get("scenarios") or []
         except yaml.YAMLError:
             scenarios = None
-    return diags + check_set(reqs, scenarios)
+    return diags + check_set(reqs, scenarios, roots)

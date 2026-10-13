@@ -200,7 +200,7 @@ requirements:
     how it is verified — is what makes a specification usable. Under the standard's names, a
     reader who knows 29148 needs no translation, and a specdeck requirement is a requirement in
     the sense every requirements engineer uses.
-  type: functional
+  type: standards-compliance
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §5.2.8
 
@@ -249,9 +249,31 @@ requirements:
     characteristics, §5.2.6 set characteristics, §5.2.7 language). Checking them where a machine
     can, and naming the clause, turns a 100-page standard into feedback on the line someone just
     wrote. The criteria that need judgement (appropriate, feasible, correct) are left to people.
-  type: functional
+  type: standards-compliance
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §5.2.4–5.2.7
+
+- id: req.consistent-examples
+  statement: "`specdeck validate` shall report a requirement whose examples give two expected values for the same inputs."
+  rationale: >-
+    A set is consistent when no requirement contradicts another (§5.2.6). A requirement that gives
+    two answers for one input contradicts itself, and any test checked against it passes or fails
+    by which example it picked.
+  type: standards-compliance
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §5.2.6
+
+- id: req.consistent-tests
+  statement: >-
+    `specdeck validate` shall report a linked test that asserts a literal value for an example's
+    inputs that differs from the example's expected value, with the test's file and line.
+  rationale: >-
+    A test written with a number instead of `example()` can drift from the requirement it claims
+    to verify. Then the test and the requirement disagree and cannot both be right (§5.2.6). The
+    report names the place, because one of the two has to change.
+  type: standards-compliance
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §5.2.6
 
 - id: req.file-validation
   statement: >-
@@ -273,7 +295,7 @@ requirements:
     specification from the requirements and the tests that verify them gives a document a reviewer
     or auditor recognises, that reports which requirements are verified now, and that cannot drift.
     Sections only people can write are marked to be supplied, so an incomplete set is visible.
-  type: functional
+  type: standards-compliance
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §9.6
 
@@ -387,6 +409,26 @@ requirements:
     Asking for a map and silently getting none is the worst outcome: the agent document would be
     missing its most useful half with no sign of the gap. The tests still run.
   type: software-attribute
+  verification: test
+
+- id: agents.rules
+  statement: >-
+    `specdeck agents` shall write each design-constraint, standards-compliance and process
+    requirement into the agent instructions file with its rationale, the tests that verify the
+    requirement and its verification status.
+  rationale: >-
+    An instructions file is mostly rules, and a hand-written one goes stale without anyone being
+    told. Kept as typed requirements (§9.6.16, §9.6.17, §5.2.8.3), the rules carry their reasons
+    and are checked by tests, so the file says which rules hold now and which are broken.
+  type: functional
+  verification: test
+
+- id: agents.in-place
+  statement: "`specdeck agents` shall replace only the generated block of an existing instructions file."
+  rationale: >-
+    AGENTS.md is usually written by hand. Generated rules have to share the file with the
+    instructions people wrote, without overwriting them.
+  type: functional
   verification: test
 
 # --- run history and the viewer ----------------------------------------------------------------
@@ -566,3 +608,39 @@ requirements:
     Changing source code from a browser has to be reviewable first. The review writes nothing.
   type: usability
   verification: test
+
+# --- specdeck's own rules: design constraints and the Definition of Done ------------------------
+
+- id: constraint.dependencies
+  statement: specdeck shall require only pytest and PyYAML to install.
+  rationale: >-
+    specdeck is added to other people's test suites. Each extra dependency is a version conflict
+    waiting in someone else's environment. Optional features (coverage mapping) load their
+    libraries when asked for.
+  type: design-constraint
+  verification: test
+
+- id: process.self-check
+  statement: A change to specdeck shall leave `specdeck validate` reporting no findings on specdeck's own spec and requirements.
+  rationale: >-
+    specdeck checks other projects against ISO/IEC/IEEE 29148:2018; its own requirements and tests
+    are the first place that check has to pass. A finding left behind is a requirement that is
+    unverified, ambiguous or untraced.
+  type: process
+  verification: demonstration
+
+- id: process.generated-docs
+  statement: SRS.md and the rules in AGENTS.md shall be regenerated from a full run before a change is committed.
+  rationale: >-
+    Both are generated, so they are only as current as the run they came from. A committed SRS
+    that disagrees with the tests is the drift specdeck exists to prevent.
+  type: process
+  verification: inspection
+
+- id: process.standard-text
+  statement: The repository shall cite ISO/IEC/IEEE 29148:2018 by clause number, in specdeck's own words.
+  rationale: >-
+    The standard is copyrighted. Clause references let a reader with a copy check each claim,
+    and the descriptions stay ours.
+  type: process
+  verification: inspection

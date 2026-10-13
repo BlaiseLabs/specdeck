@@ -62,6 +62,11 @@ def _attrs(r: dict) -> str:
 
 
 def _status(r: dict) -> str:
+    """The last run's verification status; for a requirement no test covers, its declared
+    non-test method (§6.5.2), which the run cannot carry out."""
+    other = [m for m in r.get("verification") or [] if m != "test"]
+    if other and r.get("status") in (None, "untested"):
+        return f"by {' and '.join(other)} (declared)"
     return r.get("status") or "not run"
 
 
@@ -128,7 +133,7 @@ def build(reqs: Requirements, report: Optional[dict], scenarios: Optional[list],
         counts[_status(r)] = counts.get(_status(r), 0) + 1
     out += ["", "**Summary:** " + ", ".join(f"{v} {k}" for k, v in sorted(counts.items())), ""]
 
-    findings = check_set(reqs, scenarios)
+    findings = check_set(reqs, scenarios, [root])
     out += ["### 3.1 Requirement quality (§5.2.4–5.2.7)", ""]
     if findings:
         out += ["Findings of `specdeck validate` against the criteria a tool can check:", ""]

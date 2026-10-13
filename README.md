@@ -22,8 +22,8 @@ specdeck keeps them in one place:
 
 The tests are the evidence, the specification is generated from them on each run, so it
 reports which requirements are verified *now* and cannot drift. specdeck's own
-specification, written this way, is [SRS.md](SRS.md): 59 requirements, each traced to
-the tests that verify it.
+specification, written this way, is [SRS.md](SRS.md): 67 requirements, each traced to
+the tests that verify it or declaring how else it is verified.
 
 **What is claimed.** specdeck is *aligned with* 29148:2018, not fully conformant (§4.2
 also covers life-cycle processes a tool cannot carry out). The generated SRS targets
@@ -176,12 +176,29 @@ Config: `specdeck_requirements` (default `requirements.yaml`),
 | a binding requirement uses "shall"; positive, not "shall not"; active voice; not "shall be able to" | §5.2.4 |
 | one capability per requirement (one "shall"); a rationale is recorded; a test or other method verifies it | §5.2.5, §5.2.8.2, §6.5.2 |
 | no TBD/TBS/TBR; every test traces to a requirement; no links to requirements that do not exist | §5.2.6 |
+| consistent: no requirement gives two expected values for the same inputs, and no linked test asserts a literal that differs from an example (reported at the test's line) | §5.2.6 |
 | no superlatives, subjective or ambiguous terms, vague pronouns, open-ended terms, comparatives, loopholes or totality terms | §5.2.7 |
 | attribute names, types and verification methods are the standard's | §5.2.8, §6.5.2 |
 
 The word lists for §5.2.7 are specdeck's; the categories are the standard's. Findings
 are warnings; `--strict` makes them errors. *Appropriate*, *feasible* and *correct*
 (§5.2.5) need judgement and are listed for review in the SRS rather than checked.
+
+### The project's rules, for coding agents
+
+```bash
+specdeck agents            # updates AGENTS.md; --out CLAUDE.md, or - for stdout
+```
+
+An agent instructions file is mostly rules. In specdeck they are requirements like any other,
+typed as the standard types them: `design-constraint` (§9.6.16, decisions that limit how the
+code may be built — the rationale is the decision record, the test is the check that fails when
+it is broken), `standards-compliance` (§9.6.17) and `process` (§5.2.8.3 — the Definition of
+Done). `specdeck agents` writes each into the instructions file with its rationale, the tests
+that verify it and whether it held in the last run, names any broken rule again under
+"Before you finish", and tells the agent to check by hand the rules verified by inspection or
+demonstration. Only a marked block is replaced, so the hand-written part of the file is kept.
+specdeck's own [AGENTS.md](AGENTS.md) is generated this way.
 
 ### The specification
 
@@ -289,7 +306,7 @@ specs this replaces).
 
 ```bash
 pytest --specdeck-coverage          # also records which scenarios run which source functions
-specdeck context --out AGENTS.md    # one document describing the suite
+specdeck context --out SUITE.md     # one document describing the suite
 ```
 
 What goes in that document was decided by measurement, not taste. `bench/agent_ab`
@@ -332,7 +349,7 @@ and a naive version of it made an agent *worse*:
   execute the changed function — from 43 to 5.
 
 ```bash
-specdeck context --for specdeck/ci.py,specdeck/trust.py --out AGENTS.md
+specdeck context --for specdeck/ci.py,specdeck/trust.py --out SUITE.md
 ```
 
 `--for` takes the files a change touches. Scenarios that run none of them are kept in
@@ -408,7 +425,8 @@ specdeck srs --out SRS.md       # the software requirements specification (29148
 specdeck requirements           # the requirements report, --fail-on-unmet for CI
 specdeck trust proof.json       # met, or just passing? joins requirements with proofdeck's JSON
 specdeck report --proofdeck proof.json --out report.md   # Markdown for a PR comment
-specdeck context --out AGENTS.md   # the suite described for a coding agent
+specdeck context --out SUITE.md    # the suite described for a coding agent
+specdeck agents                 # the project's rules into AGENTS.md, with their status
 specdeck watch -- -q            # re-run the suite when a file changes
 specdeck runs                   # recorded runs, newest first
 specdeck diff 7 12              # what moved between two runs
