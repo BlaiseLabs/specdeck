@@ -188,7 +188,7 @@ def cmd_validate(args) -> int:
     if req is None and Path(DEFAULT_REQUIREMENTS).exists():
         req = DEFAULT_REQUIREMENTS
     if req:
-        results.append((str(req), validate_requirements_file(req)))
+        results.append((str(req), validate_requirements_file(req, spec=spec)))
 
     errors = sum(1 for _, ds in results for d in ds if d.severity == "error")
     warnings = sum(1 for _, ds in results for d in ds if d.severity == "warning")

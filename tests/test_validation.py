@@ -1,6 +1,8 @@
 """specdeck's own spec validator — no outside project needed to know a spec is valid."""
 import textwrap
 
+import yaml
+
 from specdeck import and_, given, scenario, then, when
 from specdeck.validation import is_valid, validate_requirements_file, validate_text
 
@@ -151,3 +153,56 @@ def test_a_requirements_file_that_does_not_parse_is_an_error(tmp_path):
     with then("an error names the file as unreadable", expected="REQUIREMENTS_UNREADABLE"):
         assert [d.code for d in diags if d.severity == "error"] == ["REQUIREMENTS_UNREADABLE"]
         assert not is_valid(diags)
+
+
+@scenario("validate-requirement-quality", group="validation", tags=["requirements", "standard"],
+          covers=["req.quality"])
+def test_requirement_quality_is_checked_against_29148(tmp_path):
+    """`specdeck validate` checks each requirement and the set against ISO/IEC/IEEE 29148:2018:
+    the construct of §5.2.4, the characteristics of §5.2.5 and §5.2.6 a tool can check, and the
+    language criteria of §5.2.7. Each finding cites its clause."""
+    from specdeck.validation import validate_requirements_file
+
+    with given("requirements with typical weaknesses, and a spec in which one test traces to none of them"):
+        reqs = tmp_path / "requirements.yaml"
+        reqs.write_text("""\
+requirements:
+  - id: good
+    statement: The order shall get 15% off at 100 units or more.
+    rationale: Agreed with sales.
+  - id: vague
+    statement: The checkout shall be fast and user-friendly if possible.
+    rationale: Users complain.
+  - id: plain
+    statement: Totals are rounded half up.
+  - id: double
+    statement: The receipt shall show the total; it shall show the discount.
+    rationale: Audit.
+  - id: unverified
+    statement: The export shall be TBD.
+    rationale: Finance asked.
+  - id: inspected
+    statement: The receipt shall carry the company logo.
+    rationale: Brand rules.
+    verification: inspection
+""")
+        spec = tmp_path / "spec.yaml"
+        spec.write_text(yaml.safe_dump({"feature": "f", "scenarios": [
+            {"id": "a", "name": "A", "tags": ["req:good", "req:vague", "req:plain", "req:double"], "logic": ["pytest t.py::a"]},
+            {"id": "b", "name": "B", "tags": ["req:ghost"], "logic": ["pytest t.py::b"]},
+            {"id": "c", "name": "C", "logic": ["pytest t.py::c"]}]}))
+    with when("it is validated with the spec"):
+        diags = validate_requirements_file(reqs, spec=spec)
+        by = lambda code: {d.scenario for d in diags if d.code == code}  # noqa: E731
+    with then("the well-formed requirement passes untouched", expected="no findings for 'good'"):
+        assert not [d for d in diags if d.scenario == "good"]
+    with and_("§5.2.7: vague terms are named, with their category", expected="fast, user-friendly, if possible"):
+        lang = " ".join(d.message for d in diags if d.code == "LANGUAGE" and d.scenario == "vague")
+        assert '"fast"' in lang and '"user-friendly"' in lang and '"if possible"' in lang and "§5.2.7" in lang
+    with and_("§5.2.4: a statement without 'shall' is flagged; §5.2.5: so is a missing rationale and a double requirement"):
+        assert "plain" in by("NOT_SHALL") and "plain" in by("NO_RATIONALE") and "double" in by("NOT_SINGULAR")
+    with and_("§5.2.5/§5.2.6: unverified and TBD requirements, untraced tests and unknown links are reported"):
+        assert by("NOT_VERIFIED") == {"unverified"}           # 'inspected' declares a non-test method
+        assert "unverified" in by("TBX") and by("UNTRACED_TEST") == {"c"} and by("UNKNOWN_REQUIREMENT") == {"ghost"}
+    with and_("every finding cites the clause it comes from"):
+        assert all(d.clause and d.clause.startswith("§") for d in diags if d.code != "REQUIREMENT")

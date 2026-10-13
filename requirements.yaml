@@ -112,3 +112,16 @@ requirements:
   type: functional
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §5.2.8
+
+- id: req.quality
+  statement: >-
+    `specdeck validate` shall report each requirement and requirement set that departs from the
+    quality criteria of ISO/IEC/IEEE 29148:2018 that a tool can check, citing the clause.
+  rationale: >-
+    The standard defines what makes a requirement good (§5.2.4 construct, §5.2.5 individual
+    characteristics, §5.2.6 set characteristics, §5.2.7 language). Checking them where a machine
+    can, and naming the clause, turns a 100-page standard into feedback on the line someone just
+    wrote. The criteria that need judgement (appropriate, feasible, correct) are left to people.
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §5.2.4–5.2.7

@@ -36,6 +36,7 @@ class Diagnostic:
     scenario: Optional[str] = None
     path: Optional[str] = None
     line: Optional[int] = None
+    clause: Optional[str] = None    # the ISO/IEC/IEEE 29148:2018 clause a requirement check comes from
 
     def to_dict(self) -> dict:
         return {k: v for k, v in asdict(self).items() if v is not None}
@@ -292,12 +293,16 @@ def validate_file(path) -> list:
     return validate_text(text, source=p.name)
 
 
-def validate_requirements_file(path) -> list:
+def validate_requirements_file(path, spec=None) -> list:
     """Diagnostics for a hand-written requirements file.
 
     ``requirements.load`` already collects its own problems rather than raising;
     this turns them into the same Diagnostic shape so one command reports both.
+    Then the quality checks of ISO/IEC/IEEE 29148:2018 §5.2.4–5.2.7 (``quality``):
+    with ``spec`` (the generated spec's path), also which requirements are verified
+    and which tests trace to no requirement.
     """
+    from .quality import check_set
     from .requirements import load
 
     p = Path(path)
@@ -309,4 +314,11 @@ def validate_requirements_file(path) -> list:
              for prob in reqs.problems]
     if not reqs.items:
         diags.append(Diagnostic("warning", "NO_REQUIREMENTS", f"{p} declares no requirements."))
-    return diags
+        return diags
+    scenarios = None
+    if spec is not None and Path(spec).exists():
+        try:
+            scenarios = (yaml.safe_load(Path(spec).read_text(encoding="utf-8")) or {}).get("scenarios") or []
+        except yaml.YAMLError:
+            scenarios = None
+    return diags + check_set(reqs, scenarios)
