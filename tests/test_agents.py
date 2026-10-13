@@ -78,3 +78,38 @@ def test_only_the_generated_block_of_an_existing_file_is_replaced(tmp_path):
     with and_("there is one block, and the block reflects the second run", expected="one BEGIN, no broken rule"):
         assert text.count(BEGIN) == 1 and text.count(END) == 1
         assert "Broken in the last run" not in text and "holds in the last run" in text
+
+
+@scenario("agents-adherence", group="agents", tags=["agents"], depends_on=["agents-rules"],
+          covers=["agents.adherence"])
+def test_the_adherence_policy_has_defaults_a_project_can_change(tmp_path):
+    """Above the rules, AGENTS.md says what keeping a rule means: the adherence policy. specdeck
+    ships default clauses; a project rewords, drops or adds clauses in requirements.yaml, or turns
+    the policy off."""
+    from specdeck.adherence import DEFAULT
+
+    with given("the same rules three ways: no adherence block, a block that changes it, and `adherence: false`"):
+        changed = tmp_path / "changed.yaml"
+        changed.write_text("adherence:\n  intent: false\n  conflicts: If a request conflicts with a rule, stop and ask.\n"
+                           "  review: Leave a TODO naming the rule wherever you were unsure.\n  bogus: 3\n" + REQUIREMENTS)
+        off = tmp_path / "off.yaml"
+        off.write_text("adherence: false\n" + REQUIREMENTS)
+        plain = tmp_path / "plain.yaml"
+        plain.write_text(REQUIREMENTS)
+    with when("each is loaded and written into AGENTS.md"):
+        d, c, o = load(plain), load(changed), load(off)
+        texts = [write(tmp_path / f"{n}.md", r, REPORT) for n, r in (("d", d), ("c", c), ("o", o))]
+    with then("without a block, specdeck's default clauses apply and are written above the rules",
+              expected="intent, conflicts"):
+        assert [x.id for x in d.adherence.clauses] == ["intent", "conflicts"] and d.adherence.source == "specdeck default"
+        assert DEFAULT.text() in texts[0] and texts[0].index(DEFAULT.text()) < texts[0].index("### Design constraints")
+    with and_("a project's block drops, rewords and adds clauses, in that order of precedence",
+              expected="conflicts (reworded), review"):
+        assert [(x.id, x.text) for x in c.adherence.clauses] == [
+            ("conflicts", "If a request conflicts with a rule, stop and ask."),
+            ("review", "Leave a TODO naming the rule wherever you were unsure.")]
+        assert "stop and ask" in texts[1] and "Making the test pass" not in texts[1]
+    with and_("a clause that isn't text is reported, not written", expected="problem names 'bogus'"):
+        assert any("'bogus'" in p for p in c.problems) and "bogus" not in texts[1]
+    with and_("`adherence: false` writes no policy"):
+        assert o.adherence.clauses == () and DEFAULT.clauses[0].text not in texts[2]

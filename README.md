@@ -200,6 +200,22 @@ that verify it and whether it held in the last run, names any broken rule again 
 demonstration. Only a marked block is replaced, so the hand-written part of the file is kept.
 specdeck's own [AGENTS.md](AGENTS.md) is generated this way.
 
+Above the rules goes the **adherence policy**: what keeping a rule means. specdeck ships two
+default clauses, each measured in `bench/rules_ab`. `intent` says that getting a rule's test to
+pass without keeping the rule breaks the rule; under pressure, agents had been importing pandas
+through `importlib` to get past a stdlib-only test. `conflicts` says that when a request conflicts
+with a rule, the agent keeps the rule and says so. A project rewords, drops or adds clauses:
+
+```yaml
+adherence:
+  conflicts: If a request conflicts with a rule, stop and ask before going on.   # reword
+  intent: false                                                                     # drop
+  review: Leave a TODO naming the rule wherever you were unsure.                   # add
+```
+
+`adherence: false` turns it off. The defaults live in `specdeck/adherence.py`, with the reason
+and the measurement behind each clause.
+
 ### The specification
 
 ```bash

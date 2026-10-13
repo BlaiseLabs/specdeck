@@ -15,6 +15,9 @@ Each rule is written with its rationale, the tests that verify it and its verifi
 from the last run, so the file says which rules hold now and which are broken. A rule that no
 test verifies is listed with its declared method (§6.5.2) for the agent to check by hand.
 
+Above the rules goes the adherence policy (``adherence.py``): what keeping a rule means, from
+specdeck's default clauses as changed by the project's `adherence:` block.
+
 Only the block between the markers is written. The rest of an existing file is left as it is,
 so hand-written instructions and the generated rules share one file.
 """
@@ -61,13 +64,9 @@ def block(reqs: Requirements, report: Optional[dict]) -> str:
            f"The rules below are requirements in `requirements.yaml`, typed as in {STANDARD}. Each is "
            "checked by the tests named under it; the status is from the last test run. Keep to every rule "
            "that holds. A broken rule is the first thing to fix, or to raise with a person if the rule "
-           "itself looks wrong. Change a rule by editing `requirements.yaml`, never this block.", "",
-           # Measured in bench/rules_ab (small n): with this sentence no agent got around a rule test
-           # under pressure (0 of 4, against 2 of 2 without); asking to say so raised how often agents
-           # told the person they had kept a rule against the request from 0 of 6 to 2 of 6.
-           "A rule's test checks the rule. Making the test pass without keeping the rule (a dynamic import, "
-           "a check sidestepped) is breaking the rule. If a request conflicts with a rule, keep the rule and "
-           "say so in your summary: which rule, and what you did instead.", ""]
+           "itself looks wrong. Change a rule by editing `requirements.yaml`, never this block.", ""]
+    if reqs.adherence.clauses:   # the adherence policy (adherence.py): what keeping a rule means
+        out += [reqs.adherence.text(), ""]
     broken = [r for r in rows if r.get("type") in dict(RULES) and r.get("status") == "failing"]
     names = ", ".join(f"`{r['id']}`" for r in broken)
     if broken:   # first, where an agent reading from the top meets it before anything else

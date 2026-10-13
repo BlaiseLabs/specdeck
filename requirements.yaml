@@ -434,6 +434,17 @@ requirements:
   type: functional
   verification: test
 
+- id: agents.adherence
+  statement: >-
+    `specdeck agents` shall write the adherence policy above the rules, using specdeck's default
+    clauses as changed by the `adherence:` block of requirements.yaml.
+  rationale: >-
+    What keeping a rule means is not in the rules. Measured (bench/rules_ab): agents under pressure
+    got a rule's test to pass without keeping the rule until one sentence said that this breaks the
+    rule. The wording is a project's choice, so it is data with a default, not text in the code.
+  type: functional
+  verification: test
+
 - id: agents.in-place
   statement: "`specdeck agents` shall replace only the generated block of an existing instructions file."
   rationale: >-

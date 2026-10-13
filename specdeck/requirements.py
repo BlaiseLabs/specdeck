@@ -129,6 +129,12 @@ class Requirements:
     items: dict = field(default_factory=dict)       # id -> Requirement, in file order
     problems: list = field(default_factory=list)    # human-readable problems with the file
     srs: dict = field(default_factory=dict)         # the `srs:` block: §9.6 sections only people can write
+    adherence: "Policy" = None                      # the adherence policy for agents (adherence.py); set by load
+
+    def __post_init__(self):
+        if self.adherence is None:
+            from .adherence import DEFAULT
+            self.adherence = DEFAULT
 
     def __bool__(self) -> bool:
         return bool(self.items)
@@ -168,6 +174,9 @@ def load(path) -> Requirements:
     entries = data.get("requirements") if isinstance(data, dict) else data
     if isinstance(data, dict) and isinstance(data.get("srs"), dict):
         reqs.srs = dict(data["srs"])
+    from .adherence import resolve
+    reqs.adherence, problems = resolve(data.get("adherence") if isinstance(data, dict) else None, path.name)
+    reqs.problems += problems
     if not isinstance(entries, list):
         reqs.problems.append(f"{path.name}: expected a list under `requirements:`")
         return reqs
