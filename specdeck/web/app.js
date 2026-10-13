@@ -1373,8 +1373,8 @@ def test_tiers():
       return `<section class="card req ${S.reqFocus === r.id ? 'focus' : ''}" id="req-${esc(r.id)}">
         <div class="req-h"><span class="pill ${st.cls}">${icon(st.icon)}${st.label}</span><code class="req-id">${esc(r.id)}</code>
           <span class="spacer"></span>${r.examples.length ? `<span class="muted" style="font-size:12px">${r.examples_checked} of ${r.examples.length} examples used</span>` : ''}</div>
-        <div class="req-says">${fmt(r.says)}</div>
-        ${r.why ? `<div class="req-why">${fmt(r.why)}</div>` : ''}
+        <div class="req-says">${fmt(r.statement ?? r.says)}</div>
+        ${(r.rationale ?? r.why) ? `<div class="req-why">${fmt(r.rationale ?? r.why)}</div>` : ''}
         ${ex}
         <div class="rel-label">${r.scenarios.length ? `Covered by ${plural(r.scenarios.length, 'scenario')}` : 'Covered by'}</div>${sc}
       </section>`;
@@ -1531,7 +1531,7 @@ def test_tiers():
       const r = by.get(id);
       const st = r ? REQ[r.status] : null;
       const used = (s.examples_used || []).filter((u) => u[0] === id).length;
-      return `<span class="rel-chip" data-req-link="${esc(id)}" data-tip="${esc(r ? r.says : 'Not in the requirements file')}">${st ? icon(st.icon) : icon('error')}<span>${esc(id)}</span>${used ? `<span class="faint">· ${plural(used, 'example')}</span>` : ''}</span>`;
+      return `<span class="rel-chip" data-req-link="${esc(id)}" data-tip="${esc(r ? (r.statement ?? r.says) : 'Not in the requirements file')}">${st ? icon(st.icon) : icon('error')}<span>${esc(id)}</span>${used ? `<span class="faint">· ${plural(used, 'example')}</span>` : ''}</span>`;
     }).join('');
     return `<div class="section"><h4>Covers</h4><div class="rel">${chips}</div></div>`;
   }

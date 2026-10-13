@@ -138,7 +138,7 @@ def test_missing():
 @scenario("requirements-file-problems", tags=["requirements"])
 def test_problems_in_the_file_are_reported_not_fatal(pytester, run):
     """A malformed entry is skipped with a warning; the rest of the file still works."""
-    with given("a file with a duplicate id and an entry without `says:`"):
+    with given("a file with a duplicate id and an entry without a statement"):
         pytester.makefile(".yaml", requirements="""\
 requirements:
   - id: a.one
@@ -152,7 +152,7 @@ requirements:
         result, _, _ = run()
         rep = _report(pytester)
     with then("both problems are reported and a.one still counts", expected="1 of 1 met, 2 warnings"):
-        result.stdout.fnmatch_lines(["*a.one is defined twice*", "*a.two needs `says:`*"])
+        result.stdout.fnmatch_lines(["*a.one is defined twice*", "*a.two needs `statement:`*29148:2018 §5.2.4*"])
         assert rep["counts"]["met"] == 1 and rep["counts"]["total"] == 1
 
 
@@ -201,3 +201,57 @@ def test_after():
         assert "duplicate scenario id" not in result.stdout.str()
     with and_("depending on the id depends on all three cases"):
         assert scenario_by_id(spec, "after")["depends_on"] == ["tiers-qty-100", "tiers-qty-99", "tiers-qty-9"]
+
+
+@scenario("requirements-29148-attributes", tags=["requirements", "standard"], covers=["req.attributes"])
+def test_requirements_carry_the_attributes_of_29148(tmp_path):
+    """Each requirement carries the attributes of ISO/IEC/IEEE 29148:2018 §5.2.8 under the standard's
+    names, its type from §5.2.8.3 and its verification method from §6.5.2; specdeck's older names
+    still load, and anything outside the standard is reported with the clause it departs from."""
+    from specdeck.requirements import TYPES, VERIFICATION, load
+
+    with given("a requirements file using the standard's attribute names, an older entry, and three mistakes"):
+        f = tmp_path / "requirements.yaml"
+        f.write_text("""\
+requirements:
+  - id: pricing.bulk-tier
+    statement: The order shall get 15% off at 100 units or more.
+    rationale: Agreed with sales, 2026-09.
+    type: functional
+    priority: high
+    owner: sales-ops
+    risk: low
+    difficulty: nominal
+    verification: [test, inspection]
+  - id: pricing.legacy
+    says: Refunds shall never exceed the charge.
+    why: Chargebacks cost more than the refund.
+  - id: pricing.bad-type
+    statement: The page shall load in 2 seconds.
+    type: speed
+  - id: pricing.bad-method
+    statement: The receipt shall show the discount.
+    verification: eyeballing
+  - id: pricing.extra
+    statement: Totals shall round half up.
+    colour: blue
+""")
+    with when("it is loaded"):
+        reqs = load(f)
+        r, old = reqs.get("pricing.bulk-tier"), reqs.get("pricing.legacy")
+    with then("every §5.2.8 attribute is kept under the standard's name", expected="statement, rationale, type, priority, owner, risk, difficulty, verification"):
+        assert (r.statement, r.rationale, r.type, r.priority, r.owner, r.risk, r.difficulty, r.verification) == (
+            "The order shall get 15% off at 100 units or more.", "Agreed with sales, 2026-09.", "functional", "high",
+            "sales-ops", "low", "nominal", ["test", "inspection"])
+        assert r.to_dict()["statement"] == r.statement and "says" not in r.to_dict()
+    with and_("an entry in specdeck's older words still loads, under the standard's names"):
+        assert (old.statement, old.rationale) == ("Refunds shall never exceed the charge.", "Chargebacks cost more than the refund.")
+        assert (old.says, old.why) == (old.statement, old.rationale)
+    with and_("each departure from the standard is reported with its clause", expected="§5.2.8.3, §6.5.2, §5.2.8"):
+        problems = " | ".join(reqs.problems)
+        assert "type 'speed'" in problems and "§5.2.8.3" in problems
+        assert "verification eyeballing" in problems and "§6.5.2" in problems
+        assert "unknown attribute(s) colour" in problems and "§5.2.8" in problems
+    with and_("the types are the §9.6 SRS sections and the methods are the four of §6.5.2"):
+        assert "design-constraint" in TYPES and TYPES["design-constraint"].startswith("§9.6.16")
+        assert set(VERIFICATION) == {"test", "analysis", "simulation", "demonstration", "inspection"}

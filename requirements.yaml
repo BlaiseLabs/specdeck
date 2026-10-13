@@ -99,3 +99,16 @@ requirements:
     root-cause sorting from 40% to 100% costs 'which tests break' accuracy, in the generated
     document and in the raw test files alike. Choosing is unavoidable, so the choice is named
     and its numbers published rather than buried.
+
+- id: req.attributes
+  statement: >-
+    Each requirement shall carry the attributes of ISO/IEC/IEEE 29148:2018 §5.2.8 under the
+    standard's names, with its type from §5.2.8.3 and its verification method from §6.5.2.
+  rationale: >-
+    What a requirement records about itself — why it exists, how much it matters, who owns it,
+    how it is verified — is what makes a specification usable. Under the standard's names, a
+    reader who knows 29148 needs no translation, and a specdeck requirement is a requirement in
+    the sense every requirements engineer uses.
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §5.2.8

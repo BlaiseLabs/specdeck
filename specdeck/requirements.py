@@ -1,16 +1,22 @@
 """Requirements: what the code should do, written by people, independent of the tests.
 
 The generated spec says what the tests do. This file says what they *should*
-check. Each entry is short: an id, one sentence of intent, and concrete
-examples. Tests link to entries with ``@scenario(covers=[...])`` and can take
-their expected values from the examples with ``example()``, so an expected
-value comes from the requirement rather than from running the code.
+check. Each entry is a requirement in the sense of ISO/IEC/IEEE 29148:2018: a
+uniquely identified statement (§5.2.4) with the attributes of §5.2.8 —
+rationale, type, priority, owner — and the method that verifies it (§6.5.2).
+Tests link to entries with ``@scenario(covers=[...])`` (traceability) and can
+take their expected values from the examples with ``example()``, so an
+expected value comes from the requirement rather than from running the code.
 
     # requirements.yaml
     requirements:
-      - id: pricing.bulk-tier
-        says: Orders of 100 units or more get 15% off; 10 or more get 5%.
-        why: Agreed with sales, 2026-09.            # optional
+      - id: pricing.bulk-tier                       # identification, §5.2.8.2
+        statement: The order shall get 15% off at 100 units or more, and 5% at 10 or more.
+        rationale: Agreed with sales, 2026-09.      # §5.2.8.2; optional
+        type: functional                            # §5.2.8.3; optional
+        priority: high                              # stakeholder priority, §5.2.8.2; optional
+        owner: sales-ops                            # §5.2.8.2; optional
+        verification: test                          # §6.5.2: test, analysis, simulation, demonstration, inspection
         examples:
           - given: {qty: 100}
             expect: 15
@@ -39,6 +45,29 @@ import yaml
 DEFAULT_FILE = "requirements.yaml"
 _ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
+STANDARD = "ISO/IEC/IEEE 29148:2018"
+
+# The type attribute (§5.2.8.3), named after the sections of a software requirements
+# specification that hold each kind (§9.6.11–9.6.18), plus the two further examples of §5.2.8.3.
+TYPES = {
+    "interface": "§9.6.11 External interfaces",
+    "functional": "§9.6.12 Functions",
+    "usability": "§9.6.13 Usability requirements",
+    "performance": "§9.6.14 Performance requirements",
+    "logical-database": "§9.6.15 Logical database requirements",
+    "design-constraint": "§9.6.16 Design constraints",
+    "standards-compliance": "§9.6.17 Standards compliance",
+    "software-attribute": "§9.6.18 Software system attributes",
+    "process": "§5.2.8.3 Process requirements",
+    "human-factors": "§5.2.8.3 Human factors requirements",
+}
+# The four verification methods of §6.5.2 ("analysis or simulation" is one method).
+VERIFICATION = ("test", "analysis", "simulation", "demonstration", "inspection")
+# Keys an entry may use: §5.2.8 attributes under the standard's names, the older specdeck
+# names (`says`, `why`), and specdeck's own (examples, tags, standard).
+KNOWN_KEYS = {"id", "statement", "says", "rationale", "why", "type", "priority", "owner", "risk", "difficulty",
+              "verification", "standard", "examples", "tags"}
+
 
 class RequirementError(LookupError):
     """An id or example that isn't in the requirements file."""
@@ -53,17 +82,38 @@ class Example:
 
 @dataclass
 class Requirement:
-    id: str
-    says: str
-    why: Optional[str] = None
+    """One requirement with its attributes (ISO/IEC/IEEE 29148:2018 §5.2.8)."""
+
+    id: str                                         # identification, §5.2.8.2
+    statement: str                                  # the requirement itself, §5.2.4
+    rationale: Optional[str] = None                 # §5.2.8.2
+    type: Optional[str] = None                      # §5.2.8.3, one of TYPES
+    priority: Optional[str] = None                  # stakeholder priority, §5.2.8.2
+    owner: Optional[str] = None                     # §5.2.8.2
+    risk: Optional[str] = None                      # §5.2.8.2
+    difficulty: Optional[str] = None                # §5.2.8.2
+    verification: list = field(default_factory=list)  # methods, §6.5.2; empty means test
+    standard: Optional[str] = None                  # a clause this requirement implements, if any
     examples: list = field(default_factory=list)
     tags: list = field(default_factory=list)
     line: Optional[int] = None
 
+    # specdeck's names before it adopted the standard's
+    @property
+    def says(self) -> str:
+        return self.statement
+
+    @property
+    def why(self) -> Optional[str]:
+        return self.rationale
+
     def to_dict(self) -> dict:
-        d = {"id": self.id, "says": self.says}
-        if self.why:
-            d["why"] = self.why
+        d = {"id": self.id, "statement": self.statement}
+        for key in ("rationale", "type", "priority", "owner", "risk", "difficulty", "standard"):
+            if getattr(self, key):
+                d[key] = getattr(self, key)
+        if self.verification:
+            d["verification"] = list(self.verification)
         if self.tags:
             d["tags"] = list(self.tags)
         d["examples"] = [{k: v for k, v in (("name", e.name), ("given", e.given), ("expect", e.expect))
@@ -123,13 +173,35 @@ def load(path) -> Requirements:
         if not isinstance(entry, dict):
             reqs.problems.append(f"{path.name}: entry {i} is not a mapping")
             continue
-        rid, says = str(entry.get("id") or "").strip(), str(entry.get("says") or "").strip()
+        rid = str(entry.get("id") or "").strip()
+        statement = str(entry.get("statement") or entry.get("says") or "").strip()
         if not rid or not _ID.match(rid):
-            reqs.problems.append(f"{path.name}: entry {i} needs an `id` made of letters, digits, '.', '-' or '_'")
+            reqs.problems.append(f"{path.name}: entry {i} needs an `id` made of letters, digits, '.', '-' or '_' "
+                                 f"(identification, {STANDARD} §5.2.8.2)")
             continue
-        if not says:
-            reqs.problems.append(f"{path.name}: {rid} needs `says:`, one sentence of what should happen")
+        if not statement:
+            reqs.problems.append(f"{path.name}: {rid} needs `statement:`, one sentence of what shall happen "
+                                 f"({STANDARD} §5.2.4)")
             continue
+        if entry.get("statement") and entry.get("says") and str(entry["statement"]).strip() != str(entry["says"]).strip():
+            reqs.problems.append(f"{path.name}: {rid} has both `statement` and `says`, and they differ; "
+                                 f"`statement` is used")
+        unknown = sorted(set(entry) - KNOWN_KEYS)
+        if unknown:
+            reqs.problems.append(f"{path.name}: {rid} has unknown attribute(s) {', '.join(unknown)}; the attributes "
+                                 f"are those of {STANDARD} §5.2.8 ({', '.join(sorted(KNOWN_KEYS - {'says', 'why'}))})")
+        rtype = str(entry["type"]).strip() if entry.get("type") else None
+        if rtype and rtype not in TYPES:
+            reqs.problems.append(f"{path.name}: {rid} has type {rtype!r}; the types are {', '.join(TYPES)} "
+                                 f"({STANDARD} §5.2.8.3, §9.6.11–9.6.18)")
+            rtype = None
+        methods = entry.get("verification") or []
+        methods = [str(m).strip() for m in (methods if isinstance(methods, list) else [methods])]
+        bad = [m for m in methods if m not in VERIFICATION]
+        if bad:
+            reqs.problems.append(f"{path.name}: {rid} has verification {', '.join(bad)}; the methods are "
+                                 f"{', '.join(VERIFICATION)} ({STANDARD} §6.5.2)")
+            methods = [m for m in methods if m in VERIFICATION]
         if rid in reqs.items:
             reqs.problems.append(f"{path.name}: {rid} is defined twice; the second one is ignored")
             continue
@@ -144,9 +216,13 @@ def load(path) -> Requirements:
                 continue
             examples.append(Example(given=dict(given), expect=ex["expect"], name=ex.get("name")))
         tags = entry.get("tags") or []
-        reqs.items[rid] = Requirement(id=rid, says=says, why=(str(entry["why"]).strip() if entry.get("why") else None),
-                                      examples=examples, tags=[str(t) for t in tags] if isinstance(tags, list) else [],
-                                      line=lines.get(rid))
+        rationale = entry.get("rationale") or entry.get("why")
+        text = lambda k: str(entry[k]).strip() if entry.get(k) not in (None, "") else None  # noqa: E731
+        reqs.items[rid] = Requirement(
+            id=rid, statement=statement, rationale=str(rationale).strip() if rationale else None, type=rtype,
+            priority=text("priority"), owner=text("owner"), risk=text("risk"), difficulty=text("difficulty"),
+            verification=methods, standard=text("standard"), examples=examples,
+            tags=[str(t) for t in tags] if isinstance(tags, list) else [], line=lines.get(rid))
     return reqs
 
 

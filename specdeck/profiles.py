@@ -34,7 +34,7 @@ class Profile:
     test_sources: bool      # the test files verbatim
     summary: str
     measured: str
-    requirements: bool = False   # each requirement's says and why, with the tests that cover it
+    requirements: bool = False   # each requirement's statement and rationale (29148 §5.2.8), with its tests
 
     @property
     def needs_coverage(self) -> bool:
@@ -71,7 +71,7 @@ PROFILES = {
                  "tokens, identical answers."),
     "intent": Profile(
         "intent", index=False, steps=False, coverage=False, rule=False, test_sources=False, requirements=True,
-        summary="The requirements alone: what each says, why, and which tests cover it. For 'what is this test for?'",
+        summary="The requirements alone: each statement, its rationale, and which tests verify it. For 'what is this test for?'",
         measured="Measured in bench/purpose (specdeck's own suite, comments and docs stripped); see "
                  "RESULTS.md there."),
 }

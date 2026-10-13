@@ -101,7 +101,8 @@ tests with nothing named beside them.
 
 
 def _requirements(report: dict) -> str:
-    """Each requirement's says, why and status, then the tests that cover it."""
+    """Each requirement's statement, rationale, type and verification status (ISO/IEC/IEEE 29148:2018
+    §5.2.4, §5.2.8), then the tests that verify it."""
     reqs = report.get("requirements") or []
     by_test: dict = {}
     for r in reqs:
@@ -111,9 +112,12 @@ def _requirements(report: dict) -> str:
     for r in reqs:
         out.append(f"### {r['id']} ({r.get('status', 'unknown')})")
         out.append("")
-        out.append(f"Says: {r['says']}")
-        if r.get("why"):
-            out.append(f"Why: {' '.join(str(r['why']).split())}")
+        out.append(f"Statement: {r.get('statement') or r.get('says', '')}")
+        rationale = r.get("rationale") or r.get("why")
+        if rationale:
+            out.append(f"Rationale: {' '.join(str(rationale).split())}")
+        if r.get("type"):
+            out.append(f"Type: {r['type']}")
         tests = r.get("scenarios") or []
         if not tests:
             out.append("Tests: none")

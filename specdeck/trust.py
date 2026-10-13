@@ -69,7 +69,7 @@ def join(requirements: dict, proofdeck: dict, *, spec: Optional[dict] = None) ->
         faked = sorted({n for t in mine for n in fakes.get(t, [])})
         through_fakes = bool(mine) and all(fakes.get(t) for t in mine)
         out.append({
-            "id": req["id"], "says": req.get("says", ""), "status": req["status"], "verdict": verdict,
+            "id": req["id"], "statement": req.get("statement") or req.get("says", ""), "status": req["status"], "verdict": verdict,
             "tests": sorted(mine), "through_fakes": through_fakes, "fakes": faked,
             "lines": {
                 "unproven": [_loc(ln) for ln in unproven],

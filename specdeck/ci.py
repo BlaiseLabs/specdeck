@@ -107,7 +107,7 @@ def render_markdown(model: dict) -> str:
         out += [head, "|---|---|---|" if trust else "|---|---|"]
         mark = {"met": "✔", "failing": "✖", "blocked": "⊘", "not-run": "·", "untested": "?"}
         for r in reqs["requirements"]:
-            row = f"| `{r['id']}` {_md(r.get('says', ''))} | {mark.get(r['status'], '?')} {r['status']} |"
+            row = f"| `{r['id']}` {_md(r.get('statement') or r.get('says', ''))} | {mark.get(r['status'], '?')} {r['status']} |"
             if trust:
                 row += f" {_proof(verdicts[r['id']])} |"  # the join covers every requirement
             out.append(row)

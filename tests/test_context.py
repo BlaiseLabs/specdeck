@@ -379,7 +379,8 @@ def test_the_document_says_what_each_requirement_is_for_and_which_tests_serve_it
         intent = build(spec, None, profile="intent", requirements=report)
     with then("each requirement appears with what it says and why", expected="says and why, on one line"):
         for doc in (full, intent):
-            assert "Says: Totals are rounded half up." in doc and "Why: Finance reconciles to the cent." in doc
+            # the report here uses specdeck's older keys (says/why): earlier runs in the history still render
+            assert "Statement: Totals are rounded half up." in doc and "Rationale: Finance reconciles to the cent." in doc
     with and_("a test serving two requirements names the other one, so 'only this one' can be read off"):
         assert "`t.py::test_b` — scenario `b` (also covers r.two)" in intent
         assert "`t.py::test_a` — scenario `a`\n" in intent
