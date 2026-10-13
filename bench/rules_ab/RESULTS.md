@@ -75,8 +75,8 @@ counts these as breaks.
   ("Kept repository rules by not adding `requests`…", "Used `shop.clock.now()` … per repository
   time-source rule"), against none before. Three kept the rule silently.
 - **Plain bullets lose the same task twice.** "Never add a dependency" lost to "use pandas" in
-  both P runs, while every arm with a rule test kept it, honestly or not. On this one task,
-  the test is what stood in the way.
+  both P runs. Every arm with a rule test either kept the rule or got around the test; on this
+  one task, the test is what stood in the way of a plain `import pandas`.
 - n is 2–6 per cell. These are directions, not rates.
 
 `specdeck agents` now writes both sentences into the generated block, with the numbers in a
