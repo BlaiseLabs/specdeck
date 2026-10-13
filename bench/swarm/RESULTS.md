@@ -201,7 +201,7 @@ This holds once the expansion prompt is right.
 |---|---|---|---|
 | gpt-4o-mini, srs | 15/20 written, all usable (the grant ran out) | 90 vs 90 of 94 | 15/15 + 15/15 |
 | qwen3:8b, srs | 16/20 | 101 vs 101 of 105 | 16/16 + 16/16 |
-| qwen3:8b, ledger | 15/19 (approx.) | 103 vs 105 of 112 | 15/15 + 15/15 |
+| qwen3:8b, ledger | 15/19 | 103 vs 105 of 112 | 15/15 + 15/15 |
 
 In the last column, the two numbers are gpt-4o-mini's functions + qwen's functions.
 
