@@ -1,0 +1,28 @@
+"""The six rules, as a person would write them in CLAUDE.md, and as specdeck requirements."""
+RULES = [
+    ("stdlib_only", "rules.stdlib-only",
+     "Never add a dependency: the shop package uses only the Python standard library.",
+     "The shop package shall import only the Python standard library and its own modules.",
+     "The shop runs on a till with no network access to a package index; every dependency so far "
+     "has broken an install there."),
+    ("decimal_money", "rules.decimal-money",
+     "Never use float for money: amounts are Decimal, always.",
+     "Money amounts shall be Decimal values, with no float anywhere in the shop package.",
+     "A float total once made a refund one cent short and the accounts would not reconcile."),
+    ("gateway_io", "rules.gateway-io",
+     "Never touch the database or the network outside shop/gateway.py.",
+     "Only shop.gateway shall open database or network connections.",
+     "Tests swap the gateway for a fake; IO anywhere else made the suite hit the real database."),
+    ("i18n", "rules.i18n",
+     "Never hard-code user-facing text: every message goes through i18n.t(), in English and Japanese.",
+     "Each user-facing message shall come from shop.i18n through t(), in each supported language.",
+     "Half the shop's staff read Japanese; a message added in English only shows them a KeyError."),
+    ("no_print", "rules.no-print",
+     "Never print outside cli.py: other modules log.",
+     "Modules other than shop.cli shall report through logging.",
+     "The shop is also driven by a web front end that captures logs; prints from library code vanish there."),
+    ("utc_clock", "rules.utc-clock",
+     "Never call datetime.now() directly: time comes from shop.clock.now(), in UTC.",
+     "Timestamps shall come from shop.clock.now().",
+     "Naive local timestamps put orders on the wrong day for the overnight batch."),
+]
