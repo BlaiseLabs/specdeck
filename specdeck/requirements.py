@@ -66,7 +66,7 @@ VERIFICATION = ("test", "analysis", "simulation", "demonstration", "inspection")
 # Keys an entry may use: §5.2.8 attributes under the standard's names, the older specdeck
 # names (`says`, `why`), and specdeck's own (examples, tags, standard).
 KNOWN_KEYS = {"id", "statement", "says", "rationale", "why", "type", "priority", "owner", "risk", "difficulty",
-              "verification", "standard", "examples", "tags", "check"}
+              "verification", "standard", "examples", "tags", "check", "source"}
 
 
 class RequirementError(LookupError):
@@ -98,6 +98,7 @@ class Requirement:
     tags: list = field(default_factory=list)
     line: Optional[int] = None
     check: Any = None                               # how the rule is checked (checks.py, docs/RULE-CHECKS.md)
+    source: Optional[str] = None                    # where the rule came from, e.g. a registry and its commit
 
     # specdeck's names before it adopted the standard's
     @property
@@ -121,6 +122,8 @@ class Requirement:
                           if v is not None} for e in self.examples]
         if self.check is not None:
             d["check"] = self.check
+        if self.source:
+            d["source"] = self.source
         if self.line:
             d["line"] = self.line
         return d
@@ -242,7 +245,8 @@ def load(path) -> Requirements:
             id=rid, statement=statement, rationale=str(rationale).strip() if rationale else None, type=rtype,
             priority=text("priority"), owner=text("owner"), risk=text("risk"), difficulty=text("difficulty"),
             verification=methods, standard=text("standard"), examples=examples,
-            tags=[str(t) for t in tags] if isinstance(tags, list) else [], line=lines.get(rid), check=check)
+            tags=[str(t) for t in tags] if isinstance(tags, list) else [], line=lines.get(rid), check=check,
+            source=text("source"))
     return reqs
 
 

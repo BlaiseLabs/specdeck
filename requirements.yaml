@@ -377,6 +377,41 @@ requirements:
   type: interface
   verification: test
 
+# --- sharing rules -----------------------------------------------------------------------------
+
+- id: registry.self-hosted
+  statement: >-
+    `specdeck rules` shall read a rule registry from a directory or from a git URL, and
+    `specdeck rules publish` shall commit a rule card into a registry checkout.
+  rationale: >-
+    A registry that is a git repository needs no service to self-host: clone it, add rules, push.
+    Reading from a URL clones once and pulls on later use, so a shared registry stays current.
+  type: interface
+  verification: test
+
+- id: registry.shareable-only
+  statement: >-
+    A rule shall be shared through a registry only with a rationale and a well-formed check that
+    runs no `command`.
+  rationale: >-
+    What makes a shared rule worth more than the text in a rules directory is the reason and the
+    check that says when the rule breaks. A `command` would run someone else's code in the
+    adopting project, so a shared check is data only.
+  type: design-constraint
+  verification: test
+
+- id: registry.add
+  statement: >-
+    `specdeck rules add` shall append a registry rule to requirements.yaml with its check and its
+    source, leaving the file's other text unchanged.
+  rationale: >-
+    A rule taken from a registry has to work like one written in the project: checked on every
+    run, shown in AGENTS.md, counted by `specdeck breaks`. Recording the registry and commit
+    keeps the rule traceable to where it came from (§6.6); keeping the file's comments and layout
+    respects the people who wrote the file.
+  type: functional
+  verification: test
+
 # --- documents for coding agents ---------------------------------------------------------------
 
 - id: context.from-last-run

@@ -1,0 +1,61 @@
+# Generic rules for Python projects, each with the check that says when it breaks.
+# make-registry.sh publishes them into a new registry. Paths are the common layout; adjust after adding.
+requirements:
+  - id: money.decimal
+    statement: Money amounts shall be Decimal values, with no float in money code.
+    rationale: >-
+      Binary floats cannot represent most cent amounts; a float refund comes out a cent short and
+      the accounts stop reconciling.
+    type: design-constraint
+    check: {forbid_pattern: '\bfloat\(', paths: ['**/*.py'], except: ['tests/**']}
+    tags: [python, money, correctness]
+
+  - id: time.aware
+    statement: Timestamps shall be timezone-aware.
+    rationale: >-
+      A naive datetime.now() is local time on one machine and UTC on another, which puts records on
+      the wrong day for anything that runs overnight.
+    type: design-constraint
+    check: {ruff: [DTZ001, DTZ003, DTZ005, DTZ007], paths: ['**/*.py']}
+    tags: [python, time, correctness]
+
+  - id: deps.reviewed
+    statement: A dependency shall be added only in a change a person reviews for the dependency.
+    rationale: >-
+      Agents add packages to finish a task; each one is supply-chain risk and a version conflict
+      for every installer. Asked to "just use pandas", agents added it in a stdlib-only project.
+    type: process
+    check: {no_new_dependencies: true}
+    tags: [python, node, dependencies, agents]
+
+  - id: output.no-print
+    statement: Library code shall report through logging, with print only in command-line entry points.
+    rationale: Output from print in library code is lost wherever the library runs without a terminal.
+    type: design-constraint
+    check: {ruff: [T201], paths: ['**/*.py'], except: ['**/cli.py', '**/__main__.py', 'tests/**', 'scripts/**']}
+    tags: [python, logging]
+
+  - id: tests.no-new-skips
+    statement: A change shall add no skip or xfail marker to an existing test suite.
+    rationale: >-
+      Skipping a failing test is the quickest way for an agent to turn a suite green without
+      fixing anything; the test then stops checking what it was written for.
+    type: process
+    check: {forbid_pattern: '@pytest\.mark\.(skip|skipif|xfail)\b|pytest\.skip\(', paths: ['tests/**', '**/test_*.py']}
+    tags: [python, testing, agents]
+
+  - id: secrets.no-key-files
+    statement: The repository shall contain no environment or private-key files.
+    rationale: A committed .env or key file is a leaked credential the moment the repository is shared.
+    type: design-constraint
+    check: {protect: ['**/.env', '**/.env.*', '**/*.pem', '**/id_rsa', '**/id_ed25519']}
+    tags: [security, secrets]
+
+  - id: io.gateway-only
+    statement: Only the gateway module shall make network calls.
+    rationale: >-
+      Tests replace the gateway with recorded traffic; a network call anywhere else reaches the
+      real service from a test run.
+    type: design-constraint
+    check: {forbid_import: [requests, httpx, urllib3, aiohttp], except: ['**/gateway.py', 'tests/**']}
+    tags: [python, architecture, testing]

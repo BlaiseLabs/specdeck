@@ -14,6 +14,9 @@ A rule's test checks the rule. Making the test pass without keeping the rule (a 
 - **Adding specdeck to a suite shall leave its exit code unchanged until a gate is switched on.** (`gate.optional`)
   Why: A tool that fails other people's builds on arrival gets uninstalled. Gates are opt-in, by flag or config.
   Verified by: `tests/test_ci.py::test_the_report_exits_zero_unless_a_gate_is_asked_for`, `tests/test_gates.py::test_gates_are_off_by_default`, `tests/test_gates.py::test_gate_can_be_set_in_config` — holds in the last run
+- **A rule shall be shared through a registry only with a rationale and a well-formed check that runs no `command`.** (`registry.shareable-only`)
+  Why: What makes a shared rule worth more than the text in a rules directory is the reason and the check that says when the rule breaks. A `command` would run someone else's code in the adopting project, so a shared check is data only.
+  Verified by: `tests/test_registry.py::test_a_rule_travels_through_a_self_hosted_registry` — holds in the last run
 - **Runs shall be recorded only with the live flag or its config setting.** (`history.opt-in`)
   Why: History is written to the user's home directory. Recording without being asked would leave files behind for people who never wanted the viewer.
   Verified by: `tests/test_live_flag.py::test_no_flag_means_no_recording` — holds in the last run

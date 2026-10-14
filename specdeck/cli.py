@@ -9,6 +9,7 @@
     specdeck agents        the project's rules, written into AGENTS.md with their status
     specdeck check         evaluate the rules' checks against the change, without running tests
     specdeck breaks        how often each rule broke, from the log pytest runs append to
+    specdeck rules         share rules through a registry (search, add, publish, init)
     specdeck srs           the software requirements specification, in ISO/IEC/IEEE 29148:2018 form
     specdeck watch         re-run the suite when a file changes
     specdeck runs          list recorded runs
@@ -104,6 +105,30 @@ def _add_context(sub) -> None:
                         "much shorter on a large suite")
 
 
+def _add_rules(sub) -> None:
+    r = sub.add_parser("rules", help="share rules through a registry: a git repository of rule cards")
+    rs = r.add_subparsers(dest="rules_cmd", required=True)
+    reg = {"default": os.environ.get("SPECDECK_REGISTRY"), "metavar": "DIR_OR_GIT_URL",
+           "help": "the registry: a directory, or a git URL to clone (default $SPECDECK_REGISTRY)"}
+    i = rs.add_parser("init", help="create an empty registry (a git repository with rules/)")
+    i.add_argument("path")
+    s = rs.add_parser("search", help="find rules in the registry")
+    s.add_argument("query", nargs="*")
+    s.add_argument("--registry", **reg)
+    w = rs.add_parser("show", help="print a rule card")
+    w.add_argument("id")
+    w.add_argument("--registry", **reg)
+    a = rs.add_parser("add", help="add a rule from the registry to requirements.yaml, with its check")
+    a.add_argument("id")
+    a.add_argument("--registry", **reg)
+    a.add_argument("--requirements", default=DEFAULT_REQUIREMENTS)
+    p = rs.add_parser("publish", help="publish one of this project's rules into a registry checkout and commit it")
+    p.add_argument("id")
+    p.add_argument("--registry", **reg)
+    p.add_argument("--requirements", default=DEFAULT_REQUIREMENTS)
+    p.add_argument("--message", default="")
+
+
 def _add_watch(sub) -> None:
     w = sub.add_parser("watch", help="re-run the suite when a file changes")
     w.add_argument("pytest_args", nargs=argparse.REMAINDER, help="arguments passed through to pytest")
@@ -172,6 +197,7 @@ def main(argv=None) -> int:
     b.add_argument("--log", default=".specdeck/breaks.jsonl", help="breaks log (default .specdeck/breaks.jsonl)")
     b.add_argument("--format", choices=("text", "json"), default="text")
     b.add_argument("--all", action="store_true", help="every requirement, not only rules with a check or a break")
+    _add_rules(sub)
     _add_watch(sub)
     _add_history(sub)
     args = ap.parse_args(argv)
@@ -199,6 +225,8 @@ def _dispatch(args) -> int:
         return cmd_agents(args)
     if args.cmd == "check":
         return cmd_check(args)
+    if args.cmd == "rules":
+        return cmd_rules(args)
     if args.cmd == "breaks":
         return cmd_breaks(args)
     if args.cmd == "watch":
@@ -336,6 +364,51 @@ def cmd_check(args) -> int:
             if r.error:
                 print(f"      {r.error}")
     return 1 if args.fail and any(r.state == "broken" for r in results.values()) else 0
+
+
+def cmd_rules(args) -> int:
+    import yaml
+
+    from . import registry as _r
+    from .requirements import load
+
+    try:
+        if args.rules_cmd == "init":
+            print(f"specdeck: registry ready at {_r.init(Path(args.path))}", file=sys.stderr)
+            return 0
+        if not args.registry:
+            print("specdeck: say which registry: --registry DIR_OR_GIT_URL, or set SPECDECK_REGISTRY", file=sys.stderr)
+            return 2
+        if args.rules_cmd == "publish":
+            reqs = load(args.requirements)
+            req = reqs.items.get(args.id)
+            if req is None:
+                print(f"specdeck: no requirement {args.id} in {args.requirements}", file=sys.stderr)
+                return 2
+            out = _r.publish(Path(args.registry), _r.card_from(req.to_dict()), args.message)
+            print(f"specdeck: published {args.id} to {out}; push the registry to share it", file=sys.stderr)
+            return 0
+        reg = _r.open_registry(args.registry)
+        if args.rules_cmd == "search":
+            found = reg.search(" ".join(args.query))
+            for card in found:
+                print(_r.summary(card))
+            print(f"specdeck: {len(found)} rule(s) in {reg.spec}" + (f" @ {reg.revision}" if reg.revision else ""),
+                  file=sys.stderr)
+            return 0
+        card = reg.card(args.id)
+        if args.rules_cmd == "show":
+            print(yaml.safe_dump(card, sort_keys=False, allow_unicode=True, width=100), end="")
+            return 0
+        source = f"{reg.spec}@{reg.revision}" if reg.revision else reg.spec
+        entry = _r.add(Path(args.requirements), card, source)
+        print(entry)
+        print(f"specdeck: added {args.id} to {args.requirements} from {source}. Its text goes into the agents' "
+              f"instructions: read it before committing. Run pytest to check it.", file=sys.stderr)
+        return 0
+    except _r.RegistryError as exc:
+        print(f"specdeck: {exc}", file=sys.stderr)
+        return 2
 
 
 def cmd_breaks(args) -> int:

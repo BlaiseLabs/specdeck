@@ -253,6 +253,14 @@ line, and goes first in AGENTS.md. Each run is logged, and `specdeck breaks` say
 rule broke: a first measure of whether a rule works, with no experiment. `specdeck check
 --base origin/main --fail` runs the checks alone, for CI, pre-commit, or an agent's hook.
 
+### Sharing rules
+
+Rules with their checks can be shared through a self-hosted registry: a git repository of rule
+cards ([docs/REGISTRY.md](docs/REGISTRY.md)). `specdeck rules search`, `rules add ID` (into
+requirements.yaml, with its check and source), `rules publish ID` (into a registry checkout, then
+push). Only rules with a reason and a data check are shared, so adopting one never runs someone
+else's code.
+
 ### The specification
 
 ```bash
@@ -482,6 +490,8 @@ specdeck context --out SUITE.md    # the suite described for a coding agent
 specdeck agents                 # the project's rules into CLAUDE.md / AGENTS.md, with their status
 specdeck check --fail           # evaluate the rules' checks against the change, no tests
 specdeck breaks                 # how often each rule broke, from the run log
+specdeck rules search money     # find shared rules in a registry (--registry or $SPECDECK_REGISTRY)
+specdeck rules add ID           # add one, with its check and source
 specdeck watch -- -q            # re-run the suite when a file changes
 specdeck runs                   # recorded runs, newest first
 specdeck diff 7 12              # what moved between two runs
