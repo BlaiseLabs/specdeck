@@ -1,7 +1,46 @@
 # specdeck
 
-**An executable requirements specification for pytest projects, aligned with
-ISO/IEC/IEEE 29148:2018.**
+**Enforce your CLAUDE.md and AGENTS.md rules with tests.**
+
+A requirements-based tool for enforcing AGENTS.md and CLAUDE.md rules.
+
+Coding agents treat CLAUDE.md and AGENTS.md as advice: they follow the rules some of the time,
+and nothing tells you when they didn't. specdeck gives each rule a check that runs with your
+tests. When a change breaks a rule, the test run names the rule, the file and the line, and the
+next agent session finds the broken rule at the top of CLAUDE.md and AGENTS.md.
+
+```bash
+pip install -e .                    # a pytest plugin and a CLI; not on PyPI yet
+specdeck rules add money.decimal    # a shared rule with its reason and its check (--registry DIR_OR_GIT_URL)
+pytest
+# specdeck: rule money.decimal broken: shop/orders.py:45: return round(float(order.total) * 0.97, 2)
+specdeck agents                     # the rules and their status, written into CLAUDE.md / AGENTS.md
+```
+
+## Every rule is a requirement
+
+In specdeck a rule is a requirement: what must hold, why, how it is checked, and whether it
+holds right now. A line in CLAUDE.md has only the first of those.
+
+| | A line in CLAUDE.md | A rule in specdeck |
+|---|---|---|
+| What must hold | ✔ | ✔ `statement` |
+| Why | rarely (12% of 555 real rules) | ✔ `rationale` |
+| How you'd know it broke | ✗ | ✔ a `check:` or a linked test |
+| Whether it holds now | ✗ | ✔ from the last run |
+| Where it broke, and how often | ✗ | ✔ file and line; `specdeck breaks` |
+
+Because rules are requirements, specdeck can check every rule on every change, trace a break to
+its file and line, tell the next agent session which rule broke and why, count how often each
+rule breaks, and share rules with their checks through a registry that is just a git
+repository. [docs/SCENARIO.md](docs/SCENARIO.md) follows a team whose coding agents write most
+of the code, from install to the pull request.
+
+## Built on requirements engineering
+
+The requirement model follows ISO/IEC/IEEE 29148:2018, the international standard for
+requirements specifications, so rules are also checked for clarity and verifiability, and the
+same rules generate a full requirements specification when a client or auditor needs one.
 
 ISO/IEC/IEEE 29148:2018, *Requirements engineering*, is the standard that replaced
 IEEE 830 as the definition of a software requirements specification. It says what a
@@ -22,7 +61,7 @@ specdeck keeps them in one place:
 
 The tests are the evidence, the specification is generated from them on each run, so it
 reports which requirements are verified *now* and cannot drift. specdeck's own
-specification, written this way, is [SRS.md](SRS.md): 67 requirements, each traced to
+specification, written this way, is [SRS.md](SRS.md): 78 requirements, each traced to
 the tests that verify it or declaring how else it is verified.
 
 **What is claimed.** specdeck is *aligned with* 29148:2018, not fully conformant (§4.2
@@ -31,9 +70,6 @@ also covers life-cycle processes a tool cannot carry out). The generated SRS tar
 document. [docs/ISO-29148.md](docs/ISO-29148.md) maps each clause to what specdeck does.
 Clause numbers were checked against the published 2018 text; the descriptions here are
 our own words, not the standard's.
-
-**Who it's for and how it's used day to day:** [docs/SCENARIO.md](docs/SCENARIO.md) follows a
-team whose coding agents write most of the code, from install to the pull request.
 
 Under the requirements sits the scenario spec: a pytest plugin turns an ordinary suite
 into `feature → groups → scenarios → Given/When/Then`, with a scenario dependency graph

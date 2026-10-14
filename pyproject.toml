@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "specdeck"
 version = "0.1.0"
-description = "Generate a test-failure-DX spec (feature -> scenarios -> Given/When/Then, dependency DAG, pass/fail) from ordinary pytest tests. Tests are the source of truth; the spec cannot drift."
+description = "A requirements-based tool for enforcing AGENTS.md and CLAUDE.md rules: each rule is a requirement with its reason and a check that runs with your pytest tests."
 requires-python = ">=3.10"
 dependencies = [
     "pytest>=7",
