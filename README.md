@@ -17,6 +17,32 @@ pytest
 specdeck agents                     # the rules and their status, written into CLAUDE.md / AGENTS.md
 ```
 
+## Start with the purpose
+
+A project's rules make sense next to what the project is for. specdeck keeps both in one file:
+`requirements.yaml` opens with the project's purpose, and every requirement and rule under it
+carries its own reason.
+
+```yaml
+srs:
+  purpose: Take orders for the shop and charge them correctly, in English and Japanese.
+requirements:
+  - id: refunds.partial
+    statement: A partial refund shall return the amount less the processing fee, rounded to cents.
+    rationale: Agreed with finance, 2026-09.
+  - id: money.decimal
+    statement: Money amounts shall be Decimal values.
+    rationale: A float refund came out a cent short and the accounts would not reconcile.
+    check: {forbid_pattern: '\bfloat\(', paths: ['shop/**']}
+```
+
+The why travels with the work. Each rule's reason goes into CLAUDE.md and AGENTS.md beside the
+rule, and `specdeck context` gives an agent every requirement with its reason and the tests
+behind it. An agent that knows why a rule or a test exists is better placed to tell a real
+failure from an outdated test, to trace a failure to the requirement it touches, and to make the
+call you would have made when a request and a rule disagree. Fewer misunderstandings, and more
+you can leave to the agent.
+
 ## Every rule is a requirement
 
 In specdeck a rule is a requirement: what must hold, why, how it is checked, and whether it
@@ -38,9 +64,14 @@ of the code, from install to the pull request.
 
 ## Built on requirements engineering
 
-The requirement model follows ISO/IEC/IEEE 29148:2018, the international standard for
-requirements specifications, so rules are also checked for clarity and verifiability, and the
-same rules generate a full requirements specification when a client or auditor needs one.
+Purpose, requirements, reasons, checks and status: together, `requirements.yaml` is a
+requirements document, one that machines can read and that is checked on every run. Its
+structure follows ISO/IEC/IEEE 29148:2018, the international standard for requirements
+specifications: the purpose and scope of the system, requirements with their attributes, how
+each one is verified, and traceability from each requirement to its evidence. specdeck supports
+it natively. It checks your requirements against the standard's quality criteria (clear,
+singular, verifiable), keeps their status from your tests, and generates the full specification
+when a client or an auditor needs one.
 
 ISO/IEC/IEEE 29148:2018, *Requirements engineering*, is the standard that replaced
 IEEE 830 as the definition of a software requirements specification. It says what a
