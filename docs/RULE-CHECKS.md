@@ -40,6 +40,7 @@ a break.
 | `forbid_pattern: REGEX` | a line matches (by default only added lines) | `paths`, `except`, `scope: added \| files` |
 | `forbid_import: [module, …]` | a Python file imports one of them, including through `importlib.import_module("x")` and `__import__("x")` | `paths`, `except`, `scope` (default `files`) |
 | `protect: [glob, …]` | the change touches a matching file | — |
+| `append_only: [glob, …]` | the change edits or deletes an existing matching file (adding new files is fine: an archive) | — |
 | `co_change: {changed: [glob], requires: [glob]}` | the change touches `changed` but nothing in `requires` | — |
 | `no_new_dependencies: true` or `{allow: [name, …]}` | a dependency is added (pyproject.toml, requirements*.txt, package.json) | — |
 | `ruff: [CODE, …]` | ruff reports one of those rule codes, e.g. `DTZ005` (naive `datetime.now()`), `T201` (`print`) | `paths`, `except`, `scope` |

@@ -246,15 +246,21 @@ def cmd_validate(args) -> int:
     from .validation import validate_file, validate_requirements_file
 
     spec = Path(args.spec)
-    results = []
-    if not spec.exists():
-        print(f"specdeck: no spec at {spec} — run pytest first (or pass a path)", file=sys.stderr)
-        return 2
-    results.append((str(spec), validate_file(spec)))
-
     req = args.requirements
     if req is None and Path(DEFAULT_REQUIREMENTS).exists():
         req = DEFAULT_REQUIREMENTS
+    results = []
+    if not spec.exists():
+        # Before the first test run there is no spec, but the requirements can already be checked:
+        # a project starts by writing them. Only an explicitly named, missing spec is an error.
+        if args.spec != DEFAULT_SPEC or not req:
+            print(f"specdeck: no spec at {spec} — run pytest first (or pass a path)", file=sys.stderr)
+            return 2
+        print(f"specdeck: no spec at {spec} yet, so only {req} is checked; run pytest to check the tests "
+              f"against it too", file=sys.stderr)
+        spec = None
+    else:
+        results.append((str(spec), validate_file(spec)))
     if req:
         results.append((str(req), validate_requirements_file(req, spec=spec)))
 

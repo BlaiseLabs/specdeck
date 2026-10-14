@@ -63,6 +63,7 @@ def test_each_kind_of_check_detects_its_break(tmp_path):
                               "    stamp = datetime.now()\n    return float(x)\n",
             "shop/report.py": "import requests\n",
             "migrations/0002.sql": "alter table orders add note text;\n",
+            "docs/schema.md": "orders, rewritten\n",
             "pyproject.toml": '[project]\nname = "shop"\ndependencies = ["pyyaml", "pandas>=2", "Requests"]\n',
         })
     with when("each rule's check is evaluated against the change"):
@@ -70,7 +71,10 @@ def test_each_kind_of_check_detects_its_break(tmp_path):
   - {id: money.float, statement: "Money shall not use float.", check: {forbid_pattern: 'float\\(', paths: [shop/**]}}
   - {id: io.gateway, statement: "Only the gateway shall do IO.", check: {forbid_import: [requests, pandas, urllib], except: [shop/gateway.py]}}
   - {id: migrations.frozen, statement: "Migrations shall stay unedited.", check: {protect: [migrations/0001.sql]}}
+  - {id: migrations.append, statement: "Migrations shall only be added.", check: {append_only: [migrations/**]}}
+  - {id: docs.append, statement: "Docs shall only be added.", check: {append_only: [docs/**]}}
   - {id: schema.docs, statement: "Schema docs shall follow migrations.", check: {co_change: {changed: [migrations/**], requires: [docs/schema.md]}}}
+  - {id: changelog, statement: "The changelog shall follow migrations.", check: {co_change: {changed: [migrations/**], requires: [CHANGELOG.md]}}}
   - {id: deps.none, statement: "No dependency shall be added.", check: {no_new_dependencies: {allow: [requests]}}}
   - {id: time.utc, statement: "Time shall be aware.", check: {ruff: [DTZ005], paths: [shop/**]}}
   - {id: done.tests, statement: "The suite shall pass.", check: {test: [tests/test_x.py::test_a]}}
@@ -84,9 +88,13 @@ def test_each_kind_of_check_detects_its_break(tmp_path):
         assert r["io.gateway"].state == "broken"
         joined = " ".join(r["io.gateway"].evidence)
         assert "imports pandas" in joined and "imports requests" in joined and "gateway" not in joined
-    with and_("the frozen migration is untouched, but schema docs did not follow the new one",
-              expected="protect holds; co_change broken"):
-        assert r["migrations.frozen"].state == "holds" and r["schema.docs"].state == "broken"
+    with and_("the frozen migration is untouched; a new migration is fine in an append-only folder, an edited doc is not",
+              expected="protect holds; append_only holds for migrations, broken for docs"):
+        assert r["migrations.frozen"].state == "holds"
+        assert r["migrations.append"].state == "holds"
+        assert r["docs.append"].evidence == ["docs/schema.md changed"]
+    with and_("the schema docs followed the new migration, the changelog did not", expected="co_change holds, then broken"):
+        assert r["schema.docs"].state == "holds" and r["changelog"].state == "broken"
     with and_("pandas is a new dependency; requests is allowed", expected="adds pandas"):
         assert r["deps.none"].evidence == ["pyproject.toml: adds pandas"]
     if shutil.which("ruff"):

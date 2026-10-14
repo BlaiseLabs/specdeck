@@ -270,3 +270,28 @@ def test_unlinked():
         assert "expects 10" in d.message and "qty=100" in d.message and "15" in d.message
     with and_("both cite the set characteristic they break", expected="§5.2.6"):
         assert all(d.clause == "§5.2.6" for d in found("CONFLICTING_EXAMPLES") + found("CONTRADICTS_EXAMPLE"))
+
+
+@scenario("validate-before-tests", group="validation", tags=["validator", "cli"], depends_on=["validate-clean"],
+          covers=["req.validate-before-tests"])
+def test_the_requirements_can_be_validated_before_any_test_runs(tmp_path, monkeypatch, capsys):
+    """A project starts by writing its requirements, before any test exists. `specdeck validate`
+    checks the requirements file on its own then, instead of failing for want of a spec; a spec
+    named on the command line that does not exist is still an error."""
+    from specdeck.cli import main
+
+    with given("a new project with only a requirements file, one of its statements vague"):
+        (tmp_path / "requirements.yaml").write_text(
+            "requirements:\n  - id: a\n    statement: The report shall be fast.\n    rationale: Users wait.\n")
+        monkeypatch.chdir(tmp_path)
+    with when("specdeck validate runs with no spec, then with a missing spec named"):
+        code = main(["validate"])
+        out = capsys.readouterr()
+        named = main(["validate", "missing/spec.yaml"])
+    with then("the requirements are checked, and the run says the tests are not yet", expected="exit 0; fast flagged"):
+        assert code == 0 and '"fast"' in out.out and "only requirements.yaml is checked" in out.err
+    with and_("before any test, nothing is reported as unverified", expected="no NOT_VERIFIED"):
+        assert "NOT_VERIFIED" not in out.out
+    with and_("a missing spec that was asked for by name is still an error", expected="exit 2"):
+        assert named == 2
+

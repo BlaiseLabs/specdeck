@@ -17,11 +17,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-PRIMITIVES = ("forbid_pattern", "forbid_import", "protect", "co_change", "no_new_dependencies", "ruff", "test",
-              "command")
+PRIMITIVES = ("forbid_pattern", "forbid_import", "protect", "append_only", "co_change", "no_new_dependencies", "ruff",
+              "test", "command")
 COMPOSITIONS = ("all", "any", "not")
 OPTIONS = ("paths", "except", "scope", "when")
-NEEDS_CHANGE = ("protect", "co_change", "no_new_dependencies")
+NEEDS_CHANGE = ("protect", "append_only", "co_change", "no_new_dependencies")
 MAX_EVIDENCE = 10
 SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "__pycache__", ".specdeck", ".tox", ".mypy_cache", "build",
              "dist"}
@@ -214,7 +214,7 @@ def validate(node, where: str = "check") -> list:
                 re.compile(v)
             except re.error as exc:
                 out.append(f"{where}.forbid_pattern does not compile: {exc}")
-    elif kind in ("forbid_import", "protect", "ruff", "test"):
+    elif kind in ("forbid_import", "protect", "append_only", "ruff", "test"):
         if not (isinstance(v, list) and v and all(isinstance(x, str) and x for x in v)):
             out.append(f"{where}.{kind} should be a list of names")
     elif kind == "co_change":
@@ -334,6 +334,13 @@ def _forbid_import(node, ctx) -> Result:
 def _protect(node, ctx) -> Result:
     hits = [f"{p} {'deleted' if ctx.change.status[p] == 'D' else 'changed'}" for p in ctx.change.changed
             if matches(p, node["protect"])]
+    return _broken(hits) if hits else _holds()
+
+
+def _append_only(node, ctx) -> Result:
+    """Files under these globs may be added, never changed or deleted: an archive."""
+    hits = [f"{p} {'deleted' if ctx.change.status[p] == 'D' else 'changed'}" for p in ctx.change.changed
+            if matches(p, node["append_only"]) and ctx.change.status[p] != "A"]
     return _broken(hits) if hits else _holds()
 
 
@@ -485,6 +492,7 @@ def describe(node) -> str:
         "forbid_pattern": lambda: f"no match for `{v}` in {lines}{where}",
         "forbid_import": lambda: f"no import of {', '.join(v)}{where}",
         "protect": lambda: f"{', '.join(v)} left unchanged",
+        "append_only": lambda: f"files in {', '.join(v)} only added, never changed or deleted",
         "co_change": lambda: f"a change to {', '.join(v['changed'])} also changes {', '.join(v['requires'])}",
         "no_new_dependencies": lambda: "no new dependencies" + (
             f" (except {', '.join(v['allow'])})" if isinstance(v, dict) and v.get("allow") else ""),

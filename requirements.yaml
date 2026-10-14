@@ -264,6 +264,15 @@ requirements:
   verification: test
   standard: ISO/IEC/IEEE 29148:2018 §5.2.4–5.2.7
 
+- id: req.validate-before-tests
+  statement: "`specdeck validate` shall check the requirements file on its own when no spec has been generated yet."
+  rationale: >-
+    A project starts by writing its requirements, before any test exists. Found in the invoice
+    showcase: the agent, told to finish with `specdeck validate` clean, wrote a fake empty spec in
+    /tmp to get past "no spec — run pytest first".
+  type: functional
+  verification: test
+
 - id: req.consistent-examples
   statement: "`specdeck validate` shall report a requirement whose examples give two expected values for the same inputs."
   rationale: >-
@@ -338,7 +347,7 @@ requirements:
 - id: rules.checks
   statement: >-
     A requirement's `check:` shall describe how the rule is checked, from patterns, imports,
-    protected paths, co-changes, dependencies, ruff codes, tests and commands, combined with
+    protected and append-only paths, co-changes, dependencies, ruff codes, tests and commands, combined with
     `all`, `any`, `not` and `when`.
   rationale: >-
     About half of the rules people write can be checked from the code or the change alone (555
