@@ -446,6 +446,17 @@ requirements:
   type: functional
   verification: test
 
+- id: agents.targets
+  statement: >-
+    `specdeck agents` shall write the generated block into each of CLAUDE.md and AGENTS.md that
+    exists, or into a new AGENTS.md when neither does, unless `--out` names the files.
+  rationale: >-
+    The block only helps if the agent reads it. Claude Code reads CLAUDE.md, and AGENTS.md only
+    when there is no CLAUDE.md; Codex, Cursor and Copilot read AGENTS.md. Writing to AGENTS.md
+    alone left the rules invisible to Claude Code in every repo that also had a CLAUDE.md.
+  type: functional
+  verification: test
+
 - id: agents.in-place
   statement: "`specdeck agents` shall replace only the generated block of an existing instructions file."
   rationale: >-

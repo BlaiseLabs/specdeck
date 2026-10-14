@@ -94,6 +94,18 @@ def block(reqs: Requirements, report: Optional[dict]) -> str:
     return "\n".join(out)
 
 
+# The instruction files coding agents read on their own. Claude Code reads CLAUDE.md, and AGENTS.md only
+# when there is no CLAUDE.md (v2.1.277, 2026-09-18); Codex, Cursor, Copilot and others read AGENTS.md.
+# So the block goes into whichever exist, both when both do, and AGENTS.md when neither does.
+INSTRUCTION_FILES = ("CLAUDE.md", "AGENTS.md")
+
+
+def targets(root: Path) -> list:
+    """The instruction files to write the block into, in ``root``."""
+    found = [root / name for name in INSTRUCTION_FILES if (root / name).exists()]
+    return found or [root / "AGENTS.md"]
+
+
 def update(text: Optional[str], new_block: str) -> str:
     """``text`` with the generated block replaced, or appended when it has none."""
     if not text:

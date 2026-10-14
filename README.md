@@ -201,7 +201,7 @@ measured in `bench/rules_ab`:
 
 
 ```bash
-specdeck agents            # updates AGENTS.md; --out CLAUDE.md, or - for stdout
+specdeck agents            # updates CLAUDE.md and/or AGENTS.md (whichever exist); --out FILE to choose, - for stdout
 ```
 
 An agent instructions file is mostly rules. In specdeck they are requirements like any other,

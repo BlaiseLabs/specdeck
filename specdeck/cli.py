@@ -154,9 +154,10 @@ def main(argv=None) -> int:
     a.add_argument("--requirements", default=DEFAULT_REQUIREMENTS, help="requirements file (default requirements.yaml)")
     a.add_argument("--report", default=".specdeck/requirements.json",
                    help="requirements report from the last run, for each rule's status")
-    a.add_argument("--out", default="AGENTS.md",
-                   help="instructions file to update (default AGENTS.md; - for stdout). Only the generated "
-                        "block is replaced; the rest of the file is kept")
+    a.add_argument("--out", action="append", default=None, metavar="FILE",
+                   help="instructions file to update; repeat for several, - for stdout. Default: CLAUDE.md "
+                        "and/or AGENTS.md, whichever exist (both if both do), else AGENTS.md. Only the "
+                        "generated block is replaced; the rest of each file is kept")
     _add_watch(sub)
     _add_history(sub)
     args = ap.parse_args(argv)
@@ -267,11 +268,15 @@ def cmd_agents(args) -> int:
     if report is None:
         print("specdeck: no requirements report yet — run pytest first for each rule's status (continuing)",
               file=sys.stderr)
-    if args.out == "-":
+    from .agents import targets
+
+    outs = args.out or [str(p) for p in targets(Path("."))]
+    if outs == ["-"]:
         print(block(reqs, report))
         return 0
-    write(Path(args.out), reqs, report)
-    print(f"specdeck: updated the rules in {args.out}", file=sys.stderr)
+    for out in outs:
+        write(Path(out), reqs, report)
+    print(f"specdeck: updated the rules in {', '.join(outs)}", file=sys.stderr)
     return 0
 
 

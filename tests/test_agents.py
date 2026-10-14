@@ -113,3 +113,34 @@ def test_the_adherence_policy_has_defaults_a_project_can_change(tmp_path):
         assert any("'bogus'" in p for p in c.problems) and "bogus" not in texts[1]
     with and_("`adherence: false` writes no policy"):
         assert o.adherence.clauses == () and DEFAULT.clauses[0].text not in texts[2]
+
+
+@scenario("agents-targets", group="agents", tags=["agents"], depends_on=["agents-in-place"],
+          covers=["agents.targets"])
+def test_the_block_goes_where_the_agents_read(tmp_path, monkeypatch):
+    """Claude Code reads CLAUDE.md, and AGENTS.md only when there is no CLAUDE.md; other agents read
+    AGENTS.md. So the rules go into whichever of the two exist, into both when both do, and into
+    AGENTS.md when neither does. --out names the files instead."""
+    from specdeck.cli import main
+
+    def run(files, *out):
+        d = tmp_path / "-".join(files or ["none"]) / "-".join(out or ["default"]).replace("/", "_")
+        d.mkdir(parents=True)
+        (d / "requirements.yaml").write_text(REQUIREMENTS)
+        for f in files:
+            (d / f).write_text(f"# {f}\n\nHand-written.\n")
+        monkeypatch.chdir(d)
+        args = ["agents"] + [x for o in out for x in ("--out", o)]
+        assert main(args) == 0
+        return {p.name for p in d.glob("*.md") if BEGIN in p.read_text()}
+
+    with given("projects with only CLAUDE.md, only AGENTS.md, both, and neither"):
+        pass
+    with when("`specdeck agents` runs in each, with no --out"):
+        got = {k: run(list(k)) for k in [("CLAUDE.md",), ("AGENTS.md",), ("CLAUDE.md", "AGENTS.md"), ()]}
+    with then("the block goes into the files that exist, both when both do, else a new AGENTS.md",
+              expected="CLAUDE.md | AGENTS.md | both | AGENTS.md"):
+        assert got[("CLAUDE.md",)] == {"CLAUDE.md"} and got[("AGENTS.md",)] == {"AGENTS.md"}
+        assert got[("CLAUDE.md", "AGENTS.md")] == {"CLAUDE.md", "AGENTS.md"} and got[()] == {"AGENTS.md"}
+    with and_("--out overrides the choice, and can be given more than once", expected="RULES.md only"):
+        assert run(["CLAUDE.md", "AGENTS.md"], "RULES.md") == {"RULES.md"}
