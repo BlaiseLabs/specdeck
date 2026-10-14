@@ -38,7 +38,7 @@ adherence:
 
 
 @scenario("registry-roundtrip", group="registry", tags=["registry", "rules"], depends_on=["check-cli"],
-          covers=["registry.self-hosted", "registry.shareable-only", "registry.add"])
+          covers=["registry.self-hosted", "registry.publish", "registry.shareable-only", "registry.add"])
 def test_a_rule_travels_through_a_self_hosted_registry(tmp_path, monkeypatch, capsys):
     """A registry is a git repository of rule cards. One project publishes a rule into it; another
     finds it, by directory or by git URL, adds it with its check and where it came from, and the

@@ -380,12 +380,18 @@ requirements:
 # --- sharing rules -----------------------------------------------------------------------------
 
 - id: registry.self-hosted
-  statement: >-
-    `specdeck rules` shall read a rule registry from a directory or from a git URL, and
-    `specdeck rules publish` shall commit a rule card into a registry checkout.
+  statement: "`specdeck rules` shall read a rule registry from a directory or from a git URL."
   rationale: >-
     A registry that is a git repository needs no service to self-host: clone it, add rules, push.
     Reading from a URL clones once and pulls on later use, so a shared registry stays current.
+  type: interface
+  verification: test
+
+- id: registry.publish
+  statement: "`specdeck rules publish` shall commit a project's rule as a card into a registry checkout."
+  rationale: >-
+    Publishing is a commit, and sharing is a push, so a registry reviews new rules the way its
+    host reviews any change: a pull request.
   type: interface
   verification: test
 
