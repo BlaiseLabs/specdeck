@@ -46,6 +46,17 @@ def _rule(r: dict) -> list:
         out.append(f"  Implements: {r['standard']}")
     tests = [s.get("nodeid") or s["id"] for s in r.get("scenarios") or []]
     other = [m for m in r.get("verification") or ["test"] if m != "test"]
+    if r.get("check") is not None:
+        from .checks import describe, validate
+        if not validate(r["check"]):
+            cr = r.get("check_result") or {}
+            state = {"holds": "holds in the last run", "broken": "**broken in the last run**",
+                     "error": "could not be checked in the last run"}.get(cr.get("state"), "not checked yet")
+            out.append(f"  Checked by: {describe(r['check'])} — {state}")
+            if cr.get("state") == "broken":
+                out += [f"    - {e}" for e in (cr.get("evidence") or [])[:3]]
+            if not tests:
+                return out
     if tests:
         out.append(f"  Verified by: {', '.join(f'`{t}`' for t in tests)} — {STATUS.get(r.get('status'), r.get('status') or 'not run yet')}")
     elif other:
@@ -58,7 +69,7 @@ def _rule(r: dict) -> list:
 def block(reqs: Requirements, report: Optional[dict]) -> str:
     """The generated block, markers included."""
     by_id = {r["id"]: r for r in (report or {}).get("requirements", [])}
-    rows = [dict(r.to_dict(), **{k: by_id.get(r.id, {}).get(k) for k in ("status", "scenarios")})
+    rows = [dict(r.to_dict(), **{k: by_id.get(r.id, {}).get(k) for k in ("status", "scenarios", "check_result")})
             for r in reqs.items.values()]
     out = [BEGIN, "", "## Project rules", "",
            f"The rules below are requirements in `requirements.yaml`, typed as in {STANDARD}. Each is "

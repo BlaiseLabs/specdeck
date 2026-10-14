@@ -7,6 +7,8 @@
     specdeck report        Markdown for a PR comment: scenarios, fix-first, requirements, proof
     specdeck context       one document describing the suite, for a coding agent
     specdeck agents        the project's rules, written into AGENTS.md with their status
+    specdeck check         evaluate the rules' checks against the change, without running tests
+    specdeck breaks        how often each rule broke, from the log pytest runs append to
     specdeck srs           the software requirements specification, in ISO/IEC/IEEE 29148:2018 form
     specdeck watch         re-run the suite when a file changes
     specdeck runs          list recorded runs
@@ -158,6 +160,18 @@ def main(argv=None) -> int:
                    help="instructions file to update; repeat for several, - for stdout. Default: CLAUDE.md "
                         "and/or AGENTS.md, whichever exist (both if both do), else AGENTS.md. Only the "
                         "generated block is replaced; the rest of each file is kept")
+    k = sub.add_parser("check", help="evaluate the rules' checks against the change, without running tests "
+                                     "(for CI, a pre-commit hook, or an agent's hook after an edit)")
+    k.add_argument("--requirements", default=DEFAULT_REQUIREMENTS, help="requirements file (default requirements.yaml)")
+    k.add_argument("--base", default="HEAD", help="git revision to compare the change against (default HEAD: "
+                                                  "the uncommitted work)")
+    k.add_argument("--spec", default=DEFAULT_SPEC, help="generated spec, for `test:` checks (last run's outcomes)")
+    k.add_argument("--format", choices=("text", "json"), default="text")
+    k.add_argument("--fail", action="store_true", help="exit 1 when a rule is broken")
+    b = sub.add_parser("breaks", help="how often each rule broke, from the log pytest runs append to")
+    b.add_argument("--log", default=".specdeck/breaks.jsonl", help="breaks log (default .specdeck/breaks.jsonl)")
+    b.add_argument("--format", choices=("text", "json"), default="text")
+    b.add_argument("--all", action="store_true", help="every requirement, not only rules with a check or a break")
     _add_watch(sub)
     _add_history(sub)
     args = ap.parse_args(argv)
@@ -183,6 +197,10 @@ def _dispatch(args) -> int:
         return cmd_srs(args)
     if args.cmd == "agents":
         return cmd_agents(args)
+    if args.cmd == "check":
+        return cmd_check(args)
+    if args.cmd == "breaks":
+        return cmd_breaks(args)
     if args.cmd == "watch":
         from .watch import watch
 
@@ -277,6 +295,70 @@ def cmd_agents(args) -> int:
     for out in outs:
         write(Path(out), reqs, report)
     print(f"specdeck: updated the rules in {', '.join(outs)}", file=sys.stderr)
+    return 0
+
+
+def cmd_check(args) -> int:
+    import yaml
+
+    from .checks import describe, run_all
+    from .requirements import load
+
+    if not Path(args.requirements).exists():
+        print(f"specdeck: no requirements file at {args.requirements}", file=sys.stderr)
+        return 2
+    reqs = load(args.requirements)
+    for prob in reqs.problems:
+        print(f"specdeck: warning: {prob}", file=sys.stderr)
+    tests = None
+    if Path(args.spec).exists():
+        tests = {}
+        for sc in (yaml.safe_load(Path(args.spec).read_text(encoding="utf-8")) or {}).get("scenarios") or []:
+            status = next((t[7:] for t in sc.get("tags") or [] if isinstance(t, str) and t.startswith("status:")), None)
+            if status:
+                tests[sc["id"]] = status
+                for cmd in sc.get("logic") or []:
+                    if isinstance(cmd, str) and cmd.startswith("pytest "):
+                        tests[cmd[7:].strip()] = status
+    results = run_all(reqs, Path("."), args.base, tests)
+    if not results:
+        print("specdeck: no requirement has a `check:`; see docs/RULE-CHECKS.md", file=sys.stderr)
+    if args.format == "json":
+        print(json.dumps({rid: r.to_dict() for rid, r in results.items()}, indent=2))
+    else:
+        mark = {"holds": "✔", "broken": "✖", "error": "!"}
+        for rid, r in results.items():
+            state = "n/a" if not r.applicable else r.state
+            print(f"{mark.get(r.state, '?') if r.applicable else '·'} {rid:<28} {state:<7} "
+                  f"{describe(reqs.items[rid].check)}")
+            for e in r.evidence[:5]:
+                print(f"      {e}")
+            if r.error:
+                print(f"      {r.error}")
+    return 1 if args.fail and any(r.state == "broken" for r in results.values()) else 0
+
+
+def cmd_breaks(args) -> int:
+    from .checks import summarize
+
+    rows = summarize(Path(args.log))
+    if args.format == "json":
+        print(json.dumps(rows, indent=2))
+        return 0
+    if not rows:
+        print(f"specdeck: no runs logged at {args.log} yet; pytest appends one per run once a requirement "
+              f"has a `check:`", file=sys.stderr)
+        return 0
+    shown = rows if args.all else [s for s in rows if s["checked"] or s["broken"]]
+    print(f"{'rule':<28} {'applied':>7} {'broken':>6} {'rate':>6} {'commits':>7}  last broken")
+    for s in shown:
+        rate = f"{s['rate']:.0%}" if s["rate"] is not None else "—"
+        last = f"{s['last_broken']['ts']} {s['last_broken']['sha']}" if s["last_broken"] else "never"
+        print(f"{s['id']:<28} {s['applied']:>7} {s['broken']:>6} {rate:>6} {s['commits']:>7}  {last}")
+        for e in s["last_evidence"][:2] if s["last_broken"] else []:
+            print(f"{'':<30}{e}")
+    if len(shown) < len(rows):
+        print(f"({len(rows) - len(shown)} more requirements without a check never broke; --all lists them)")
     return 0
 
 

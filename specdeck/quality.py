@@ -4,8 +4,8 @@ What a tool can check of the standard's quality criteria, each diagnostic citing
 
 - §5.2.4 requirements construct: a binding requirement uses "shall"; positive statements, not
   "shall not"; active voice, not "it is required that"; not "shall be able to".
-- §5.2.5 characteristics of an individual requirement: *verifiable* (a linked test, or a declared
-  non-test verification method, §6.5.2), *necessary* (its rationale is recorded, §5.2.8),
+- §5.2.5 characteristics of an individual requirement: *verifiable* (a linked test, a rule check
+  (``checks.py``), or a declared non-test verification method, §6.5.2), *necessary* (its rationale is recorded, §5.2.8),
   *singular* (one capability: one "shall"). *Conforming* is the attribute check in
   ``requirements.load``. *Appropriate*, *feasible* and *correct* need judgement; the generated
   specification lists them for review rather than pretending to check them.
@@ -50,8 +50,10 @@ def _diag(severity: str, code: str, message: str, clause: str, rid: Optional[str
 
 
 def language(text: str) -> list:
-    """[(category, term)] for each §5.2.7 term found in a requirement statement, in order of the list."""
+    """[(category, term)] for each §5.2.7 term found in a requirement statement, in order of the list.
+    Text in backticks is code (a name, a keyword, a command), not language, and is not checked."""
     found = []
+    text = re.sub(r"`[^`]*`", " ", text)
     low = " " + re.sub(r"\s+", " ", text.lower()) + " "
     for category, terms in LANGUAGE.items():
         for term in terms:
@@ -124,7 +126,7 @@ def check_set(reqs, scenarios: Optional[list], roots=()) -> list:
                              "the requirements do not describe", "§5.2.6", sc["id"]))
     for req in reqs.items.values():
         non_test = [m for m in req.verification if m != "test"]
-        if req.id not in linked and not non_test:
+        if req.id not in linked and not non_test and req.check is None:
             out.append(_diag("warning", "NOT_VERIFIED", "no test verifies it and no other verification method is "
                              "declared", "§5.2.5, §6.5.2", req.id, req.line))
     for rid, ids in linked.items():

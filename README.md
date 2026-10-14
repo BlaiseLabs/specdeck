@@ -230,6 +230,29 @@ adherence:
 `adherence: false` turns it off. The defaults live in `specdeck/adherence.py`, with the reason
 and the measurement behind each clause.
 
+### Rule checks and break detection
+
+A rule can say how it is checked, as data ([docs/RULE-CHECKS.md](docs/RULE-CHECKS.md)):
+
+```yaml
+  - id: io.gateway-only
+    statement: Only shop.gateway shall open network connections.
+    rationale: Tests replace the gateway with recorded traffic; a direct call charged a test card.
+    type: design-constraint
+    check:
+      - forbid_import: [requests, httpx, urllib3]   # import statements and importlib.import_module("x")
+        except: [shop/gateway.py]
+      - no_new_dependencies: {allow: [pyyaml]}
+```
+
+Checks: `forbid_pattern`, `forbid_import`, `protect`, `co_change`, `no_new_dependencies`, `ruff`
+(by rule code), `test`, `command`; combined with `all`, `any`, `not` and `when`. On each run they
+are evaluated against the change (the uncommitted work by default; `--specdeck-check-base` or
+`specdeck_check_base` in CI). A broken check fails its requirement, is printed with the file and
+line, and goes first in AGENTS.md. Each run is logged, and `specdeck breaks` says how often each
+rule broke: a first measure of whether a rule works, with no experiment. `specdeck check
+--base origin/main --fail` runs the checks alone, for CI, pre-commit, or an agent's hook.
+
 ### The specification
 
 ```bash
@@ -456,7 +479,9 @@ specdeck requirements           # the requirements report, --fail-on-unmet for C
 specdeck trust proof.json       # met, or just passing? joins requirements with proofdeck's JSON
 specdeck report --proofdeck proof.json --out report.md   # Markdown for a PR comment
 specdeck context --out SUITE.md    # the suite described for a coding agent
-specdeck agents                 # the project's rules into AGENTS.md, with their status
+specdeck agents                 # the project's rules into CLAUDE.md / AGENTS.md, with their status
+specdeck check --fail           # evaluate the rules' checks against the change, no tests
+specdeck breaks                 # how often each rule broke, from the run log
 specdeck watch -- -q            # re-run the suite when a file changes
 specdeck runs                   # recorded runs, newest first
 specdeck diff 7 12              # what moved between two runs

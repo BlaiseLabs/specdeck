@@ -322,6 +322,10 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini("specdeck_needs", "needs.json output path (relative to rootdir)", default=".specdeck/needs.json")
     parser.addini("specdeck_requirements", "hand-written requirements file (relative to rootdir)",
                   default="requirements.yaml")
+    parser.addini("specdeck_check_base", "git revision rule checks compare the change against (default HEAD: "
+                  "the uncommitted work; in CI, e.g. origin/main)", default="HEAD")
+    parser.addini("specdeck_breaks_out", "log of rule checks per run, read by `specdeck breaks` (relative to rootdir)",
+                  default=".specdeck/breaks.jsonl")
     parser.addini("specdeck_requirements_out", "requirements report output path (relative to rootdir)",
                   default=".specdeck/requirements.json")
     g.addoption("--specdeck-live", action="store_true", default=False,
@@ -349,6 +353,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addini("specdeck_coverage", "record per-scenario source coverage: true or false", default="false")
     parser.addini("specdeck_coverage_out", "coverage map output path (relative to rootdir)",
                   default=".specdeck/coverage.json")
+    g.addoption("--specdeck-check-base", default=None, metavar="REV",
+                help="git revision rule checks compare the change against (default: specdeck_check_base, HEAD)")
     g.addoption("--specdeck-merge", action="store_true", default=False,
                 help="on a partial run, merge the scenarios that ran into the existing spec instead of skipping the write")
 
@@ -802,6 +808,7 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     # present (`-p no:terminal` used to drop it silently); only printing is
     # conditional.
     rep = requirements_report(config, store)
+    check_results = _run_checks(config, store, rep)
     rp = None
     if rep is not None:
         rp = Path(config.getini("specdeck_requirements_out"))
@@ -841,10 +848,36 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
                               f"which isn't in the requirements file", yellow=True)
             for prob in rep["problems"]:
                 tr.write_line(f"specdeck: warning: {prob}", yellow=True)
+            for rid, res in check_results.items():
+                if res.state == "broken":
+                    tr.write_line(f"specdeck: rule {rid} broken: {'; '.join(res.evidence[:3])}", red=True)
+                elif res.state == "error":
+                    tr.write_line(f"specdeck: warning: the check of {rid} could not run: {res.error}", yellow=True)
         for w in store.warnings:
             tr.write_line(f"specdeck: warning: {w}", yellow=True)
 
     _apply_gates(config, session, rep, out, tr)
+
+
+def _run_checks(config: pytest.Config, store: "_Store", rep: Optional[dict]) -> dict:
+    """Evaluate the requirements' rule checks against the change and fold them into the report;
+    append the run to the breaks log. {requirement id: checks.Result}."""
+    reqs = getattr(config, "_specdeck_reqs", None)
+    if rep is None or reqs is None or not any(r.check is not None for r in reqs.items.values()):
+        return {}
+    from . import checks as _checks
+
+    base = config.getoption("--specdeck-check-base") or config.getini("specdeck_check_base") or "HEAD"
+    tests = {}
+    for r in (store.records[n] for n in store.order if n in store.records):
+        tests[r.id] = tests[r.nodeid] = _outcome(r)
+    results = _checks.run_all(reqs, config.rootpath, base, tests)
+    if results:
+        _checks.merge(rep, results)
+        log = Path(config.getini("specdeck_breaks_out"))
+        log = log if log.is_absolute() else Path(str(config.rootpath)) / log
+        _checks.record(log, rep, base=base, root=config.rootpath, full=True)
+    return results
 
 
 def _apply_gates(config: pytest.Config, session: pytest.Session, rep, spec_path: Path, tr) -> None:

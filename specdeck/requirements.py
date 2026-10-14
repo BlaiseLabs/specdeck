@@ -66,7 +66,7 @@ VERIFICATION = ("test", "analysis", "simulation", "demonstration", "inspection")
 # Keys an entry may use: §5.2.8 attributes under the standard's names, the older specdeck
 # names (`says`, `why`), and specdeck's own (examples, tags, standard).
 KNOWN_KEYS = {"id", "statement", "says", "rationale", "why", "type", "priority", "owner", "risk", "difficulty",
-              "verification", "standard", "examples", "tags"}
+              "verification", "standard", "examples", "tags", "check"}
 
 
 class RequirementError(LookupError):
@@ -97,6 +97,7 @@ class Requirement:
     examples: list = field(default_factory=list)
     tags: list = field(default_factory=list)
     line: Optional[int] = None
+    check: Any = None                               # how the rule is checked (checks.py, docs/RULE-CHECKS.md)
 
     # specdeck's names before it adopted the standard's
     @property
@@ -118,6 +119,8 @@ class Requirement:
             d["tags"] = list(self.tags)
         d["examples"] = [{k: v for k, v in (("name", e.name), ("given", e.given), ("expect", e.expect))
                           if v is not None} for e in self.examples]
+        if self.check is not None:
+            d["check"] = self.check
         if self.line:
             d["line"] = self.line
         return d
@@ -230,11 +233,16 @@ def load(path) -> Requirements:
         tags = entry.get("tags") or []
         rationale = entry.get("rationale") or entry.get("why")
         text = lambda k: str(entry[k]).strip() if entry.get(k) not in (None, "") else None  # noqa: E731
+        check = entry.get("check")
+        if check is not None:
+            from .checks import validate
+            bad = validate(check)
+            reqs.problems += [f"{path.name}: {rid}: {p} (see docs/RULE-CHECKS.md); the check is skipped" for p in bad]
         reqs.items[rid] = Requirement(
             id=rid, statement=statement, rationale=str(rationale).strip() if rationale else None, type=rtype,
             priority=text("priority"), owner=text("owner"), risk=text("risk"), difficulty=text("difficulty"),
             verification=methods, standard=text("standard"), examples=examples,
-            tags=[str(t) for t in tags] if isinstance(tags, list) else [], line=lines.get(rid))
+            tags=[str(t) for t in tags] if isinstance(tags, list) else [], line=lines.get(rid), check=check)
     return reqs
 
 

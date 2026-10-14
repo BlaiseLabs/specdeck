@@ -57,8 +57,15 @@ def _attrs(r: dict) -> str:
              ("Priority", r.get("priority")), ("Owner", r.get("owner")), ("Risk", r.get("risk")),
              ("Difficulty", r.get("difficulty")),
              ("Verification method", ", ".join(r.get("verification") or ["test"])),
-             ("Implements", r.get("standard"))]
+             ("Implements", r.get("standard")), ("Check", _check(r))]
     return "\n".join(f"- **{k}:** {' '.join(str(v).split())}" for k, v in pairs if v)
+
+
+def _check(r: dict):
+    if r.get("check") is None:
+        return None
+    from .checks import describe, validate
+    return describe(r["check"]) if not validate(r["check"]) else "malformed (see `specdeck validate`)"
 
 
 def _status(r: dict) -> str:

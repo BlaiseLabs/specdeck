@@ -331,6 +331,52 @@ requirements:
   type: interface
   verification: test
 
+# --- rule checks and break detection -----------------------------------------------------------
+
+- id: rules.checks
+  statement: >-
+    A requirement's `check:` shall describe how the rule is checked, from patterns, imports,
+    protected paths, co-changes, dependencies, ruff codes, tests and commands, combined with
+    `all`, `any`, `not` and `when`.
+  rationale: >-
+    About half of the rules people write can be checked from the code or the change alone (555
+    real rules, research_rules/rule_taxonomy.md). Described as data, a check can be validated,
+    shown to agents in AGENTS.md and shared without running anyone's code; where a check needs
+    code, it points at a test or an existing linter.
+  type: functional
+  verification: test
+
+- id: rules.check-status
+  statement: >-
+    Each run shall evaluate the rules' checks against the change and report a broken check as a
+    failing requirement, with the file and line of the break.
+  rationale: >-
+    A rule nobody checks is a wish. Folding the check into the requirement's status puts a broken
+    rule where people and agents already look: the run summary, the report and AGENTS.md.
+  type: functional
+  verification: test
+
+- id: rules.breaks
+  statement: >-
+    `specdeck breaks` shall report, per rule, the runs the rule applied to, the runs with a break,
+    the commits involved and the last break.
+  rationale: >-
+    How often a rule breaks is the first cheap measure of whether it works, before any experiment:
+    a rule that keeps breaking is badly worded, badly placed or too strict, and a rule that never
+    applies may be dead. Each run appends one line to a log, so the measure needs no setup.
+  type: functional
+  verification: test
+
+- id: rules.check-cli
+  statement: >-
+    `specdeck check` shall evaluate the rules' checks against a base revision without running the
+    tests, exiting 1 on a broken rule with `--fail`.
+  rationale: >-
+    The same checks belong in CI, in a pre-commit hook and in a coding agent's hook after each
+    edit, none of which wants to run the whole suite.
+  type: interface
+  verification: test
+
 # --- documents for coding agents ---------------------------------------------------------------
 
 - id: context.from-last-run
@@ -653,6 +699,7 @@ requirements:
     libraries when asked for.
   type: design-constraint
   verification: test
+  check: {no_new_dependencies: true}
 
 - id: process.self-check
   statement: A change to specdeck shall leave `specdeck validate` reporting no findings on specdeck's own spec and requirements.

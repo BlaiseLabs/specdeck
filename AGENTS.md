@@ -19,6 +19,7 @@ A rule's test checks the rule. Making the test pass without keeping the rule (a 
   Verified by: `tests/test_live_flag.py::test_no_flag_means_no_recording` — holds in the last run
 - **specdeck shall require only pytest and PyYAML to install.** (`constraint.dependencies`)
   Why: specdeck is added to other people's test suites. Each extra dependency is a version conflict waiting in someone else's environment. Optional features (coverage mapping) load their libraries when asked for.
+  Checked by: no new dependencies — holds in the last run
   Verified by: `tests/test_constraints.py::test_specdeck_installs_with_pytest_and_pyyaml_alone` — holds in the last run
 
 ### Standards compliance (§9.6.17)

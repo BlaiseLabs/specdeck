@@ -181,6 +181,10 @@ requirements:
   - id: unverified
     statement: The export shall be TBD.
     rationale: Finance asked.
+  - id: coded
+    statement: "`specdeck check` shall exit 1 when `any` rule is broken."
+    rationale: Code in backticks is names, not language.
+    verification: inspection
   - id: inspected
     statement: The receipt shall carry the company logo.
     rationale: Brand rules.
@@ -199,6 +203,8 @@ requirements:
     with and_("§5.2.7: vague terms are named, with their category", expected="fast, user-friendly, if possible"):
         lang = " ".join(d.message for d in diags if d.code == "LANGUAGE" and d.scenario == "vague")
         assert '"fast"' in lang and '"user-friendly"' in lang and '"if possible"' in lang and "§5.2.7" in lang
+    with and_("words in backticks are code, not language, and are not flagged", expected="no LANGUAGE for 'coded'"):
+        assert not [d for d in diags if d.scenario == "coded" and d.code == "LANGUAGE"]
     with and_("§5.2.4: a statement without 'shall' is flagged; §5.2.5: so is a missing rationale and a double requirement"):
         assert "plain" in by("NOT_SHALL") and "plain" in by("NO_RATIONALE") and "double" in by("NOT_SINGULAR")
     with and_("§5.2.5/§5.2.6: unverified and TBD requirements, untraced tests and unknown links are reported"):
