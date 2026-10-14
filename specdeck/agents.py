@@ -11,6 +11,7 @@ requirements in requirements.yaml, under the types of ISO/IEC/IEEE 29148:2018:
 - ``process`` (§5.2.8.3): requirements on how the work is done, which is what a team calls its
   Definition of Done.
 
+The block opens with the project's purpose (the `srs:` block's `purpose`), when there is one.
 Each rule is written with its rationale, the tests that verify it and its verification status
 from the last run, so the file says which rules hold now and which are broken. A rule that no
 test verifies is listed with its declared method (§6.5.2) for the agent to check by hand.
@@ -71,7 +72,11 @@ def block(reqs: Requirements, report: Optional[dict]) -> str:
     by_id = {r["id"]: r for r in (report or {}).get("requirements", [])}
     rows = [dict(r.to_dict(), **{k: by_id.get(r.id, {}).get(k) for k in ("status", "scenarios", "check_result")})
             for r in reqs.items.values()]
-    out = [BEGIN, "", "## Project rules", "",
+    out = [BEGIN, ""]
+    purpose = " ".join(str(reqs.srs.get("purpose") or "").split())
+    if purpose:   # what the project is for, from the `srs:` block (§9.6.2): the rules make sense next to it
+        out += ["## Project purpose", "", purpose, ""]
+    out += ["## Project rules", "",
            f"The rules below are requirements in `requirements.yaml`, typed as in {STANDARD}. Each is "
            "checked by the tests named under it; the status is from the last test run. Keep to every rule "
            "that holds. A broken rule is the first thing to fix, or to raise with a person if the rule "

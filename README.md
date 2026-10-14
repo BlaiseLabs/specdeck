@@ -36,9 +36,9 @@ requirements:
     check: {forbid_pattern: '\bfloat\(', paths: ['shop/**']}
 ```
 
-The why travels with the work. Each rule's reason goes into CLAUDE.md and AGENTS.md beside the
-rule, and `specdeck context` gives an agent every requirement with its reason and the tests
-behind it. An agent that knows why a rule or a test exists is better placed to tell a real
+The why travels with the work. The project's purpose opens the block specdeck writes into
+CLAUDE.md and AGENTS.md, each rule's reason sits beside the rule, and `specdeck context` gives an
+agent every requirement with its reason and the tests behind it. An agent that knows why a rule or a test exists is better placed to tell a real
 failure from an outdated test, to trace a failure to the requirement it touches, and to make the
 call you would have made when a request and a rule disagree. Fewer misunderstandings, and more
 you can leave to the agent.

@@ -4,6 +4,8 @@ from specdeck.agents import BEGIN, END, write
 from specdeck.requirements import load
 
 REQUIREMENTS = """\
+srs:
+  purpose: Take orders for the shop and charge them correctly.
 requirements:
   - id: arch.queue
     statement: Services shall exchange messages only through the queue.
@@ -30,7 +32,7 @@ REPORT = {"requirements": [
     {"id": "price.bulk", "status": "met", "scenarios": [{"id": "b", "nodeid": "tests/test_price.py::test_bulk"}]}]}
 
 
-@scenario("agents-rules", group="agents", tags=["agents", "standard"], covers=["agents.rules"])
+@scenario("agents-rules", group="agents", tags=["agents", "standard"], covers=["agents.rules", "agents.purpose"])
 def test_the_rules_are_written_with_their_reasons_tests_and_status(tmp_path):
     """Design constraints (ISO/IEC/IEEE 29148:2018 §9.6.16), standards compliance (§9.6.17) and
     process requirements (§5.2.8.3) — the Definition of Done — become the agent's rules, each with
@@ -55,6 +57,9 @@ def test_the_rules_are_written_with_their_reasons_tests_and_status(tmp_path):
         assert "Verified by inspection, not by a test: check it yourself" in text
     with and_("the agent is told that getting around a rule's test breaks the rule, and to say when it keeps one"):
         assert "Making the test pass without keeping the rule" in text and '"Not done as asked:"' in text
+    with and_("the block opens with the project's purpose, before the rules", expected="Project purpose first"):
+        assert text.index("## Project purpose\n\nTake orders for the shop and charge them correctly.") \
+            < text.index("## Project rules")
     with and_("functional requirements are not rules", expected="price.bulk absent"):
         assert "price.bulk" not in text
 

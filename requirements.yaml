@@ -7,10 +7,12 @@
 srs:
   title: specdeck — software requirements specification
   purpose: >-
-    specdeck makes a pytest suite its own requirements specification. Requirements are written
-    once, with their rationale; tests are linked to the requirements they verify; and the
-    specification is generated from every run, so it reports which requirements are verified now
-    and cannot drift from the tests.
+    specdeck enforces a project's CLAUDE.md and AGENTS.md rules with tests. Each rule is a
+    requirement: what must hold, why, how it is checked, and whether it holds now. Requirements
+    and rules are written once, with their reasons; tests and checks are linked to them; and every
+    run reports which hold, names a broken rule with its file and line, and tells the next agent
+    session. The same requirements make the project's requirements specification, generated from
+    every run so it cannot drift from the tests.
   scope: >-
     specdeck is a pytest plugin and command-line tool. It generates the scenario spec from a test
     run, reads and checks a requirements file, joins the two into verification status, writes
@@ -520,6 +522,19 @@ requirements:
     rule, until the file said that doing so breaks the rule.
   type: functional
   verification: test
+
+- id: agents.purpose
+  statement: >-
+    `specdeck agents` shall open the generated block with the project's purpose, when the `srs:`
+    block of requirements.yaml states one.
+  rationale: >-
+    A rule makes sense next to what the project is for. An agent that knows the purpose is better
+    placed to tell a real failure from an outdated test and to decide as the team would when a
+    request and a rule disagree. The purpose is already written for the specification (§9.6.2);
+    putting it in the agents' instructions costs one paragraph.
+  type: functional
+  verification: test
+  standard: ISO/IEC/IEEE 29148:2018 §9.6.2
 
 - id: agents.adherence
   statement: >-
