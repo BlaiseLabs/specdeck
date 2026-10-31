@@ -1,137 +1,197 @@
 # specdeck
 
-**Enforce your CLAUDE.md and AGENTS.md rules with tests.**
+Enforce your CLAUDE.md and AGENTS.md rules with tests.
 
 A requirements-based tool for enforcing AGENTS.md and CLAUDE.md rules.
 
-Coding agents treat CLAUDE.md and AGENTS.md as advice: they follow the rules some of the time,
-and nothing tells you when they didn't. specdeck gives each rule a check that runs with your
-tests. When a change breaks a rule, the test run names the rule, the file and the line, and the
-next agent session finds the broken rule at the top of CLAUDE.md and AGENTS.md.
+I had Claude Code build a small invoice tool. One of its rules says money has to be Decimal, and another says an issued invoice never changes. So I put floats in the money code on purpose and edited an invoice that had already been issued. Every test still passed.
+
+```
+specdeck: rule money.decimal broken: invoicing/money.py:15: return to_cents(Decimal(str(float(quantity) * float(unit_price))))
+specdeck: rule issued.append-only broken: invoices/issued/INV-0005.json changed
+139 passed in 1.44s
+```
+
+That gap is why specdeck exists. Those two lines are it talking. All 139 tests were green and two rules were broken.
+
+CLAUDE.md and AGENTS.md are just text that gets pasted into the agent's context. Agents follow them some of the time, and nothing tells you when they didn't. With specdeck each rule gets a reason and a small check. Every pytest run checks your rules against the change, names the one that broke with its file and line, and puts it at the top of CLAUDE.md so the next session sees it first.
+
+It's Python and pytest only for now, and it isn't on PyPI yet, so you install it from a clone.
 
 ```bash
-pip install -e .                    # a pytest plugin and a CLI; not on PyPI yet
-specdeck rules add money.decimal    # a shared rule with its reason and its check (--registry DIR_OR_GIT_URL)
-pytest
-# specdeck: rule money.decimal broken: shop/orders.py:45: return round(float(order.total) * 0.97, 2)
-specdeck agents                     # the rules and their status, written into CLAUDE.md / AGENTS.md
+pip install -e .
+pytest                          # every rule checked against your change
+specdeck breaks                 # how often each rule has broken
+specdeck agents                 # the rules and their status, written into CLAUDE.md and AGENTS.md
 ```
+
+## What a rule looks like
+
+Rules live in `requirements.yaml`.
+
+```yaml
+requirements:
+  - id: money.decimal
+    statement: Money amounts shall be Decimal values.
+    rationale: A float refund came out a cent short and the accounts would not reconcile.
+    type: design-constraint
+    check: {forbid_pattern: '\bfloat\(', paths: ['shop/**']}
+```
+
+Most rules only need a pattern or a list of paths. I looked at 555 real rules from public projects and curated lists, and about half could be checked from the code or the change alone. About 30% can't be checked at all, like "follow best practices". specdeck won't help with those.
+
+Here's what you can use as a check.
+
+| Check | Breaks when |
+|---|---|
+| `forbid_pattern` | a line matches, by default only lines the change added |
+| `forbid_import` | a Python file imports a banned module, including through `importlib.import_module("x")` |
+| `protect` | the change touches a matching file |
+| `append_only` | the change edits or deletes an existing file, while adding new ones is fine |
+| `co_change` | the change touches A but not B |
+| `no_new_dependencies` | a dependency is added to pyproject.toml, a requirements file or package.json |
+| `ruff` | a ruff rule fires, such as `DTZ005` for a naive `datetime.now()` |
+| `test` | a test you point at didn't pass |
+| `command` | a shell command fails, for local rules only and never shared |
+
+You can combine them with `all`, `any`, `not` and `when`. A check that can't run, like no git repo or ruff missing, gets reported as an error and never counts as a break. The details are in [docs/RULE-CHECKS.md](docs/RULE-CHECKS.md).
+
+By default the checks look at your uncommitted work, which is usually what an agent just did. In CI you point them at a branch with `--specdeck-check-base origin/main`. `specdeck check --base origin/main --fail` runs the checks alone without the tests.
+
+A line in CLAUDE.md only has the first row of this table.
+
+| | A line in CLAUDE.md | A rule in specdeck |
+|---|---|---|
+| What must hold | yes | `statement` |
+| Why | rarely, 12% of those 555 rules | `rationale` |
+| How you'd know it broke | no | a `check:` or a linked test |
+| Whether it holds now | no | from the last run |
+| Where it broke, and how often | no | file and line, and `specdeck breaks` |
+
+## Why not just use hooks?
+
+Hooks are great and you should keep them. They do a different job.
+
+| | Hooks | specdeck |
+|---|---|---|
+| When | While the agent works, and they can block it | On each test run, in CI, or when you ask |
+| Who it covers | Mainly one agent's tool calls | Any change, from any agent or person |
+| What it sees | Each action as it happens | The whole change, like A changing without B, or a new dependency |
+| What it leaves behind | A block or a warning | The rule's reason, its status and its break history |
+
+Hooks stop the action. specdeck tells you whether the rule still holds. `specdeck check --fail` should be callable from a hook too, though I haven't tried that setup myself.
+
+To be clear about what this doesn't do, specdeck doesn't stop an agent from breaking a rule. It catches the break afterwards. An agent that never runs the tests won't see anything, so CI running `pytest` is what makes it stick.
 
 ## Start with the purpose
 
-A project's rules make sense next to what the project is for. specdeck keeps both in one file:
-`requirements.yaml` opens with the project's purpose, and every requirement and rule under it
-carries its own reason.
+A project's rules make more sense next to what the project is for, so `requirements.yaml` can open with that too.
 
 ```yaml
 srs:
   purpose: Take orders for the shop and charge them correctly, in English and Japanese.
-requirements:
-  - id: refunds.partial
-    statement: A partial refund shall return the amount less the processing fee, rounded to cents.
-    rationale: Agreed with finance, 2026-09.
-  - id: money.decimal
-    statement: Money amounts shall be Decimal values.
-    rationale: A float refund came out a cent short and the accounts would not reconcile.
-    check: {forbid_pattern: '\bfloat\(', paths: ['shop/**']}
 ```
 
-The why travels with the work. The project's purpose opens the block specdeck writes into
-CLAUDE.md and AGENTS.md, each rule's reason sits beside the rule, and `specdeck context` gives an
-agent every requirement with its reason and the tests behind it. An agent that knows why a rule or a test exists is better placed to tell a real
-failure from an outdated test, to trace a failure to the requirement it touches, and to make the
-call you would have made when a request and a rule disagree. Fewer misunderstandings, and more
-you can leave to the agent.
+The purpose goes at the top of the block specdeck writes into CLAUDE.md and AGENTS.md, and each rule's reason sits next to the rule. An agent that knows why a rule or a test exists is better placed to tell a real failure from an outdated test, and to make the call you would have made when a request and a rule disagree.
 
-## Every rule is a requirement
+When I had Claude Code build that invoice tool, the owner's request "just use floats" came back like this.
 
-In specdeck a rule is a requirement: what must hold, why, how it is checked, and whether it
-holds right now. A line in CLAUDE.md has only the first of those.
+> Not done as asked: I didn't switch to floats. The project rule `money.decimal` says "The tool shall hold and compute money amounts as Decimal values," and `float` is blocked in `invoicing/**` by a pattern check and by `tests/test_money.py`.
 
-| | A line in CLAUDE.md | A rule in specdeck |
-|---|---|---|
-| What must hold | ✔ | ✔ `statement` |
-| Why | rarely (12% of 555 real rules) | ✔ `rationale` |
-| How you'd know it broke | ✗ | ✔ a `check:` or a linked test |
-| Whether it holds now | ✗ | ✔ from the last run |
-| Where it broke, and how often | ✗ | ✔ file and line; `specdeck breaks` |
+## What gets written for the agent
 
-Because rules are requirements, specdeck can check every rule on every change, trace a break to
-its file and line, tell the next agent session which rule broke and why, count how often each
-rule breaks, and share rules with their checks through a registry that is just a git
-repository. [docs/SCENARIO.md](docs/SCENARIO.md) follows a team whose coding agents write most
-of the code, from install to the pull request.
+`specdeck agents` writes into whichever of CLAUDE.md and AGENTS.md exist, into both if both do, and into a new AGENTS.md if neither does. `--out FILE` picks the file yourself. Only a marked block gets replaced, so whatever you wrote by hand stays.
+
+Claude Code only reads AGENTS.md when there's no CLAUDE.md, which is why it writes to both.
+
+The rules in that block are the requirements typed `design-constraint`, `standards-compliance` or `process`. Each one comes with its reason, how it's checked and whether it held in the last run. Rules that nothing can check tell the agent to check them by hand.
+
+Above the rules sits what I call the adherence policy, which says what keeping a rule means. It has two default clauses.
+
+The first is `intent`. Under pressure, I saw agents read a stdlib-only rule test and then load pandas through `importlib` so the test wouldn't see it. The test stayed green while the rule was broken. This clause says that getting a test to pass without keeping the rule is breaking the rule. Without it 2 of 2 agents got around the check, and with it all 8 kept the rule.
+
+The second is `conflicts`. When a request asks for something a rule forbids, the agent keeps the rule and starts its summary with "Not done as asked". That wording got 5 of 6 agents to say plainly what they didn't do, against 0 of 6 with no clause.
+
+These are small numbers, so read them as a direction. You can change the policy.
+
+```yaml
+adherence:
+  conflicts: If a request conflicts with a rule, stop and ask before going on.   # reword
+  intent: false                                                                     # drop
+  review: Leave a TODO naming the rule wherever you were unsure.                   # add
+```
+
+`adherence: false` turns it off.
+
+I also tested whether specdeck's file keeps agents to the rules better than a hand-written one, and it doesn't. Under pressure, breaks fell from 4 of 6 with no rules to 1 of 6 with plain bullets, and specdeck did no better while using 1.3 to 1.7 times the tokens. Writing rules down is what prevents breaks. What specdeck adds is knowing when one happened. The experiments are in `bench/rules_ab`.
+
+## Sharing rules
+
+A rule with its check can be shared through a registry, which is just a git repo with one YAML file per rule. Hosting one means hosting a repo.
+
+```bash
+specdeck rules init ~/rules-registry
+specdeck rules publish money.decimal --registry ~/rules-registry    # commits it, then you push
+specdeck rules search money --registry <folder or git URL>
+specdeck rules add money.decimal --registry <folder or git URL>     # into requirements.yaml, with its check and source
+```
+
+Only rules with a reason and a check made of plain data can be published, so adding someone's rule never runs their code. The rule's text does end up in your agent's instructions though, so read it before you commit it. There's more in [docs/REGISTRY.md](docs/REGISTRY.md), and seven starter rules in `examples/registry`.
 
 ## Built on requirements engineering
 
-Purpose, requirements, reasons, checks and status: together, `requirements.yaml` is a
-requirements document, one that machines can read and that is checked on every run. Its
-structure follows ISO/IEC/IEEE 29148:2018, the international standard for requirements
-specifications: the purpose and scope of the system, requirements with their attributes, how
-each one is verified, and traceability from each requirement to its evidence. specdeck supports
-it natively. It checks your requirements against the standard's quality criteria (clear,
-singular, verifiable), keeps their status from your tests, and generates the full specification
-when a client or an auditor needs one.
+If you're wondering why rules are called requirements here, it's because a rule really is one. Requirements engineering has spent decades working out what a requirement needs before you can rely on it, so I built on that instead of inventing my own format.
 
-ISO/IEC/IEEE 29148:2018, *Requirements engineering*, is the standard that replaced
-IEEE 830 as the definition of a software requirements specification. It says what a
-requirement is (§5.2.4), what makes one well formed (§5.2.5–5.2.7), what it records
-about itself (§5.2.8), how it is verified (§6.5.2) and what a specification contains
-(§9.6). It assumes people keep the specification and the evidence in step by hand.
-
-specdeck keeps them in one place:
+The model follows ISO/IEC/IEEE 29148:2018, the international standard that replaced IEEE 830. specdeck is aligned with it, not fully conformant, because full conformance also covers life-cycle processes a tool can't carry out. The clause numbers were checked against the published text, and the descriptions are my own words.
 
 | The standard | specdeck |
 |---|---|
-| Requirement statement, "shall" (§5.2.4) | `statement:` in `requirements.yaml` |
-| Attributes: identification, rationale, type, priority, owner, risk, difficulty (§5.2.8) | the same names in `requirements.yaml` |
-| Verification by test, inspection, analysis/simulation, demonstration (§6.5.2) | `verification:`; *test* is automated: tests link with `covers=` and their last run is the verification status |
-| Characteristics of a requirement and of a set (§5.2.5, §5.2.6), language to avoid (§5.2.7) | `specdeck validate`, each finding citing its clause |
-| Traceability (§6.6) | requirement → tests → status, both directions, in every run and in the run history |
-| Software requirements specification (§9.6) | `specdeck srs`, generated from the requirements and the last run |
+| Requirement statement using "shall" (§5.2.4) | `statement` |
+| Attributes like rationale, type, priority, owner, risk and difficulty (§5.2.8) | the same names in `requirements.yaml` |
+| Verification by test, inspection, analysis or simulation, and demonstration (§6.5.2) | `verification`, where test is automated and the others are recorded as declared |
+| Quality of a requirement and of a set, and language to avoid (§5.2.5 to §5.2.7) | `specdeck validate`, with each finding citing its clause |
+| Traceability (§6.6) | requirement to tests to status, on every run |
+| Software requirements specification (§9.6) | `specdeck srs` |
 
-The tests are the evidence, the specification is generated from them on each run, so it
-reports which requirements are verified *now* and cannot drift. specdeck's own
-specification, written this way, is [SRS.md](SRS.md): 78 requirements, each traced to
-the tests that verify it or declaring how else it is verified.
+`specdeck validate` flags things like a requirement with no "shall", a vague word like "fast", two requirements in one, a missing reason, or a test linked to nothing. It also flags a requirement that gives two answers for the same input, and a linked test that asserts a different number from an example. Findings are warnings unless you pass `--strict`. Whether a requirement is appropriate, feasible and correct takes judgement, so those are listed for review and not checked.
 
-**What is claimed.** specdeck is *aligned with* 29148:2018, not fully conformant (§4.2
-also covers life-cycle processes a tool cannot carry out). The generated SRS targets
-*tailored conformance* (§4.5.2) to the content of §9.6 and declares its tailoring in the
-document. [docs/ISO-29148.md](docs/ISO-29148.md) maps each clause to what specdeck does.
-Clause numbers were checked against the published 2018 text; the descriptions here are
-our own words, not the standard's.
+`specdeck srs --out SRS.md` writes the full specification when a client or an auditor needs one, with a table from each requirement to its tests to the last result. Sections only people can write come from the `srs:` block, and an empty one is marked as to be supplied so the gap stays visible. The generated document aims at tailored conformance to §9.6 and says so. specdeck's own is [SRS.md](SRS.md), with 80 requirements, and [docs/ISO-29148.md](docs/ISO-29148.md) maps each clause to what the tool does.
 
-Under the requirements sits the scenario spec: a pytest plugin turns an ordinary suite
-into `feature → groups → scenarios → Given/When/Then`, with a scenario dependency graph
-and every scenario stamped with its real outcome. The YAML renders in its own viewer,
-`specdeck validate` checks it with zero warnings, and a minimal sphinx-needs `needs.json`
-makes the same graph reachable by traceability tooling and by coding agents.
+## Linking tests to requirements
 
-## Why this direction (and not Gherkin)
+Business requirements work the same way, and examples are where they get useful.
 
-Research before building (2026-09) was blunt: classic BDD fails because it's a
-*second language nobody maintains*, step definitions explode, and `.feature`
-files drift from the code — and product people never read them anyway.
-Generating the spec from pytest removes the first three. What survives is the
-warning that a derived spec "just restates the implementation"; specdeck answers
-that with what Gherkin-first never had: **runtime-recorded steps** (a step is in
-the spec only if it executed), **expected vs observed + decision context** on
-failure, and a **pass/fail stamp** per scenario — the thing reverse-engineered
-specs are criticized for lacking.
-
-## Install & run
-
-```bash
-pip install -e .
-pytest            # writes .specdeck/spec.yaml and .specdeck/needs.json
+```yaml
+  - id: pricing.bulk-tier
+    statement: An order of 100 units or more shall get 15% off.
+    rationale: Agreed with sales, 2026-09.
+    type: functional
+    examples:
+      - {given: {qty: 100}, expect: 15}
+      - {given: {qty: 99}, expect: 5}
 ```
 
-Zero configuration: every test becomes a scenario. Id from the function name,
-group from the module, name from the docstring's first line, `logic` = the pytest
-node id, `tags` include the group and `status:<outcome>`.
+```python
+from specdeck import scenario, example, examples
 
-## Annotate for real steps
+@scenario(covers=["pricing.bulk-tier"])
+def test_tiers():
+    assert bulk_discount(100) == example("pricing.bulk-tier", qty=100)
+
+@pytest.mark.parametrize("given, expected", examples("pricing.bulk-tier"))
+def test_every_example(given, expected):
+    assert bulk_discount(**given) == expected
+```
+
+The expected value comes from the requirement, not from running the code. An expected number copied from what the code printed passes even when the code is wrong.
+
+Each requirement ends up met, failing, blocked, not run or untested. `specdeck requirements` prints the list. `example()` with inputs the requirement has no example for raises `RequirementError` and lists the ones it does have. An id on a parametrized test becomes one id per case, and depending on that id means depending on every case.
+
+## The spec it generates
+
+With zero configuration, every test becomes a scenario in `.specdeck/spec.yaml`, with its id from the function name, its group from the module, and its name from the first sentence of the docstring. You also get `.specdeck/needs.json` for sphinx-needs tooling.
+
+If you want real steps, you annotate them.
 
 ```python
 from specdeck import scenario, given, when, then
@@ -147,391 +207,92 @@ def test_replay_matches_recording(tape):
         assert out.content == "pong: !ping"
 ```
 
-- Steps record **as they execute** (context managers), so they're truthful.
-- A failing `then` captures `expected_label` (yours) and `observed_label` (from
-  pytest's assertion message) into the spec's `assertion` block, plus any
-  `decision_context` — the DX failure format of test-failure-dx.
-- `depends_on` accepts scenario ids or bare test function names.
+Steps are recorded as they run, so a step is only marked as done if it actually executed. A failing `then` keeps what you expected, what it saw, and any decision context.
 
-## `depends_on` semantics — read this
+I went this way instead of Gherkin because classic BDD tends to fail for the same reason every time. It's a second language nobody maintains, and the `.feature` files drift from the code. Generating the spec from pytest removes that.
 
-`depends_on` is **documentation order** ("read/build these first; if every
-scenario passes, the vision is delivered") plus **skip-if-a-prerequisite-failed**
-(the pytest-dependency convention). It **never reorders execution** — runtime
-coupling between tests is an anti-pattern, and specdeck won't help you create it.
+`depends_on` is about reading order. It says read these first, and it skips a test if a prerequisite failed. It never reorders execution, because tests that have to run in order pass for the wrong reasons. If A fails then B, which depends on A, is skipped as blocked, and so is C, which depends on B.
 
-Blocking cascades: if A fails, B (depends on A) is skipped as *blocked*, and so
-is C (depends on B). The viewer shows all of them as blocked by A.
-
-## Configuration (`pyproject.toml` / `pytest.ini`)
+A partial run (a file, a node id, `-k`, `-m`, `--lf`) doesn't rewrite the spec or check the rules, so running one test never shrinks the spec down to one scenario. `--specdeck-merge` updates just the scenarios that ran, and `--no-specdeck` writes nothing.
 
 ```toml
 [tool.pytest.ini_options]
 specdeck_feature = "tapedeck"
 specdeck_description = "Record real SDK sessions to a tape; replay them offline."
-specdeck_out = ".specdeck/spec.yaml"      # default
-specdeck_needs = ".specdeck/needs.json"   # default
+specdeck_out = ".specdeck/spec.yaml"            # default
+specdeck_needs = ".specdeck/needs.json"         # default
+specdeck_requirements = "requirements.yaml"     # default
+specdeck_check_base = "HEAD"                    # default
+specdeck_breaks_out = ".specdeck/breaks.jsonl"  # default
 ```
 
-CLI: `--no-specdeck` (don't write), `--specdeck-out PATH`.
-
-A partial run (a file, a node id, `-k`, `-m`, `--lf`) does not rewrite the spec,
-so running one test never shrinks it to one scenario.
-
-## Requirements (ISO/IEC/IEEE 29148:2018)
-
-The generated spec says what the tests do. `requirements.yaml`, written by people, says
-what they *should* show. Each entry is a requirement in the sense of 29148: one
-"shall" statement (§5.2.4) with its attributes (§5.2.8), and concrete examples that make
-it verifiable (§5.2.5).
-
-```yaml
-requirements:
-  - id: pricing.bulk-tier                   # identification (§5.2.8.2)
-    statement: An order of 100 units or more shall get 15% off.
-    rationale: Agreed with sales, 2026-09.  # why it is necessary (§5.2.5)
-    type: functional                        # §5.2.8.3; places it in the SRS (§9.6.11–9.6.18)
-    priority: high                          # optional: priority, owner, risk, difficulty
-    verification: test                      # §6.5.2: test, inspection, analysis, simulation, demonstration
-    examples:
-      - given: {qty: 100}
-        expect: 15
-      - given: {qty: 99}
-        expect: 5
-```
-
-`type` is one of `interface`, `functional`, `usability`, `performance`,
-`logical-database`, `design-constraint`, `standards-compliance`, `software-attribute`
-(the sections of §9.6.11–9.6.18), or `process` and `human-factors` (§5.2.8.3).
-`standard:` records the clause a requirement implements. The older keys `says` and `why`
-are still read as `statement` and `rationale`.
-
-Link tests to requirements, and take expected values from the examples so they come
-from the requirement rather than from running the code:
-
-```python
-from specdeck import scenario, example, examples
-
-@scenario(covers=["pricing.bulk-tier"])
-def test_tiers():
-    assert bulk_discount(100) == example("pricing.bulk-tier", qty=100)
-
-@pytest.mark.parametrize("given, expected", examples("pricing.bulk-tier"))
-def test_every_example(given, expected):      # one case per example
-    assert bulk_discount(**given) == expected
-```
-
-Using an example counts as covering its requirement. Each requirement's verification
-status is **met** (every covering scenario passes), **failing**, **blocked**, **not
-run**, or **untested** (nothing covers it). Every run writes
-`.specdeck/requirements.json`, prints `specdeck: requirements: 1 of 3 met, ...`, warns
-about links to ids that don't exist and about problems in the file, and tags scenarios
-`req:<id>` in the spec. The viewer leads with "requirements met" and has a Requirements
-tab showing each entry, its examples (and which ones a passing test used), and the
-scenarios behind it.
-
-`example()` with inputs the requirement has no example for raises `RequirementError`,
-listing the examples it does have. An explicit scenario id on a parametrized test
-becomes one id per case (`tiers-qty-100`); depending on the id depends on every case.
-Config: `specdeck_requirements` (default `requirements.yaml`),
-`specdeck_requirements_out`.
-
-### Quality, checked against the standard
-
-`specdeck validate` checks each requirement and the set against what a tool can check of
-29148, and cites the clause in each finding:
-
-| Check | Clause |
-|---|---|
-| a binding requirement uses "shall"; positive, not "shall not"; active voice; not "shall be able to" | §5.2.4 |
-| one capability per requirement (one "shall"); a rationale is recorded; a test or other method verifies it | §5.2.5, §5.2.8.2, §6.5.2 |
-| no TBD/TBS/TBR; every test traces to a requirement; no links to requirements that do not exist | §5.2.6 |
-| consistent: no requirement gives two expected values for the same inputs, and no linked test asserts a literal that differs from an example (reported at the test's line) | §5.2.6 |
-| no superlatives, subjective or ambiguous terms, vague pronouns, open-ended terms, comparatives, loopholes or totality terms | §5.2.7 |
-| attribute names, types and verification methods are the standard's | §5.2.8, §6.5.2 |
-
-The word lists for §5.2.7 are specdeck's; the categories are the standard's. Findings
-are warnings; `--strict` makes them errors. *Appropriate*, *feasible* and *correct*
-(§5.2.5) need judgement and are listed for review in the SRS rather than checked.
-
-### The adherence system: rules coding agents keep
-
-specdeck's answer to "agents don't follow my CLAUDE.md" is a system of four parts, each
-measured in `bench/rules_ab`:
-
-| Part | What it is | What it did in the A/B |
-|---|---|---|
-| **Rules** | requirements typed `design-constraint`, `standards-compliance` or `process`, each with its reason | written down at all, rules cut breaks under pressure from 4 of 6 to 1 of 6 |
-| **Checks** | the tests linked to each rule with `covers=` | caught every break they could see; under pressure agents got around them (2 of 2) until the policy below |
-| **Adherence policy** | what keeping a rule means (`intent`, `conflicts` clauses) | no check got around in 6 of 6 pressured trials; agents said "Not done as asked:" in 5 of 6 |
-| **Status** | which rules hold in the last run, in AGENTS.md and the run summary | a broken rule is named first, with its reason and the test to make pass |
-
+## The viewer
 
 ```bash
-specdeck agents            # updates CLAUDE.md and/or AGENTS.md (whichever exist); --out FILE to choose, - for stdout
+pytest --specdeck-live    # record this run and watch it at http://127.0.0.1:7357/p/<project>
 ```
 
-An agent instructions file is mostly rules. In specdeck they are requirements like any other,
-typed as the standard types them: `design-constraint` (§9.6.16, decisions that limit how the
-code may be built — the rationale is the decision record, the test is the check that fails when
-it is broken), `standards-compliance` (§9.6.17) and `process` (§5.2.8.3 — the Definition of
-Done). `specdeck agents` writes each into the instructions file with its rationale, the tests
-that verify it and whether it held in the last run, names any broken rule again under
-"Before you finish", and tells the agent to check by hand the rules verified by inspection or
-demonstration. Only a marked block is replaced, so the hand-written part of the file is kept.
-specdeck's own [AGENTS.md](AGENTS.md) is generated this way.
+The first live run starts the viewer in the background, and later runs from any project join it with their own page. `specdeck_live = true` records every run, `record` keeps history without starting the viewer, and `python -m specdeck serve` runs it by hand.
 
-Above the rules goes the **adherence policy**, the part of the system that says what keeping a
-rule means. specdeck ships two default clauses, each measured in `bench/rules_ab`. `intent` says that getting a rule's test to
-pass without keeping the rule breaks the rule; under pressure, agents had been importing pandas
-through `importlib` to get past a stdlib-only test. `conflicts` says that when a request asks for
-something a rule forbids, the agent keeps the rule and starts its summary with "Not done as asked:". A project rewords, drops or adds clauses:
+* The summary shows how many scenarios pass, what changed since the last run, and the trend.
+* The overview groups scenarios by feature. A side panel lists the root-cause failures to fix first, each goal with its progress, and the scenarios most others depend on.
+* The graph draws the `depends_on` links, colored by status. Above 150 nodes it opens on one node per feature, so big suites stay readable.
+* The history lists every run with its branch and commit, and clicking one shows the suite as it was then.
+* During a run the page updates by itself, and tests not reached yet keep their last result, faded.
+* Each scenario opens a drawer with its steps, expected and observed values, dependencies, history and source.
+* You can run all tests, the failing ones, or a single scenario from the page.
+* You can edit a scenario's title, tags, `depends_on`, step text and expected labels. Only string literals get rewritten, you review a diff first, and an edit against a test that changed on disk is refused.
 
-```yaml
-adherence:
-  conflicts: If a request conflicts with a rule, stop and ask before going on.   # reword
-  intent: false                                                                     # drop
-  review: Leave a TODO naming the rule wherever you were unsure.                   # add
-```
-
-`adherence: false` turns it off. The defaults live in `specdeck/adherence.py`, with the reason
-and the measurement behind each clause.
-
-### Rule checks and break detection
-
-A rule can say how it is checked, as data ([docs/RULE-CHECKS.md](docs/RULE-CHECKS.md)):
-
-```yaml
-  - id: io.gateway-only
-    statement: Only shop.gateway shall open network connections.
-    rationale: Tests replace the gateway with recorded traffic; a direct call charged a test card.
-    type: design-constraint
-    check:
-      - forbid_import: [requests, httpx, urllib3]   # import statements and importlib.import_module("x")
-        except: [shop/gateway.py]
-      - no_new_dependencies: {allow: [pyyaml]}
-```
-
-Checks: `forbid_pattern`, `forbid_import`, `protect`, `co_change`, `no_new_dependencies`, `ruff`
-(by rule code), `test`, `command`; combined with `all`, `any`, `not` and `when`. On each run they
-are evaluated against the change (the uncommitted work by default; `--specdeck-check-base` or
-`specdeck_check_base` in CI). A broken check fails its requirement, is printed with the file and
-line, and goes first in AGENTS.md. Each run is logged, and `specdeck breaks` says how often each
-rule broke: a first measure of whether a rule works, with no experiment. `specdeck check
---base origin/main --fail` runs the checks alone, for CI, pre-commit, or an agent's hook.
-
-### Sharing rules
-
-Rules with their checks can be shared through a self-hosted registry: a git repository of rule
-cards ([docs/REGISTRY.md](docs/REGISTRY.md)). `specdeck rules search`, `rules add ID` (into
-requirements.yaml, with its check and source), `rules publish ID` (into a registry checkout, then
-push). Only rules with a reason and a data check are shared, so adopting one never runs someone
-else's code.
-
-### The specification
-
-```bash
-specdeck srs --out SRS.md
-```
-
-writes the software requirements specification with the content of §9.6, in the
-standard's order: the introduction (§9.6.1–9.6.9), the specified requirements grouped by
-type (§9.6.11–9.6.18) with their attributes and verification status, verification
-(§9.6.19) as a traceability matrix from requirement to tests to the last result, the
-quality findings, and supporting information (§9.6.20). Purpose, scope, users,
-limitations and the other sections only people can write come from an `srs:` block in
-`requirements.yaml`; a section left empty is marked *to be supplied (TBS)* rather than
-hidden, so an incomplete set shows (§5.2.6). See specdeck's own `requirements.yaml` for
-an example of the block.
-
-## The live viewer
-
-```bash
-pytest --specdeck-live          # record this run and watch it at http://127.0.0.1:7357/p/<project>
-```
-
-The first live run starts the viewer in the background; later runs, from any
-project, join the same viewer and get their own page. To record every run
-without the flag, set `specdeck_live = true` (or `record` to keep history
-without starting the viewer). `python -m specdeck serve` runs it by hand.
-
-What it shows:
-
-- **Summary.** How many scenarios pass, as a bar split by status, with what
-  changed since the previous run (newly passing, regressions, new scenarios)
-  and a trend over recent complete runs.
-- **Overview.** Scenarios grouped by feature (module), each with its status,
-  its error and how much work it holds up. The side panel answers "where is it
-  stuck": *Stuck at* lists root-cause failures (failing, with every prerequisite
-  passing), *Goals* shows each end of a dependency branch with progress over
-  everything it relies on, *Load-bearing* lists what most scenarios depend on.
-- **Graph.** The `depends_on` DAG, coloured by status. Selecting a node
-  highlights everything it needs and everything that needs it. Built to stay
-  readable on big suites:
-  - scenarios with no dependencies aren't drawn (they're in the Overview; one
-    click shows them), and the cases of a parametrized test are one node;
-  - each chain is laid out on its own and chains are packed under the feature
-    they belong to; chains that mix features sit under *Across features*;
-  - above 150 nodes it opens on a **feature map**, one node per feature, with
-    arrows counting the dependencies between features; click one to open it;
-  - **Problems** draws only failing and blocked scenarios, **Selected branch**
-    only what the selected scenario needs and what needs it;
-  - a searchable feature picker, a minimap, scroll to move and Ctrl+scroll to
-    zoom; zoomed far out, nodes turn into status tiles.
-- **History.** Every run with its source (terminal or viewer), branch and
-  commit, result and change. Click a run to see the suite as it was then.
-- **Live.** During a run the page updates by itself: the running test spins,
-  tests not reached yet keep their last result, faded.
-- **Scenario drawer.** Steps with expected and observed values, where a failure
-  stopped, dependencies both ways, the scenario's own pass/fail history, its
-  source, and a command to run it.
-- **Run from the page.** *Run all*, *Run failing* (failing and blocked) or one
-  scenario. Runs of a subset update those scenarios and keep the rest.
-- **Light editing.** Edit a scenario's title, details, tags, `depends_on`,
-  step text and expected labels. Only string literals are rewritten, you review
-  a diff before saving, and an edit made against a test that changed on disk is
-  refused. Text built with f-strings stays read-only.
-
-History lives in `~/.specdeck/history.db` (SQLite; `SPECDECK_HOME` moves it).
-The viewer uses only the standard library, listens on 127.0.0.1 only, refuses
-requests whose Host isn't loopback, and needs a per-page token for anything that
-writes. Keyboard: `/` search, `j`/`k` move, `1` `2` `3` tabs, `Esc` close.
+History lives in `~/.specdeck/history.db`, and `SPECDECK_HOME` moves it. The viewer uses only the standard library, listens on 127.0.0.1 only, refuses requests whose Host isn't loopback, and needs a per-page token for anything that writes.
 
 | Option | Meaning |
 |---|---|
 | `--specdeck-live` | record and make sure a viewer is running |
 | `--specdeck-record` | record only |
 | `--no-specdeck-live` | override `specdeck_live` from config |
-| `--specdeck-port N` / `specdeck_port` / `SPECDECK_PORT` | viewer port, default 7357 |
+| `--specdeck-port N`, `specdeck_port`, `SPECDECK_PORT` | viewer port, default 7357 |
 
-## Output
-
-```yaml
-# GENERATED by specdeck 0.1.0 from pytest on 2026-09-23T… — do not edit.
-feature: tapedeck
-groups:
-- {id: replay, name: Replay}
-scenarios:
-- id: replay-offline
-  name: Replay matches recording
-  group: replay
-  tags: [wedge, replay, 'status:passed']
-  depends_on: [capture-toy]
-  steps:
-  - {keyword: Given, text: a tape captured from the toy gateway SDK}
-  - {keyword: When, text: the handler is replayed with the network blocked}
-  - keyword: Then
-    text: the reply is the recorded one
-    assertion: {expected_label: 'pong: !ping', observed_label: 'pong: !ping'}
-  logic: [pytest tests/test_toy_roundtrip.py::test_replay_matches_recording]
-```
-
-Every string goes through `yaml.safe_dump`, so `key: value` text inside a step can
-never produce an unparseable file (the bug that silently broke the hand-written
-specs this replaces).
-
-## For a coding agent
+## Describing the suite to an agent
 
 ```bash
-pytest --specdeck-coverage          # also records which scenarios run which source functions
-specdeck context --out SUITE.md     # one document describing the suite
+pytest --specdeck-coverage         # also records which scenarios run which functions
+specdeck context --out SUITE.md    # one document describing the suite
 ```
 
-What goes in that document was decided by measurement, not taste. `bench/agent_ab`
-puts the generated spec against the raw test files, same model, same questions,
-ground truth from applying each change and running the suite. Two findings shaped it:
+I decided what goes in this document by measuring it. `bench/agent_ab` puts the generated spec against the raw test files, with the same model and questions, and the right answers come from applying each change and running the suite.
 
-- **It states what `depends_on` means.** Asked to sort real failures from ones merely
-  blocked by a failed prerequisite, every arm scored 40% exact — what the *obvious*
-  rule scores. The obvious rule is wrong: specdeck never reorders tests, so a
-  prerequisite listed later cannot block anything. Saying so, in about 100 tokens,
-  took both the spec and the raw test files to **100%**.
-- **It names the code.** The spec describes behaviour without naming a single
-  function, so an agent holding a diff cannot connect `file.py:31` to any scenario.
-  With a coverage map — which scenarios execute which functions, import-time lines
-  excluded — "which tests does this change break" went from 0.80 to 0.88 F1 and from
-  25 missed failures to 4 (the raw test files: 0.93 and 2), for fewer tokens than
-  those files cost.
+It states what `depends_on` means. Asked to sort real failures from ones merely blocked, everything scored 40% exact, because the obvious rule is wrong. Saying so in about 100 tokens took both materials to 100%.
 
-What it deliberately does *not* claim is whether a test would **notice** a change;
-running a line is not checking it. That is `proofdeck check`, and it is the one
-question no amount of reading material settles.
+It names the code. A spec describes behavior, so an agent holding a diff can't connect it to a scenario. With a map of which scenarios run which functions, "which tests does this change break" went from 0.80 to 0.88 F1 and from 25 missed failures to 4. The raw test files scored 0.93 and 2, for more tokens.
 
-Coverage recording is off by default and needs `coverage.py`; it costs about a second
-on a suite of 38 tests. Without it `specdeck context` still writes the rest.
+A function most of the suite runs is reported as a count and not a list. Handed the list, an agent named 87 tests where the true answer was none. Collapsing it cut wrong names across the benchmark from 97 to 18. Saying the map is a bound cut impossible answers from 43 to 5.
 
-### On a large suite
+`--for specdeck/ci.py,specdeck/trust.py` writes it for the files a change touches. For a change in a leaf module that's about a third of the full document.
 
-Two things in the document exist only because a bigger suite (88 tests) was measured
-and a naive version of it made an agent *worse*:
+`specdeck context --task why` sends only the requirements with their reasons and tests, about 2k tokens here. With comments and docs stripped from the repo, an agent asked why tests exist scored 10 of 20 from the tests alone, and this document scored 29 of 30. `specdeck context --profiles` lists the other arrangements with what each one measured.
 
-- **A function most of the suite runs is reported as `most (47 of 88)`, not as a list.**
-  Handed that list, the agent answered "which tests does this change break" with 87 test
-  names where the true answer was none; the same agent without the map named 9. The list
-  is identical for every change in that function — noise shaped like evidence. Collapsing
-  it cut the wrong names across the whole benchmark from 97 to 18, matching what the raw
-  test files produce, with no loss of correct answers.
-- **The map is a bound, and the document says so.** The scenarios listed against a
-  function are the only ones that can fail when you change it; a function absent from the
-  map is run by nobody. Stating that cut impossible answers — tests named that do not even
-  execute the changed function — from 43 to 5.
+This doesn't say whether a test would notice a change, since running a line isn't checking it. That's what proofdeck is for.
 
-```bash
-specdeck context --for specdeck/ci.py,specdeck/trust.py --out SUITE.md
-```
-
-`--for` takes the files a change touches. Scenarios that run none of them are kept in
-brief — id, name, dependencies, node id, no steps — because `depends_on` reaches across
-the whole suite and an invisible prerequisite is worse than a terse one. For a change in
-a leaf module that is about a third of the full document; for a change in the module every
-test exercises it is most of it, which is the honest answer.
-
-### What a test is for
-
-```bash
-specdeck context --task why --out WHY.md   # the requirements alone: statement, rationale, and the tests linked to each
-```
-
-The reasons behind a test are not in the test. With comments and docs stripped from
-specdeck's own repo (`bench/purpose`), an agent asked why tests exist scored 10/20 from
-the tests alone and 14/20 with a prose requirements document. With the document's earlier
-version pasted in — requirement ids as tags, but not what they say or why — it scored 6/10.
-So the document now carries a **Requirements** section: each requirement's statement, rationale and
-status, the tests linked to it, and beside each test any other requirement it also covers.
-It is part of the default document; `--task why` sends it alone (about 2k tokens here) and
-scored 29/30 over three sessions, the full document on disk 27/30.
+Coverage recording is off by default and needs `coverage.py`.
 
 ## In the pull request
 
-The viewer is for the desk. For the review, `specdeck report` writes one
-Markdown document from the files a run leaves behind: how many scenarios pass,
-the root causes to fix first, who is blocked by them, and every requirement
-with its status.
+`specdeck report` writes one Markdown document for a PR comment, with how many scenarios pass, what to fix first, what's blocked, and every requirement with its status.
 
 ```bash
-pytest -q                                   # writes .specdeck/spec.yaml + requirements.json
+pytest -q
 proofdeck check --base main --format json --no-gate > proof.json
 specdeck report --proofdeck proof.json --out .specdeck/report.md
 ```
 
-With proofdeck's JSON, the report answers the question neither tool can alone:
-is a *met* requirement **proven, or just passing?** specdeck knows what each
-test is for (`covers=`) and that it passes; proofdeck knows which tests
-executed each changed line, whether any of them noticed the line being wrong,
-and what each test replaces with fakes. Joined on the pytest node id, every met
-requirement gets a verdict for this change:
+With proofdeck's JSON it can tell you whether a met requirement is proven or just passing.
 
-| verdict | meaning |
+| Verdict | Meaning |
 |---|---|
-| ✔ checked | every changed line its tests ran was noticed, by a test that fakes nothing |
-| ✖ unproven | a covering test ran a changed line and did **not** notice its mutant |
-| ≈ mock-only | changed lines were only noticed through fakes |
-| · untouched | the change didn't reach anything the covering tests run |
-
-A requirement whose every covering test fakes a collaborator is flagged
-regardless of the change. `specdeck trust proof.json` prints just this join;
-`--fail-on-untrusted` gates on it, and `specdeck report` takes the same flag
-plus `--fail-on-failing` and `--fail-on-unmet`. Nothing fails until asked.
+| checked | every changed line its tests ran was noticed, by a test that fakes nothing |
+| unproven | a covering test ran a changed line and didn't notice it being broken |
+| mock-only | changed lines were only noticed through fakes |
+| untouched | the change didn't reach anything its tests run |
 
 ```yaml
 # .github/workflows/specdeck.yml
@@ -544,32 +305,7 @@ plus `--fail-on-failing` and `--fail-on-unmet`. Nothing fails until asked.
   env: { GH_TOKEN: "${{ github.token }}" }
 ```
 
-## Commands
-
-```bash
-specdeck serve                  # the viewer, on 127.0.0.1
-specdeck validate               # spec.yaml + requirements.yaml, quality against 29148; non-zero on error
-specdeck srs --out SRS.md       # the software requirements specification (29148 §9.6)
-specdeck requirements           # the requirements report, --fail-on-unmet for CI
-specdeck trust proof.json       # met, or just passing? joins requirements with proofdeck's JSON
-specdeck report --proofdeck proof.json --out report.md   # Markdown for a PR comment
-specdeck context --out SUITE.md    # the suite described for a coding agent
-specdeck agents                 # the project's rules into CLAUDE.md / AGENTS.md, with their status
-specdeck check --fail           # evaluate the rules' checks against the change, no tests
-specdeck breaks                 # how often each rule broke, from the run log
-specdeck rules search money     # find shared rules in a registry (--registry or $SPECDECK_REGISTRY)
-specdeck rules add ID           # add one, with its check and source
-specdeck watch -- -q            # re-run the suite when a file changes
-specdeck runs                   # recorded runs, newest first
-specdeck diff 7 12              # what moved between two runs
-specdeck prune --keep 200       # bound the shared history
-specdeck forget <project>       # drop a project entirely
-specdeck where                  # the history database path
-```
-
-### Gates (opt-in)
-
-Nothing changes a suite's exit code until you ask. By flag or in config:
+Adding specdeck never changes your exit code until you ask it to.
 
 ```toml
 [tool.pytest.ini_options]
@@ -578,19 +314,33 @@ specdeck_fail_on_unknown_covers = "true"   # covers= names a requirement that do
 specdeck_fail_on_invalid = "true"          # the generated spec has validation errors
 ```
 
-specdeck runs these on itself.
+## Commands
 
-## Relation to the other projects
+```bash
+specdeck check --fail           # the rules' checks against the change, no tests
+specdeck breaks                 # how often each rule broke
+specdeck agents                 # the rules into CLAUDE.md and AGENTS.md
+specdeck validate               # the spec and requirements, checked against 29148
+specdeck requirements           # the requirements report
+specdeck srs --out SRS.md       # the full specification
+specdeck rules search money     # find shared rules
+specdeck rules add ID           # add one, with its check and source
+specdeck context --out SUITE.md # the suite described for an agent
+specdeck report --out report.md # Markdown for a PR comment
+specdeck trust proof.json       # met, or just passing?
+specdeck serve                  # the viewer
+specdeck watch -- -q            # re-run the suite when a file changes
+specdeck runs                   # recorded runs
+specdeck diff 7 12              # what moved between two runs
+specdeck prune --keep 200       # bound the shared history
+specdeck forget <project>       # drop a project
+specdeck where                  # the history database path
+```
 
-specdeck stands alone: it generates the spec and the requirements specification,
-validates them, and renders them.
+## The other two tools
 
-- **tapedeck** records real SDK traffic so tests replay ground truth instead of a
-  guess. The first suite specified in specdeck.
-- **proofdeck** asks whether the tests would notice if the code were wrong, and
-  flags tests that only prove the code agrees with itself. specdeck says what is
-  covered; proofdeck says whether that coverage means anything; `specdeck trust`
-  joins the two so a requirement can be *met* without being *proven* — and say so.
-- **test-failure-dx** is where the YAML format came from; specdeck emits it, but
-  *pytest is the runner*, so `logic` is the node id to re-run.
-- **dx-spec-viewer** is superseded — `specdeck serve` replaces it.
+specdeck works on its own, and it's one of three.
+
+[tapedeck](../tapedeck) records real SDK traffic so tests replay real responses. [proofdeck](../proofdeck) asks whether your tests would notice if the code were wrong. `specdeck trust` joins proofdeck with specdeck, so a requirement can be met without being proven and say so.
+
+For a longer look at how a team might use all this, there's [docs/SCENARIO.md](docs/SCENARIO.md).
