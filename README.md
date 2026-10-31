@@ -4,7 +4,7 @@ Enforce your CLAUDE.md and AGENTS.md rules with tests.
 
 A requirements-based tool for enforcing AGENTS.md and CLAUDE.md rules.
 
-I had Claude Code build a small invoice tool. One of its rules says money has to be Decimal, and another says an issued invoice never changes. So I put floats in the money code on purpose and edited an invoice that had already been issued. Every test still passed.
+Take a small invoice tool built by Claude Code. One of its rules says money has to be Decimal, and another says an issued invoice never changes. In a scratch copy, floats were put in the money code on purpose and an issued invoice was edited. Every test still passed.
 
 ```
 specdeck: rule money.decimal broken: invoicing/money.py:15: return to_cents(Decimal(str(float(quantity) * float(unit_price))))
@@ -12,7 +12,7 @@ specdeck: rule issued.append-only broken: invoices/issued/INV-0005.json changed
 139 passed in 1.44s
 ```
 
-That gap is why specdeck exists. Those two lines are it talking. All 139 tests were green and two rules were broken.
+That gap is why specdeck exists. All 139 tests were green and two rules were broken, and those two lines are specdeck reporting it.
 
 CLAUDE.md and AGENTS.md are just text that gets pasted into the agent's context. Agents follow them some of the time, and nothing tells you when they didn't. With specdeck each rule gets a reason and a small check. Every pytest run checks your rules against the change, names the one that broke with its file and line, and puts it at the top of CLAUDE.md so the next session sees it first.
 
@@ -38,7 +38,7 @@ requirements:
     check: {forbid_pattern: '\bfloat\(', paths: ['shop/**']}
 ```
 
-Most rules only need a pattern or a list of paths. I looked at 555 real rules from public projects and curated lists, and about half could be checked from the code or the change alone. About 30% can't be checked at all, like "follow best practices". specdeck won't help with those.
+Most rules only need a pattern or a list of paths. In a sample of 555 real rules from public projects and curated lists, about half could be checked from the code or the change alone. About 30% can't be checked at all, like "follow best practices". specdeck won't help with those.
 
 Here's what you can use as a check.
 
@@ -79,7 +79,7 @@ Hooks are great and you should keep them. They do a different job.
 | What it sees | Each action as it happens | The whole change, like A changing without B, or a new dependency |
 | What it leaves behind | A block or a warning | The rule's reason, its status and its break history |
 
-Hooks stop the action. specdeck tells you whether the rule still holds. `specdeck check --fail` should be callable from a hook too, though I haven't tried that setup myself.
+Hooks stop the action. specdeck tells you whether the rule still holds. `specdeck check --fail` should be callable from a hook too, though that setup hasn't been tried yet.
 
 To be clear about what this doesn't do, specdeck doesn't stop an agent from breaking a rule. It catches the break afterwards. An agent that never runs the tests won't see anything, so CI running `pytest` is what makes it stick.
 
@@ -94,7 +94,7 @@ srs:
 
 The purpose goes at the top of the block specdeck writes into CLAUDE.md and AGENTS.md, and each rule's reason sits next to the rule. An agent that knows why a rule or a test exists is better placed to tell a real failure from an outdated test, and to make the call you would have made when a request and a rule disagree.
 
-When I had Claude Code build that invoice tool, the owner's request "just use floats" came back like this.
+In the invoice tool's sessions, the owner's request "just use floats" came back like this.
 
 > Not done as asked: I didn't switch to floats. The project rule `money.decimal` says "The tool shall hold and compute money amounts as Decimal values," and `float` is blocked in `invoicing/**` by a pattern check and by `tests/test_money.py`.
 
@@ -106,9 +106,9 @@ Claude Code only reads AGENTS.md when there's no CLAUDE.md, which is why it writ
 
 The rules in that block are the requirements typed `design-constraint`, `standards-compliance` or `process`. Each one comes with its reason, how it's checked and whether it held in the last run. Rules that nothing can check tell the agent to check them by hand.
 
-Above the rules sits what I call the adherence policy, which says what keeping a rule means. It has two default clauses.
+Above the rules sits the adherence policy, which says what keeping a rule means. It has two default clauses.
 
-The first is `intent`. Under pressure, I saw agents read a stdlib-only rule test and then load pandas through `importlib` so the test wouldn't see it. The test stayed green while the rule was broken. This clause says that getting a test to pass without keeping the rule is breaking the rule. Without it 2 of 2 agents got around the check, and with it all 8 kept the rule.
+The first is `intent`. Under pressure, agents in testing read a stdlib-only rule test and then loaded pandas through `importlib` so the test wouldn't see it. The test stayed green while the rule was broken. This clause says that getting a test to pass without keeping the rule is breaking the rule. Without it 2 of 2 agents got around the check, and with it all 8 kept the rule.
 
 The second is `conflicts`. When a request asks for something a rule forbids, the agent keeps the rule and starts its summary with "Not done as asked". That wording got 5 of 6 agents to say plainly what they didn't do, against 0 of 6 with no clause.
 
@@ -123,7 +123,7 @@ adherence:
 
 `adherence: false` turns it off.
 
-I also tested whether specdeck's file keeps agents to the rules better than a hand-written one, and it doesn't. Under pressure, breaks fell from 4 of 6 with no rules to 1 of 6 with plain bullets, and specdeck did no better while using 1.3 to 1.7 times the tokens. Writing rules down is what prevents breaks. What specdeck adds is knowing when one happened. The experiments are in `bench/rules_ab`.
+specdeck's file was also tested against a hand-written one, to see which keeps agents to the rules better, and it doesn't win. Under pressure, breaks fell from 4 of 6 with no rules to 1 of 6 with plain bullets, and specdeck did no better while using 1.3 to 1.7 times the tokens. Writing rules down is what prevents breaks. What specdeck adds is knowing when one happened. The experiments are in `bench/rules_ab`.
 
 ## Sharing rules
 
@@ -140,9 +140,9 @@ Only rules with a reason and a check made of plain data can be published, so add
 
 ## Built on requirements engineering
 
-If you're wondering why rules are called requirements here, it's because a rule really is one. Requirements engineering has spent decades working out what a requirement needs before you can rely on it, so I built on that instead of inventing my own format.
+If you're wondering why rules are called requirements here, it's because a rule really is one. Requirements engineering has spent decades working out what a requirement needs before you can rely on it, so specdeck builds on that instead of inventing a new format.
 
-The model follows ISO/IEC/IEEE 29148:2018, the international standard that replaced IEEE 830. specdeck is aligned with it, not fully conformant, because full conformance also covers life-cycle processes a tool can't carry out. The clause numbers were checked against the published text, and the descriptions are my own words.
+The model follows ISO/IEC/IEEE 29148:2018, the international standard that replaced IEEE 830. specdeck is aligned with it, not fully conformant, because full conformance also covers life-cycle processes a tool can't carry out. The clause numbers were checked against the published text, and the descriptions aren't taken from the standard's text.
 
 | The standard | specdeck |
 |---|---|
@@ -209,7 +209,7 @@ def test_replay_matches_recording(tape):
 
 Steps are recorded as they run, so a step is only marked as done if it actually executed. A failing `then` keeps what you expected, what it saw, and any decision context.
 
-I went this way instead of Gherkin because classic BDD tends to fail for the same reason every time. It's a second language nobody maintains, and the `.feature` files drift from the code. Generating the spec from pytest removes that.
+specdeck went this way instead of Gherkin because classic BDD tends to fail for the same reason every time. It's a second language nobody maintains, and the `.feature` files drift from the code. Generating the spec from pytest removes that.
 
 `depends_on` is about reading order. It says read these first, and it skips a test if a prerequisite failed. It never reorders execution, because tests that have to run in order pass for the wrong reasons. If A fails then B, which depends on A, is skipped as blocked, and so is C, which depends on B.
 
@@ -259,7 +259,7 @@ pytest --specdeck-coverage         # also records which scenarios run which func
 specdeck context --out SUITE.md    # one document describing the suite
 ```
 
-I decided what goes in this document by measuring it. `bench/agent_ab` puts the generated spec against the raw test files, with the same model and questions, and the right answers come from applying each change and running the suite.
+What goes in this document was decided by measurement. `bench/agent_ab` puts the generated spec against the raw test files, with the same model and questions, and the right answers come from applying each change and running the suite.
 
 It states what `depends_on` means. Asked to sort real failures from ones merely blocked, everything scored 40% exact, because the obvious rule is wrong. Saying so in about 100 tokens took both materials to 100%.
 
