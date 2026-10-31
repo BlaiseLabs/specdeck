@@ -38,7 +38,7 @@ requirements:
     check: {forbid_pattern: '\bfloat\(', paths: ['shop/**']}
 ```
 
-Most rules only need a pattern or a list of paths. In a sample of 555 real rules from public projects and curated lists, about half could be checked from the code or the change alone. About 30% can't be checked at all, like "follow best practices". specdeck won't help with those.
+Most rules only need a pattern or a list of paths. 555 real rules were sampled from public projects and curated lists, and about half could be checked from the code or the change alone. About 30% can't be checked at all, like "follow best practices". specdeck won't help with those.
 
 Here's what you can use as a check.
 
@@ -79,7 +79,7 @@ Hooks are great and you should keep them. They do a different job.
 | What it sees | Each action as it happens | The whole change, like A changing without B, or a new dependency |
 | What it leaves behind | A block or a warning | The rule's reason, its status and its break history |
 
-Hooks stop the action. specdeck tells you whether the rule still holds. `specdeck check --fail` should be callable from a hook too, though that setup hasn't been tried yet.
+Hooks stop the action. specdeck tells you whether the rule still holds. `specdeck check --fail` should be callable from a hook too, though that setup hasn't been tested yet.
 
 To be clear about what this doesn't do, specdeck doesn't stop an agent from breaking a rule. It catches the break afterwards. An agent that never runs the tests won't see anything, so CI running `pytest` is what makes it stick.
 
